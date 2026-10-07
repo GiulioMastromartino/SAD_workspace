@@ -200,6 +200,33 @@ void grad_batch(py::array_t<double, py::array::c_style | py::array::forcecast> x
     for (int p = 0; p < n; ++p) O(p) = (costs[p + 1] - costs[0]) / h;
 }
 
+// Stacked norm-cap violations: vals[b*N+k] = ||U[b,k]||, jac[b*N+k, :] =
+// e_k (x) u_k/||u_k||. One call replaces N per-stage Python lambdas so scipy
+// pays 2 crossings (fun+jac) per iteration instead of 2N.
+void normviol_batch(py::array_t<double, py::array::c_style | py::array::forcecast> Z,
+                    int N, double a_max,
+                    py::array_t<double, py::array::c_style> vals,
+                    py::array_t<double, py::array::c_style> jac) {
+    (void)a_max;
+    auto ZZ = Z.unchecked<2>();
+    auto V = vals.mutable_unchecked<2>();
+    auto J = jac.mutable_unchecked<3>();
+    const int B = (int)ZZ.shape(0);
+    for (int b = 0; b < B; ++b) {
+        for (int k = 0; k < N; ++k) {
+            double ux = ZZ(b, 3 * k), uy = ZZ(b, 3 * k + 1), uz = ZZ(b, 3 * k + 2);
+            double nk = std::sqrt(ux * ux + uy * uy + uz * uz);
+            V(b, k) = nk;
+            for (int i = 0; i < 3 * N; ++i) J(b, k, i) = 0.0;
+            if (nk > 1e-12) {
+                J(b, k, 3 * k) = ux / nk;
+                J(b, k, 3 * k + 1) = uy / nk;
+                J(b, k, 3 * k + 2) = uz / nk;
+            }
+        }
+    }
+}
+
 PYBIND11_MODULE(_nmpcbatch, m) {
     m.doc() = "Batched NMPC shooting cost + gradient on the Heyoka C++ path.";
     m.def("cost_batch", &cost_batch, "Shooting costs for B candidates.",
@@ -212,4 +239,8 @@ PYBIND11_MODULE(_nmpcbatch, m) {
           py::arg("q_pos"), py::arg("q_vel"), py::arg("r_fuel"),
           py::arg("db_a"), py::arg("a_max"), py::arg("norm_penalty"),
           py::arg("mu"), py::arg("r_orbit"), py::arg("tol"), py::arg("out"));
+    m.def("normviol_batch", &normviol_batch,
+          "Stacked norm violations + Jacobian in one call.",
+          py::arg("Z"), py::arg("N"), py::arg("a_max"), py::arg("vals"),
+          py::arg("jac"));
 }

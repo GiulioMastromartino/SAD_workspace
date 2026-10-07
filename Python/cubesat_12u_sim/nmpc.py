@@ -221,16 +221,20 @@ class ScipyShootingBackend(SolverBackend):
                 e_term = 0.0
             return float(c + 5.0 * cfg.q_pos * e_term**2)
 
-        # C++ Heyoka path: cost + forward-diff gradient in one batch call
-        # each (2 C++ calls per SLSQP iteration instead of ~20 Python ones).
-        # Falls back to the Python closures when unavailable or disabled.
+        # C++ Heyoka path: cost + forward-diff gradient + stacked norm
+        # constraints, each in one batch call (4 C++ crossings per SLSQP
+        # iteration instead of 2+2N Python ones). Falls back to the Python
+        # closures when unavailable or disabled.
         jac_fn = None
         if self.use_cpp:
             try:
                 from .optimization.nmpcbatch import make_funcs
-                cost_cpp, jac_cpp = make_funcs(x0, cfg)
-                if cost_cpp is not None:
-                    cost, jac_fn = cost_cpp, jac_cpp
+                funcs = make_funcs(x0, cfg)
+                if funcs[0] is not None:
+                    from scipy.optimize import NonlinearConstraint as _NLC
+                    cost, jac_fn, con_vals, con_jac = funcs
+                    constraints = [_NLC(con_vals, -np.inf, cfg.a_max,
+                                        jac=con_jac)]
             except Exception:
                 jac_fn = None
 

@@ -22,11 +22,15 @@ except Exception:
 
 
 def make_funcs(x0: np.ndarray, cfg):
-    """Return ``(cost, jac)`` closures over C++ batch calls, or ``(None, None)``."""
+    """Return ``(cost, jac, con_vals, con_jac)`` closures over C++ batch calls.
+
+    Returns ``(None, None, None, None)`` when the extension is unavailable.
+    Callers must handle the fallback (see ``nmpc.ScipyShootingBackend``).
+    """
     from .. import config as C
 
     if not available:
-        return None, None
+        return None, None, None, None
     N, dt = int(cfg.horizon), float(cfg.dt_outer)
     x0a = np.ascontiguousarray(np.asarray(x0, float).ravel())
     # norm_penalty=0: the scipy backend enforces |u|<=a_max with a hard
@@ -49,4 +53,18 @@ def make_funcs(x0: np.ndarray, cfg):
             np.asarray(z, float).ravel()), *args, g)
         return g
 
-    return cost, jac
+    def con_vals(Z: np.ndarray) -> np.ndarray:
+        Z = np.ascontiguousarray(np.asarray(Z, float).reshape(1, 3 * N))
+        vals = np.zeros((1, N))
+        jac = np.zeros((1, N, 3 * N))
+        _nmpcbatch.normviol_batch(Z, N, float(cfg.a_max), vals, jac)
+        return vals.ravel()
+
+    def con_jac(Z: np.ndarray) -> np.ndarray:
+        Z = np.ascontiguousarray(np.asarray(Z, float).reshape(1, 3 * N))
+        vals = np.zeros((1, N))
+        jac = np.zeros((1, N, 3 * N))
+        _nmpcbatch.normviol_batch(Z, N, float(cfg.a_max), vals, jac)
+        return jac[0]
+
+    return cost, jac, con_vals, con_jac

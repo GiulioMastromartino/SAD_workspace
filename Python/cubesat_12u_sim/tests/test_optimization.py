@@ -251,7 +251,7 @@ def test_nmpc_cpp_cost_matches_python():
             e_term = 0.0
         return c + 5.0 * cfg.q_pos * e_term**2
 
-    cost, _ = nb.make_funcs(x0, cfg)
+    cost, _, _, _ = nb.make_funcs(x0, cfg)
     rng = np.random.default_rng(0)
     for U in (np.zeros((6, 3)), rng.normal(0, 0.02, (6, 3))):
         ref, got = py_cost(U), cost(U.ravel())
@@ -267,7 +267,7 @@ def test_nmpc_cpp_grad_matches_python_finite_diff():
     r, v = C.R0_ECI.copy(), C.V0_ECI.copy() * 0.995
     x0 = np.concatenate([r, v])
     cfg = NMPCConfig(dt_outer=600.0, horizon=3, maxiter=50)
-    cost, jac = nb.make_funcs(x0, cfg)
+    cost, jac, _, _ = nb.make_funcs(x0, cfg)
     rng = np.random.default_rng(1)
     z = rng.normal(0, 0.01, 9)
     g = jac(z)
@@ -278,6 +278,30 @@ def test_nmpc_cpp_grad_matches_python_finite_diff():
     err = np.abs(g - num) / np.maximum(np.abs(num), 1e-3)
     assert np.median(err) < 5e-2, err
     assert np.all(np.isfinite(g))
+
+
+def test_nmpc_stacked_normviol_matches_lambdas():
+    """One C++ normviol call == N per-stage Python norms + analytic rows."""
+    nb = pytest.importorskip("cubesat_12u_sim.optimization.nmpcbatch")
+    if not nb.available:
+        pytest.skip("no _nmpcbatch extension")
+    import heyoka  # noqa: F401  (libheyoka for dynamic_lookup)
+    from cubesat_12u_sim.cxxdrive import _nmpcbatch
+    rng = np.random.default_rng(2)
+    N, B = 6, 3
+    Z = np.ascontiguousarray(rng.normal(0, 0.03, (B, 3 * N)))
+    vals = np.zeros((B, N))
+    jac = np.zeros((B, N, 3 * N))
+    _nmpcbatch.normviol_batch(Z, N, 0.05, vals, jac)
+    for b in range(B):
+        for k in range(N):
+            u = Z[b, 3 * k:3 * k + 3]
+            assert abs(vals[b, k] - np.linalg.norm(u)) < 1e-12
+            nk = np.linalg.norm(u)
+            row = np.zeros(3 * N)
+            if nk > 1e-12:
+                row[3 * k:3 * k + 3] = u / nk
+            assert np.allclose(jac[b, k], row)
 
 
 def test_nmpc_cpp_solve_agrees_and_caps():
