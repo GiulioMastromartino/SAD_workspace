@@ -263,8 +263,41 @@ Notes:
 
 ---
 
+## 11. Sweep results, 2026-10-07 (`--restarts 4 --maxiter 40 --workers 4`, cpp)
+
+20.1 min wall. Search 0.5 d, validation 24 h heyoka + 12-jet allocation.
+
+| arm | search dv / box | validation dv / box | transfers? |
+|---|---|---|---|
+| PID stage 1 | 23.96 / 0.89 km | 23.97 / 0.88 km | yes (<0.1 %) |
+| PID joint peer | 24.17 / 1.18 km | 24.05 / 1.08 km | yes |
+| NMPC H=12 (best) | 23.25 / 22.91 km | 36.16 / 33.02 km | **no** |
+| NMPC joint | 22.72 / 24.92 km | 30.84 / 42.09 km | **no** |
+| NMPC defaults H=6 | 36.44 / 29.69 km | 29.56 / 5.27 km | yes (conservative) |
+
+Tuned NMPC params tell the story: H=4 took `q_vel=38` (default 0.1),
+`db_a=3110 m` (default 500), trim budget 19.2 (default 0.5); H=12/joint took
+`r_fuel≈13-15` (default 0.5) with `db_a≈3-6 km`. All exploit perfect
+actuation: crank velocity damping (free in the surrogate, destabilizing
+under misdirected thrust) or coast at the box edge on 2 km of margin that
+attitude coupling eats. Post-hoc full-sim of H=4 (trim on *and* off):
+dv≈2000+, box≈2200 km — trim is exonerated, the weights are the cause.
+
+Consequences: the deployable result of this sweep is the **tuned PID**
+(84 % under hand-tuned gains, validated). NMPC needs a robustness-aware
+re-tune: cap `q_vel`/`db_a`/trim near defaults, or put actuation direction
+noise + multi-IC into the surrogate cost.
+
+---
+
 ## 9. Known limitations
 
+- **Surrogate gap for high-gain NMPC (measured, see §11).** The search
+  surrogate is translation-only with perfect thrust direction. PID tuning
+  transfers to full-sim to <0.1 %, but NMPC weights with large `q_vel` /
+  wide `db_a` / large trim budgets overfit the perfect-actuation assumption
+  and diverge under attitude/allocation coupling. Do not quote surrogate
+  NMPC numbers as flight numbers — only validation-table numbers.
 - **Single initial condition.** Every evaluation uses the same −0.5 % injection.
   A gain set tuned on one point of a 9-dimensional initial-state space is not
   robust; a Monte-Carlo-weighted cost (or `cfg.v_frac` swept) would be the
