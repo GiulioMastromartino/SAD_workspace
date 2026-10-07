@@ -1,0 +1,49 @@
+{
+  "note": "partial snapshot: killed during stage 2, H=12 restart 0. Thetas NOT in log; only reported metrics recoverable.",
+  "stages": {
+    "pid": {
+      "best_dv": 23.96,
+      "best_box_km": 0.89,
+      "best_ea_km": -0.614,
+      "status": "complete, 4/4 restarts"
+    },
+    "nmpc_per_horizon": {
+      "2": {
+        "best_dv": 26.247,
+        "best_box_km": 2.93,
+        "best_ea_km": -0.077,
+        "status": "complete, 4/4 restarts"
+      },
+      "4": {
+        "best_dv": 26.187,
+        "best_box_km": 2.82,
+        "best_ea_km": 0.012,
+        "status": "complete, 4/4 restarts"
+      },
+      "6": {
+        "best_dv": 26.355,
+        "best_box_km": 3.09,
+        "best_ea_km": -0.009,
+        "status": "complete, 4/4 restarts"
+      },
+      "8": {
+        "best_dv": 26.051,
+        "best_box_km": 3.16,
+        "best_ea_km": -0.026,
+        "status": "complete, 4/4 restarts"
+      },
+      "12": {
+        "restart0_dv": 25.869,
+        "restart0_box_km": 3.79,
+        "restart0_ea_km": -0.031,
+        "status": "partial, 1/4 restarts"
+      }
+    },
+    "joint": {
+      "status": "not started"
+    },
+    "validation": {
+      "status": "not started"
+    }
+  }
+}

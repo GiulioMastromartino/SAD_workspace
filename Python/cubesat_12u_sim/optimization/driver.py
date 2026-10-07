@@ -155,13 +155,52 @@ def run_restart(theta0, space, kind: str, cfg, horizon: int, *, seed: int,
 
 def multistart(space, kind: str, cfg, horizon: int, *, restarts: int, seed: int,
                maxiter: int, workers: int, popsize: int | None = None,
-               theta_seed=None, verbose: bool = True) -> tuple[RunReport, list]:
+               theta_seed=None, verbose: bool = True,
+               checkpoint_path: str | None = None,
+               skip_completed: int = 0) -> tuple[RunReport, list]:
     """Run ``restarts`` CMA-ES runs; restart 0 seeds from ``theta_seed``.
 
     Returns ``(best_report, all_reports)``.
+
+    ``checkpoint_path``: when given, each finished restart is appended as one
+    JSON line (theta + result + restart index), so killing the sweep loses at
+    most one restart. ``skip_completed``: resume mode — skip this many leading
+    restarts (their reports are reloaded from the checkpoint file when it
+    exists and matches).
     """
+    import json as _json
+    import os as _os
+
     reports: list[RunReport] = []
-    for i in range(restarts):
+    if skip_completed and checkpoint_path and _os.path.exists(checkpoint_path):
+        with open(checkpoint_path) as _fh:
+            for _line in _fh:
+                _line = _line.strip()
+                if not _line:
+                    continue
+                _d = _json.loads(_line)
+                if len(reports) >= skip_completed:
+                    break
+                _res = Result(cost=float(_d["cost"]), dv=float(_d["dv"]),
+                              max_abs_r_err=float(_d["max_abs_r_err"]),
+                              final_e_a=float(_d["final_e_a"]),
+                              feasible=bool(_d["feasible"]),
+                              notes=str(_d.get("notes", "")))
+                _peer = None
+                if _d.get("peer_pid") is not None:
+                    _p = _d["peer_pid"]
+                    _peer = Result(**{k: _p[k] for k in
+                                      ("cost", "dv", "max_abs_r_err",
+                                       "final_e_a", "feasible", "notes")})
+                reports.append(RunReport(
+                    theta=np.asarray(_d["theta"], float), result=_res,
+                    evals=int(_d.get("evals", 0)),
+                    generations=int(_d.get("generations", 0)), peer=_peer))
+        if verbose and reports:
+            print(f"    resumed {len(reports)} restart(s) from {checkpoint_path}")
+
+    start_at = len(reports) if skip_completed else 0
+    for i in range(start_at, restarts):
         rng = np.random.default_rng(seed + 1000 * i)
         if i == 0 and theta_seed is not None:
             t0 = np.clip(np.asarray(theta_seed, float), *space.bounds())
@@ -177,6 +216,13 @@ def multistart(space, kind: str, cfg, horizon: int, *, restarts: int, seed: int,
                 print(f"    restart {i}: FAILED ({type(exc).__name__}: {exc})")
             continue
         reports.append(rep)
+        if checkpoint_path:
+            _d = rep.as_dict()
+            _d["restart"] = i
+            _d["kind"] = kind
+            _d["horizon"] = horizon
+            with open(checkpoint_path, "a") as _fh:
+                _fh.write(_json.dumps(_d, default=float) + "\n")
         if verbose:
             r = rep.result
             extra = ""

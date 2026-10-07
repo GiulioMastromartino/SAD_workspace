@@ -54,6 +54,25 @@ def _write(name: str, payload: dict) -> str:
     return path
 
 
+def _ckpt_path(args, name: str) -> str | None:
+    if not getattr(args, "checkpoint", True):
+        return None
+    os.makedirs(OUTDIR, exist_ok=True)
+    return os.path.abspath(os.path.join(OUTDIR, f"ckpt_{name}.jsonl"))
+
+
+def _resume_count(args, path: str | None, restarts: int) -> int:
+    """How many leading restarts already checkpointed (resume mode only)."""
+    if not getattr(args, "resume", False) or not path:
+        return 0
+    try:
+        with open(path) as fh:
+            n = sum(1 for line in fh if line.strip())
+    except FileNotFoundError:
+        return 0
+    return min(n, restarts)
+
+
 def _fmt(res) -> str:
     tag = "FEASIBLE" if res.feasible else "INFEASIBLE"
     return (f"dv={res.dv:8.3f} m/s  box={res.max_abs_r_err / 1e3:7.2f} km  "
@@ -69,10 +88,12 @@ def stage_pid(args, cfg: EvalConfig) -> dict:
     _log(PID_SPACE.describe())
     baseline = evaluate_pid(PID_SPACE.seed_theta(), cfg)
     _log(f"  config defaults: {_fmt(baseline)}")
+    ckpt = _ckpt_path(args, "pid")
+    skip = _resume_count(args, ckpt, args.restarts)
     best, reports = multistart(
         PID_SPACE, "pid", cfg, horizon=0, restarts=args.restarts,
         seed=args.seed, maxiter=args.maxiter, workers=args.workers,
-        popsize=args.popsize)
+        popsize=args.popsize, checkpoint_path=ckpt, skip_completed=skip)
     _log(f"  best -> {_fmt(best.result)}")
     if best.result.dv < baseline.dv:
         _log(f"  gain vs config defaults: "
@@ -106,10 +127,12 @@ def stage_nmpc(args, cfg: EvalConfig) -> dict:
     best_h = None
     for h in NMPC_HORIZONS:
         _log(f"  -- horizon H={h} --")
+        ckpt = _ckpt_path(args, f"nmpc_h{h}")
+        skip = _resume_count(args, ckpt, args.restarts)
         rep, reports = multistart(
             NMPC_SPACE, "nmpc", cfg, horizon=h, restarts=args.restarts,
             seed=args.seed, maxiter=args.maxiter, workers=args.workers,
-            popsize=args.popsize)
+            popsize=args.popsize, checkpoint_path=ckpt, skip_completed=skip)
         _log(f"     best -> {_fmt(rep.result)}")
         per_horizon.append({"horizon": h, "theta": [float(x) for x in rep.theta],
                             "result": rep.result.as_dict(),
@@ -140,10 +163,13 @@ def stage_joint(args, cfg: EvalConfig, pid_out: dict, nmpc_out: dict) -> dict:
     h = int(nmpc_out["horizon"])
     seed = np.concatenate([np.asarray(nmpc_out["theta"], float),
                            np.asarray(pid_out["theta"], float)])
+    ckpt = _ckpt_path(args, "joint")
+    skip = _resume_count(args, ckpt, args.restarts)
     best, reports = multistart(
         JOINT_SPACE, "joint", cfg, horizon=h, restarts=args.restarts,
         seed=args.seed, maxiter=args.maxiter, workers=args.workers,
-        popsize=args.popsize, theta_seed=seed)
+        popsize=args.popsize, theta_seed=seed,
+        checkpoint_path=ckpt, skip_completed=skip)
     _log(f"  best NMPC -> {_fmt(best.result)}")
     if best.peer is not None:
         _log(f"  peer PID  -> {_fmt(best.peer)}")
@@ -217,6 +243,10 @@ def main() -> None:
                     help="commanded/achieved accel ratio of the jet allocator")
     ap.add_argument("--validate-t", type=float, default=7200.0,
                     help="validation horizon [s] on the full sim")
+    ap.add_argument("--resume", action="store_true",
+                    help="resume from per-restart checkpoint files in OUTDIR")
+    ap.add_argument("--no-checkpoint", dest="checkpoint", action="store_false",
+                    help="disable per-restart checkpoint files")
     args = ap.parse_args()
 
     nmpc_cfg = EvalConfig(t_days=args.days, spec_box=args.spec_box,
@@ -246,8 +276,10 @@ def main() -> None:
     pid_out = nmpc_out = joint_out = None
     if args.stage in ("pid", "all"):
         pid_out = stage_pid(args, pid_cfg)
+        _write("res_stage_pid.json", pid_out)
     if args.stage in ("nmpc", "all"):
         nmpc_out = stage_nmpc(args, nmpc_cfg)
+        _write("res_stage_nmpc.json", nmpc_out)
     if args.stage in ("joint", "all"):
         if pid_out is None:
             raise SystemExit("--stage joint needs the stage 1 result; run "

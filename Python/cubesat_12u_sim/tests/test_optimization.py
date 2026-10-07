@@ -171,6 +171,28 @@ def test_multistart_ranks_feasible_above_infeasible():
     assert rank_key(best.result) == min(rank_key(r.result) for r in reports)
 
 
+def test_checkpoint_roundtrip_and_resume(tmp_path):
+    import json
+    from cubesat_12u_sim.optimization.driver import multistart
+    cfg = O.EvalConfig(t_days=0.01, dt_outer=60.0, dt_inner=60.0)
+    ckpt = str(tmp_path / "ckpt.jsonl")
+    best, reports = multistart(
+        PID_SPACE, "pid", cfg, horizon=0, restarts=2, seed=1, maxiter=2,
+        workers=1, popsize=4, verbose=False, checkpoint_path=ckpt)
+    assert len(reports) == 2
+    lines = [l for l in open(ckpt) if l.strip()]
+    assert len(lines) == 2
+    assert json.loads(lines[0])["restart"] == 0
+    # resume: skip 1, reload restart 0 from file, run restart 1 fresh
+    best2, reports2 = multistart(
+        PID_SPACE, "pid", cfg, horizon=0, restarts=2, seed=1, maxiter=2,
+        workers=1, popsize=4, verbose=False, checkpoint_path=ckpt,
+        skip_completed=1)
+    assert len(reports2) == 2
+    assert np.allclose(reports2[0].theta, reports[0].theta)
+    assert reports2[0].result.as_dict() == reports[0].result.as_dict()
+
+
 def test_multistart_survives_a_raising_restart(monkeypatch):
     import cubesat_12u_sim.optimization.driver as drv
 
