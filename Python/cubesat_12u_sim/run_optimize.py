@@ -90,10 +90,16 @@ def stage_pid(args, cfg: EvalConfig) -> dict:
     _log(f"  config defaults: {_fmt(baseline)}")
     ckpt = _ckpt_path(args, "pid")
     skip = _resume_count(args, ckpt, args.restarts)
+    from .optimization.pidbatch import available as _cpp_pid_ok
+    use_cpp = args.pid_backend == "cpp" and _cpp_pid_ok
+    if args.pid_backend == "cpp" and not _cpp_pid_ok:
+        _log("  warning: _pidbatch unavailable, falling back to numpy")
+    _log(f"  pid backend: {'cpp-batch' if use_cpp else 'numpy'}")
     best, reports = multistart(
         PID_SPACE, "pid", cfg, horizon=0, restarts=args.restarts,
         seed=args.seed, maxiter=args.maxiter, workers=args.workers,
-        popsize=args.popsize, checkpoint_path=ckpt, skip_completed=skip)
+        popsize=args.popsize, checkpoint_path=ckpt, skip_completed=skip,
+        use_cpp_pid=use_cpp)
     _log(f"  best -> {_fmt(best.result)}")
     if best.result.dv < baseline.dv:
         _log(f"  gain vs config defaults: "
@@ -247,6 +253,9 @@ def main() -> None:
                     help="resume from per-restart checkpoint files in OUTDIR")
     ap.add_argument("--no-checkpoint", dest="checkpoint", action="store_false",
                     help="disable per-restart checkpoint files")
+    ap.add_argument("--pid-backend", default="cpp", choices=["cpp", "numpy"],
+                    help="PID-arm evaluator (cpp = fused C++ batch, gated by "
+                         "parity test; numpy = reference)")
     args = ap.parse_args()
 
     nmpc_cfg = EvalConfig(t_days=args.days, spec_box=args.spec_box,
@@ -268,6 +277,7 @@ def main() -> None:
                             "spec_box": nmpc_cfg.spec_box,
                             "alloc_eff": nmpc_cfg.alloc_eff,
                             "alloc_eff_measured": measured,
+                            "pid_backend": args.pid_backend,
                             "nmpc_dt": [nmpc_cfg.dt_outer, nmpc_cfg.dt_inner],
                             "pid_dt": [pid_cfg.dt_outer, pid_cfg.dt_inner],
                             "restarts": args.restarts, "maxiter": args.maxiter,

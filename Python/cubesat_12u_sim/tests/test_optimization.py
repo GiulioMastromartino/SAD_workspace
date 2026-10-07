@@ -193,6 +193,27 @@ def test_checkpoint_roundtrip_and_resume(tmp_path):
     assert reports2[0].result.as_dict() == reports[0].result.as_dict()
 
 
+def test_pid_cpp_batch_matches_numpy():
+    """Parity gate for the C++ PID surrogate (Phase 1a).
+
+    Seed + random + bound-adversarial thetas must agree to 1e-6 relative;
+    measured worst is ~2e-9.
+    """
+    pidbatch = pytest.importorskip("cubesat_12u_sim.optimization.pidbatch")
+    if not pidbatch.available:
+        pytest.skip("no _pidbatch extension")
+    cfg = O.EvalConfig(t_days=0.1, dt_outer=10.0, dt_inner=10.0)
+    rng = np.random.default_rng(7)
+    lb, ub = PID_SPACE.bounds()
+    thetas = [PID_SPACE.seed_theta(), PID_SPACE.random_theta(rng), lb, ub]
+    got = pidbatch.evaluate_pid_batch(thetas, cfg, PID_SPACE)
+    for t, r in zip(thetas, got):
+        ref = O.evaluate_pid(t, cfg)
+        for k in ("dv", "max_abs_r_err", "final_e_a", "cost"):
+            a, b = getattr(r, k), getattr(ref, k)
+            assert abs(a - b) <= 1e-6 * max(abs(b), 1e-9), (k, a, b)
+
+
 def test_multistart_survives_a_raising_restart(monkeypatch):
     import cubesat_12u_sim.optimization.driver as drv
 

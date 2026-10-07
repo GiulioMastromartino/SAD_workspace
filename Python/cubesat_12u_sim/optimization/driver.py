@@ -76,6 +76,13 @@ def _run_batch(thetas) -> list[dict]:
 
     kind, cfg, horizon = _W["kind"], _W["cfg"], _W["horizon"]
     lb, ub, cache = _W["lb"], _W["ub"], _W["cache"]
+    if kind == "pid" and _W.get("use_cpp_pid"):
+        from .pidbatch import available as _cpp_ok, evaluate_pid_batch
+        from .params import PID_SPACE
+        if _cpp_ok:
+            clipped = [np.clip(np.asarray(th, float), lb, ub) for th in thetas]
+            return [r.as_dict() for r in
+                    evaluate_pid_batch(clipped, cfg, PID_SPACE)]
     out = []
     for th in thetas:
         th = np.clip(np.asarray(th, float), lb, ub)
@@ -95,7 +102,8 @@ def _run_batch(thetas) -> list[dict]:
 
 def run_restart(theta0, space, kind: str, cfg, horizon: int, *, seed: int,
                 maxiter: int, popsize: int | None = None,
-                workers: int = 1, sigma0: float = 0.3) -> RunReport:
+                workers: int = 1, sigma0: float = 0.3,
+                use_cpp_pid: bool = False) -> RunReport:
     """One CMA-ES run from ``theta0``. Never raises: caller handles failure."""
     import cma
 
@@ -105,7 +113,7 @@ def run_restart(theta0, space, kind: str, cfg, horizon: int, *, seed: int,
     n = len(space)
 
     payload = {"kind": kind, "cfg": cfg, "horizon": horizon,
-               "lb": lb, "ub": ub}
+               "lb": lb, "ub": ub, "use_cpp_pid": bool(use_cpp_pid)}
     # cma >= 3 takes bounds/popsize/seed through the options dict, not as
     # positional args.
     inopts = {"bounds": [list(lb), list(ub)],
@@ -157,7 +165,8 @@ def multistart(space, kind: str, cfg, horizon: int, *, restarts: int, seed: int,
                maxiter: int, workers: int, popsize: int | None = None,
                theta_seed=None, verbose: bool = True,
                checkpoint_path: str | None = None,
-               skip_completed: int = 0) -> tuple[RunReport, list]:
+               skip_completed: int = 0,
+               use_cpp_pid: bool = False) -> tuple[RunReport, list]:
     """Run ``restarts`` CMA-ES runs; restart 0 seeds from ``theta_seed``.
 
     Returns ``(best_report, all_reports)``.
@@ -210,7 +219,8 @@ def multistart(space, kind: str, cfg, horizon: int, *, restarts: int, seed: int,
             t0 = space.random_theta(rng)
         try:
             rep = run_restart(t0, space, kind, cfg, horizon, seed=seed + i,
-                              maxiter=maxiter, popsize=popsize, workers=workers)
+                              maxiter=maxiter, popsize=popsize, workers=workers,
+                              use_cpp_pid=use_cpp_pid)
         except Exception as exc:  # one broken restart must not sink the sweep
             if verbose:
                 print(f"    restart {i}: FAILED ({type(exc).__name__}: {exc})")

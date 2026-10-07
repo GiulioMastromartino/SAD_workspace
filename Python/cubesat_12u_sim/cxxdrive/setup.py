@@ -1,6 +1,12 @@
-"""Build the cxxdrive pybind11 extension in place.
+"""Build the cxxdrive pybind11 extensions in place.
 
-Usage (from Python/):  ./env/bin/python cubesat_12u_sim/cxxdrive/setup.py build_ext --inplace
+Usage (from Python/):
+    ./env/bin/python cubesat_12u_sim/cxxdrive/setup.py build_ext --inplace
+
+Builds both ``_cxxdrive`` (full C++ Heyoka campaign driver) and ``_pidbatch``
+(fused RTN-PID tuning surrogate; plain C++, no Heyoka dependency). Pass
+``--only pidbatch`` to skip the Heyoka module (faster iteration when the
+toolchain headers are missing).
 """
 import sys
 
@@ -9,21 +15,23 @@ from setuptools import setup
 from setuptools.command.build_ext import build_ext
 
 
+ONLY = None
+if "--only" in sys.argv:
+    idx = sys.argv.index("--only")
+    ONLY = sys.argv[idx + 1]
+    del sys.argv[idx:idx + 2]
+
+
 class BuildExt(build_ext):
     def build_extensions(self):
         import numpy
         import sysconfig
         import os
 
-        # Find boost/heyoka/eigen headers (conda env or homebrew).
-        # Same recipe as rwdrive/setup.py: campaign.cpp includes
-        # <heyoka/heyoka.hpp>, resolved from Homebrew or the conda env.
         extra_include = None
-        # Check conda env site-packages
         sp = os.path.join(sysconfig.get_path('purelib'), '..', '..', 'boost_headers', 'include')
         if os.path.isdir(sp):
             extra_include = os.path.normpath(sp)
-        # Check homebrew (heyoka + boost + eigen)
         if not extra_include:
             for p in ['/opt/homebrew/include', '/usr/local/include']:
                 if os.path.isdir(os.path.join(p, 'boost')):
@@ -47,16 +55,24 @@ except ImportError:
     print("pybind11>=2.6 required", file=sys.stderr)
     raise SystemExit(1)
 
+ext_modules = []
+if ONLY in (None, "cxxdrive"):
+    ext_modules.append(Pybind11Extension(
+        "cubesat_12u_sim.cxxdrive._cxxdrive",
+        ["cubesat_12u_sim/cxxdrive/campaign.cpp"],
+        cxx_std=17,
+    ))
+if ONLY in (None, "pidbatch"):
+    ext_modules.append(Pybind11Extension(
+        "cubesat_12u_sim.cxxdrive._pidbatch",
+        ["cubesat_12u_sim/cxxdrive/pid_batch.cpp"],
+        cxx_std=17,
+    ))
+
 setup(
     name="cxxdrive",
-    version="0.1.0",
+    version="0.2.0",
     packages=[],
-    ext_modules=[
-        Pybind11Extension(
-            "cubesat_12u_sim.cxxdrive._cxxdrive",
-            ["cubesat_12u_sim/cxxdrive/campaign.cpp"],
-            cxx_std=17,
-        ),
-    ],
+    ext_modules=ext_modules,
     cmdclass={"build_ext": BuildExt},
 )
