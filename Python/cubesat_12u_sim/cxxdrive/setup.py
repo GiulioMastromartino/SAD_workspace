@@ -45,7 +45,14 @@ class BuildExt(build_ext):
             ]
             if extra_include:
                 ext.extra_compile_args.append("-I" + extra_include)
-            ext.extra_link_args = []
+            if getattr(ext, "libraries", None) == ["nlopt"]:
+                # setuptools would drop our rpath otherwise: keep NLopt
+                # resolvable at import without touching the conda env.
+                import os as _os2
+                _nl = _os2.path.expanduser("~/.local/nlopt/lib")
+                ext.extra_link_args = ["-Wl,-rpath," + _nl]
+            else:
+                ext.extra_link_args = []
         super().build_extensions()
 
 
@@ -73,6 +80,18 @@ if ONLY in (None, "nmpcbatch"):
         "cubesat_12u_sim.cxxdrive._nmpcbatch",
         ["cubesat_12u_sim/cxxdrive/nmpc_batch.cpp"],
         cxx_std=17,
+    ))
+if ONLY in (None, "nmpcsolve"):
+    import os as _os
+    _nlopt = _os.path.expanduser("~/.local/nlopt")
+    ext_modules.append(Pybind11Extension(
+        "cubesat_12u_sim.cxxdrive._nmpcsolve",
+        ["cubesat_12u_sim/cxxdrive/nmpc_solve.cpp"],
+        cxx_std=17,
+        include_dirs=[_os.path.join(_nlopt, "include")],
+        library_dirs=[_os.path.join(_nlopt, "lib")],
+        libraries=["nlopt"],
+        extra_link_args=["-Wl,-rpath," + _os.path.join(_nlopt, "lib")],
     ))
 
 setup(

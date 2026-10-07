@@ -88,6 +88,36 @@ def _init_worker(payload: dict) -> None:
     _W["cache"] = {}
 
 
+def _run_cxx(thetas, j_star: float, has_incumbent: bool) -> list[dict]:
+    """Full-C++ closed-loop sims for a shard of candidates (NMPC cxx backend).
+
+    Scoring stays in Python (single source: :func:`objective.score`); the
+    incumbent (``j_star``, ``has_incumbent``) enables safe early abort inside
+    the C++ loop. Never raises: a broken candidate ranks last, like every
+    other backend.
+    """
+    from .objective import PENALTY_INFEASIBLE, Result, score
+    from .params import NMPC_SPACE
+    from . import nmpcsolve as NS
+
+    kind, cfg, horizon = _W["kind"], _W["cfg"], _W["horizon"]
+    lb, ub = _W["lb"], _W["ub"]
+    assert kind == "nmpc"
+    out = []
+    for th in thetas:
+        th = np.clip(np.asarray(th, float), lb, ub)
+        try:
+            dv, mx, ea, info = NS.closed_loop(th, cfg, horizon, NMPC_SPACE,
+                                              j_star=j_star,
+                                              has_incumbent=has_incumbent)
+            res = score(dv, mx, ea, cfg)
+        except Exception:
+            res = Result(PENALTY_INFEASIBLE, float("inf"), float("inf"),
+                         float("inf"), False, "cxx-exception")
+        out.append(res.as_dict())
+    return out
+
+
 def _run_batch(thetas) -> list[dict]:
     """Evaluate a batch of candidates; returns plain dicts (picklable)."""
     from .objective import evaluate_joint, evaluate_nmpc, evaluate_pid
@@ -111,8 +141,27 @@ def _run_batch(thetas) -> list[dict]:
             out.append(evaluate_nmpc(th, cfg, horizon, cache,
                                      backend=nmpc_backend).as_dict())
         else:
-            res_n, res_p = evaluate_joint(th, cfg, horizon, cache,
-                                          nmpc_backend=nmpc_backend)
+            if nmpc_backend == "cxx":
+                # joint on the full-C++ path: NMPC arm in C++, PID arm numpy.
+                # No incumbent abort here (exact sims; the incumbent lives in
+                # the restart loop and only reaches workers through _run_cxx).
+                from . import nmpcsolve as _NS
+                from .objective import (PENALTY_INFEASIBLE, Result,
+                                        evaluate_pid, score)
+                from .params import NMPC_SPACE as _NSP
+                n = len(_NSP)
+                try:
+                    dv, mx, ea, _info = _NS.closed_loop(
+                        np.asarray(th, float)[:n], cfg, horizon, _NSP)
+                    res_n = score(dv, mx, ea, cfg)
+                except Exception:
+                    res_n = Result(PENALTY_INFEASIBLE, float("inf"),
+                                   float("inf"), float("inf"), False,
+                                   "cxx-exception")
+                res_p = evaluate_pid(np.asarray(th, float)[n:], cfg, cache)
+            else:
+                res_n, res_p = evaluate_joint(th, cfg, horizon, cache,
+                                              nmpc_backend=nmpc_backend)
             out.append({"nmpc": res_n.as_dict(), "pid": res_p.as_dict()})
     return out
 
@@ -165,21 +214,41 @@ def run_restart(theta0, space, kind: str, cfg, horizon: int, *, seed: int,
     # Whole-population single future when the evaluator is a fused batch
     # kernel (pid-cpp): 1 IPC round-trip per generation instead of popsize.
     fused = kind == "pid" and use_cpp_pid
+    # Full-C++ sims (nmpc cxx): shard the population into one future per
+    # worker; each future runs whole sims in C++ with safe early abort
+    # against the incumbent best cost.
+    cxx = kind == "nmpc" and nmpc_backend == "cxx"
+    best_j = float("inf")
+    feas_seen = False
+    best_so_far = float("inf")
+    history: list[float] = []
 
     try:
-        best_so_far = float("inf")
-        history: list[float] = []
         while not es.stop():
             xs = es.ask()
             if pool is None:
-                payloads = _run_batch(xs)
+                if cxx:
+                    payloads = _run_cxx(xs, best_j, feas_seen)
+                else:
+                    payloads = _run_batch(xs)
             elif fused:
                 payloads = pool.submit(_run_batch, list(xs)).result()
+            elif cxx:
+                shards = [list(s) for s in np.array_split(list(xs), workers)]
+                futs = [pool.submit(_run_cxx, sh, best_j, feas_seen)
+                        for sh in shards if len(sh)]
+                payloads = [p for f in futs for p in f.result()]
             else:
                 futures = [pool.submit(_run_batch, [x]) for x in xs]
                 payloads = [f.result()[0] for f in futures]
             ys = [_cost(p, kind) for p in payloads]
             es.tell(xs, ys)
+            for p in payloads:
+                c = float(p["cost"] if kind != "joint" else p["nmpc"]["cost"])
+                f = bool(p["feasible"] if kind != "joint" else p["nmpc"]["feasible"])
+                if c < best_j:
+                    best_j = c
+                feas_seen = feas_seen or f
             best_so_far = min(best_so_far, min(ys))
             history.append(best_so_far)
     finally:
@@ -188,9 +257,14 @@ def run_restart(theta0, space, kind: str, cfg, horizon: int, *, seed: int,
 
     # Re-evaluate the reported best so its Result is a fresh evaluation of the
     # exact theta being reported, rather than whatever happened to sit in the
-    # final generation. _W is pool-local, so prime it here.
+    # final generation. _W is pool-local, so prime it here. No incumbent abort
+    # (j_star=inf): the reported number must be the exact cost, never an
+    # abort-truncated bound.
     _init_worker(payload)
-    final_payloads = _run_batch([es.result.xbest])
+    if cxx:
+        final_payloads = _run_cxx([es.result.xbest], float("inf"), False)
+    else:
+        final_payloads = _run_batch([es.result.xbest])
     res, peer = _as_result(final_payloads[0], kind)
     return RunReport(theta=np.asarray(es.result.xbest, float), result=res,
                      peer=peer, evals=int(es.result.evaluations),

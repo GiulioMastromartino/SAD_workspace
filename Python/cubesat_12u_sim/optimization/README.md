@@ -190,7 +190,7 @@ Options:
 | `--spec-box` | 25e3 | box half-width [m] (feasibility) |
 | `--alloc-eff` | 0.5 | commanded/achieved ratio of the allocator |
 | `--pid-backend` | `cpp` | `cpp` = fused C++ batch (§10), `numpy` = reference |
-| `--nmpc-backend` | `numpy` | `cpp` = Heyoka C++ batch cost+grad (§10), `numpy` = RK4 reference |
+| `--nmpc-backend` | `numpy` | `cpp` = Heyoka C++ batch cost+grad (§10), `cxx` = full C++ sim with embedded NLopt-SLSQP + early abort (§10), `numpy` = RK4 reference |
 | `--validate-t` | 7200 | validation horizon [s] on the full sim |
 | `--resume` | off | resume from per-restart checkpoint files |
 | `--no-checkpoint` | off | disable per-restart checkpoint files |
@@ -224,7 +224,8 @@ Two batch kernels in `cxxdrive/`, built with
 | kernel | what | measured |
 |---|---|---|
 | `_pidbatch.pid_batch_eval` | whole CMA-ES population (RTN law + RK4 + score) in one call | 10 evals in 2.5 ms vs 1330 ms numpy (~530x); parity 1.9e-9 |
-| `_nmpcbatch.cost_batch` / `grad_batch` | shooting cost + forward-diff gradient on `heyoka::taylor_adaptive_batch` (6-state orbit system, same family as `cxxdrive/campaign.cpp`) | warm solve 8 ms vs 90 ms numpy (~11x); cost parity 3e-4, solve cost within 0.2% |
+| `_nmpcbatch.cost_batch` / `grad_batch` | shooting cost + forward-diff gradient on `heyoka::taylor_adaptive_batch` (6-state orbit system, same family as `cxxdrive/campaign.cpp`) | warm solve 5 ms vs 90 ms numpy (~18x with stacked constraints); cost parity 3e-4, solve cost within 0.2% |
+| `_nmpcsolve.closed_loop_batch` | **whole NMPC sim in one call**: NLopt-SLSQP bulk plans (warm-started) + trim port + alloc_eff + safe early-abort vs incumbent | warm sim ~0.16 s vs ~1.3 s numpy (~8x); closed-loop dv within 5%, same verdict; deterministic |
 
 Notes:
 
@@ -233,11 +234,16 @@ Notes:
   more accurate than the 600 s RK4 step, so exact cost equality is not
   expected — the gates are cost ≤1e-3, same feasibility verdict, closed-loop
   dv within 5%.
-- `_nmpcbatch` needs `import heyoka` first (it links libheyoka with
-  dynamic_lookup — same pre-existing requirement as `_cxxdrive`).
+- `_nmpcsolve` needs `import heyoka` first (libheyoka, same as `_cxxdrive`)
+  **and** NLopt at `~/.local/nlopt` (built once from source with cmake;
+  the extension rpaths it, so the conda env is untouched).
 - Batch templates JIT once per worker (~7 s cold, ~0.17 s warm from disk
   cache): with a fresh pool per restart this is repaid per process, so the
   first solve in each worker is slow and the rest are fast.
+- The embedded SLSQP is NLopt `LD_SLSQP` (Kraft, same family as scipy's),
+  `ftol_rel=1e-6`, `maxeval = maxiter·(3N+3)`; solver failure falls back to
+  the same energy-based fallback as `HighLevelNMPC`. A `maxeval_cap`
+  override exists for budget probes (default 0 = auto mapping).
 - The PID kernel is plain-C++ RK4, not Taylor: at these step sizes Taylor
   buys nothing over RK4 per step, while the exact RK4 port preserves the
   tuned numbers bit-near.

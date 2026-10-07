@@ -136,7 +136,8 @@ def stage_nmpc(args, cfg: EvalConfig) -> dict:
     if nmpc_backend == "cpp" and not _cpp_nmpc_ok:
         _log("  warning: _nmpcbatch unavailable, falling back to numpy")
         nmpc_backend = "numpy"
-    _log(f"  nmpc backend: {'heyoka-cpp' if nmpc_backend == 'cpp' else 'numpy-rk4'}")
+    _log(f"  nmpc backend: "
+          f"{'heyoka-cpp(scipy)' if nmpc_backend == 'cpp' else ('full-cxx(NLopt)' if nmpc_backend == 'cxx' else 'numpy-rk4')}")
     for h in NMPC_HORIZONS:
         _log(f"  -- horizon H={h} --")
         ckpt = _ckpt_path(args, f"nmpc_h{h}")
@@ -273,9 +274,11 @@ def main() -> None:
     ap.add_argument("--pid-backend", default="cpp", choices=["cpp", "numpy"],
                     help="PID-arm evaluator (cpp = fused C++ batch, gated by "
                          "parity test; numpy = reference)")
-    ap.add_argument("--nmpc-backend", default="numpy", choices=["cpp", "numpy"],
+    ap.add_argument("--nmpc-backend", default="numpy", choices=["cpp", "numpy", "cxx"],
                     help="NMPC-arm rollout (cpp = Heyoka C++ batch cost+grad, "
-                         "~11x per solve warm; numpy = RK4 reference)")
+                         "~11x per solve warm; cxx = full C++ closed-loop sim "
+                         "with embedded NLopt-SLSQP + early abort, ~8x per "
+                         "sim; numpy = RK4 reference)")
     args = ap.parse_args()
 
     nmpc_cfg = EvalConfig(t_days=args.days, spec_box=args.spec_box,

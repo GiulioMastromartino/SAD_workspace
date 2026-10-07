@@ -280,6 +280,37 @@ def test_nmpc_cpp_grad_matches_python_finite_diff():
     assert np.all(np.isfinite(g))
 
 
+def test_nmpc_cxx_closed_loop_agrees():
+    """Full-C++ sim gate: same verdict, dv within 5% vs numpy path."""
+    from cubesat_12u_sim.optimization import nmpcsolve as NS
+    if not NS.available:
+        pytest.skip("no _nmpcsolve extension")
+    cfg = O.EvalConfig()
+    th = NMPC_SPACE.seed_theta()
+    ref = O.evaluate_nmpc(th, cfg, 6)
+    dv, mx, ea, info = NS.closed_loop(th, cfg, 6, NMPC_SPACE)
+    got = O.score(dv, mx, ea, cfg)
+    assert got.feasible == ref.feasible
+    assert abs(got.dv - ref.dv) <= 0.05 * max(abs(ref.dv), 1e-9), \
+        (got.dv, ref.dv)
+    assert not info["aborted"]
+
+
+def test_nmpc_cxx_early_abort_only_when_dominated():
+    """Abort fires on j_star=0 (nothing beats it); off at j_star=inf."""
+    from cubesat_12u_sim.optimization import nmpcsolve as NS
+    if not NS.available:
+        pytest.skip("no _nmpcsolve extension")
+    cfg = O.EvalConfig(t_days=0.1, dt_outer=600.0, dt_inner=60.0)
+    th = NMPC_SPACE.seed_theta()
+    dv, mx, ea, info = NS.closed_loop(th, cfg, 6, NMPC_SPACE,
+                                      j_star=0.0, has_incumbent=True)
+    assert info["aborted"]
+    assert not np.isfinite(dv) or dv >= 1e299
+    dv2, _, _, info2 = NS.closed_loop(th, cfg, 6, NMPC_SPACE)
+    assert not info2["aborted"] and np.isfinite(dv2)
+
+
 def test_nmpc_stacked_normviol_matches_lambdas():
     """One C++ normviol call == N per-stage Python norms + analytic rows."""
     nb = pytest.importorskip("cubesat_12u_sim.optimization.nmpcbatch")
