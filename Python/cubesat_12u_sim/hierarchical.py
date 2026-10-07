@@ -19,7 +19,7 @@ from . import config as C
 from .controller import rtn_frame
 from .dynamics import euler_to_dcm
 from .actuators import allocation_pinv, jets_to_wrench
-from .nmpc import HighLevelNMPC, NMPCConfig
+from .nmpc import HighLevelNMPC, NMPCConfig, clip_norm
 
 
 class FastTrimPID:
@@ -140,8 +140,9 @@ class HierarchicalController:
             self._bulk_a = self.nmpc.plan(r, v)  # explicit solve, no hidden counters
         a_trim = self.trim.accel_command(r, v, dt)
         a_total = self._bulk_a + a_trim
-        # global jet-capability cap (same as PID_A_MAX per axis, ECI approx)
-        a_total = np.clip(a_total, -C.PID_A_MAX, C.PID_A_MAX)
+        # global jet-capability cap as a norm, matching the physical thrust
+        # limit (a per-axis clip would allow sqrt(3)x the capability)
+        a_total = clip_norm(a_total, C.PID_A_MAX)
         self.dv_bulk += float(np.linalg.norm(self._bulk_a) * dt)
         self.dv_trim += float(np.linalg.norm(a_trim) * dt)
         self._tick += 1

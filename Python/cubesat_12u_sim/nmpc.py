@@ -78,6 +78,23 @@ def _rk4_step_orbit(x: np.ndarray, a_eci: np.ndarray, dt: float) -> np.ndarray:
     return x + dt / 6.0 * (k1 + 2 * k2 + 2 * k3 + k4)
 
 
+def clip_norm(a: np.ndarray, a_max: float) -> np.ndarray:
+    """Scale a 3-vector down to |a| <= a_max if it exceeds it.
+
+    The actuator limit is a thrust *magnitude* (one common Isp along a single
+    commanded direction), not a per-axis box: np.clip(a, -a_max, a_max) lets a
+    diagonal command reach sqrt(3)*a_max, i.e. 1.73x the physical capability.
+    Use this wherever a commanded acceleration is saturated.
+    """
+    a = np.asarray(a, float)
+    if a_max <= 0.0:
+        return np.zeros_like(a)
+    n = float(np.linalg.norm(a))
+    if n <= a_max or n == 0.0:
+        return a.copy()
+    return a * (a_max / n)
+
+
 def semi_major_axis(r: np.ndarray, v: np.ndarray) -> float:
     """Non-oscillating Kepler energy metric (same as SemiMajorPID.semi_major).
 
@@ -119,15 +136,19 @@ class ScipyShootingBackend(SolverBackend):
       q_pos*(db(e_a)/50km)^2 + q_vel*(v_radial/50m/s)^2 + r_fuel*|a_k/a_max|^2,
     where e_a = a_osc(r_k,v_k) - R_ORBIT with deadband db_a (coast inside),
     v_radial = v_k.R_hat_k (eccentricity damping only). Plus x5 terminal
-    energy weight. Dynamics: RK4 Kepler rollout. Box |a| <= a_max.
-    Warm-started (shifted) for speed.
+    energy weight. Dynamics: RK4 Kepler rollout.
+
+    Constraint: |a_k| <= a_max as a true norm (one inequality per stage, with
+    analytic Jacobian), NOT a per-axis box — a box admits diagonal commands at
+    sqrt(3)*a_max, i.e. 1.73x the jet capability. Warm-started (shifted) for
+    speed.
     """
 
     def __init__(self):
         self._warm: np.ndarray | None = None
 
     def solve(self, x0: np.ndarray, cfg: NMPCConfig) -> NMPCSolution:
-        from scipy.optimize import minimize
+        from scipy.optimize import NonlinearConstraint, minimize
 
         N, dt = int(cfg.horizon), float(cfg.dt_outer)
         x0 = np.asarray(x0, float).ravel()
@@ -140,7 +161,27 @@ class ScipyShootingBackend(SolverBackend):
             u_init = np.zeros((N, 3))
         z0 = u_init.ravel()
 
-        bounds = [(-cfg.a_max, cfg.a_max)] * (3 * N)
+        # Wide box purely as a numerical brake against runaway variables; the
+        # real feasibility boundary is the norm constraint below.
+        box = 10.0 * cfg.a_max
+        bounds = [(-box, box)] * (3 * N)
+
+        def _norm_c(U: np.ndarray, k: int) -> float:
+            return float(np.linalg.norm(U[k]))
+
+        def _norm_jac(U: np.ndarray, k: int) -> np.ndarray:
+            J = np.zeros((1, 3 * N))
+            nk = float(np.linalg.norm(U[k]))
+            if nk > 1e-12:
+                J[0, 3 * k:3 * k + 3] = U[k] / nk
+            return J
+
+        constraints = [
+            NonlinearConstraint(lambda z, k=k: _norm_c(z.reshape(N, 3), k),
+                                -np.inf, cfg.a_max,
+                                jac=lambda z, k=k: _norm_jac(z.reshape(N, 3), k))
+            for k in range(N)
+        ]
 
         def rollout(U: np.ndarray) -> np.ndarray:
             traj = np.zeros((N + 1, 6))
@@ -176,9 +217,13 @@ class ScipyShootingBackend(SolverBackend):
 
         res = minimize(cost, z0, method=cfg.solver,
                        bounds=bounds,
+                       constraints=constraints,
                        options={"maxiter": cfg.maxiter, "disp": False})
         success = bool(res.success)
         U_opt = res.x.reshape(N, 3) if success else np.zeros((N, 3))
+        # Belt-and-braces: the constraint is exact to solver tolerance, but the
+        # applied first step must never exceed the physical cap regardless.
+        U_opt = np.array([clip_norm(u, cfg.a_max) for u in U_opt])
         if success:
             self._warm = U_opt.copy()
         traj = rollout(U_opt)
@@ -274,7 +319,7 @@ class HighLevelNMPC:
         self._last_cost = sol.cost
         self._last_success = sol.success
         if sol.success:
-            self._last_a = np.clip(sol.a_eci, -self.cfg.a_max, self.cfg.a_max)
+            self._last_a = clip_norm(sol.a_eci, self.cfg.a_max)
             self._last_tau = np.clip(sol.tau_body, -self.cfg.tau_max, self.cfg.tau_max)
         else:
             self.n_fallbacks += 1

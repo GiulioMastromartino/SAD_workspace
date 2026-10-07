@@ -18,8 +18,39 @@ def test_nmpc_output_respects_caps():
     r, v = _circ_state()
     a = nmpc.accel_command(r, v, 10.0)
     assert a.shape == (3,)
-    assert np.all(np.abs(a) <= cfg.a_max + 1e-12)
     assert np.all(np.isfinite(a))
+    # magnitude cap, not per-axis: a per-axis clip would pass this while
+    # allowing sqrt(3)*a_max on a diagonal command
+    assert np.linalg.norm(a) <= cfg.a_max + 1e-12
+
+
+def test_clip_norm_is_a_magnitude_cap():
+    from cubesat_12u_sim.nmpc import clip_norm
+
+    a_max = C.NMPC_A_MAX
+    diag = np.full(3, 1.0)
+    assert np.linalg.norm(diag) > a_max
+    out = clip_norm(diag, a_max)
+    assert np.linalg.norm(out) <= a_max + 1e-15
+    # direction preserved
+    assert np.allclose(out / np.linalg.norm(out), diag / np.linalg.norm(diag))
+    # inside the ball is untouched, zero and non-positive limits are safe
+    assert np.allclose(clip_norm(np.array([0.01, 0.0, 0.0]), a_max),
+                       [0.01, 0.0, 0.0])
+    assert np.allclose(clip_norm(np.zeros(3), a_max), np.zeros(3))
+    assert np.allclose(clip_norm(np.full(3, 1.0), 0.0), np.zeros(3))
+
+
+def test_nmpc_plan_sequence_respects_norm_cap():
+    """The whole planned sequence, not just the applied first step."""
+    cfg = NMPCConfig(dt_outer=10.0, horizon=4, maxiter=30)
+    backend = ScipyShootingBackend()
+    nmpc = HighLevelNMPC(cfg, backend)
+    r, v = _circ_state()
+    nmpc.plan(r, v)
+    U = backend._warm
+    assert U is not None
+    assert np.all(np.linalg.norm(U, axis=1) <= cfg.a_max + 1e-9)
 
 
 def test_nmpc_solver_failure_fallback_safe():

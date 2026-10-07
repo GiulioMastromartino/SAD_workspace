@@ -58,8 +58,13 @@ def _run_short(t_end: float = 7200.0, dt_outer: float = 10.0, dt_inner: float = 
             for _ in range(sub):
                 r, v, euler = y[0:3, k], y[3:6, k], y[6:9, k]
                 om = y[9:12, k]
+                # dt must match the step the dynamics actually take (dt_inner),
+                # not the outer replan period: OrbitPID's integrator does
+                # int += e*dt, so passing dt_outer here over-weights the I term
+                # by dt_outer/dt_inner and hands the PID baseline a worse
+                # controller than it would be deployed with.
                 if tag == "pid":
-                    u, F_b, tau_b = ctrl.throttle_command(r, v, euler, dt_outer)
+                    u, F_b, tau_b = ctrl.throttle_command(r, v, euler, dt_inner)
                 else:
                     u, F_b, tau_b = ctrl.throttle_command(r, v, euler, dt_inner, om)
                 for i, val in enumerate(np.concatenate([F_b, tau_b])):
