@@ -11,7 +11,7 @@ and imports cma/scipy once, so the fixed cost is not paid per candidate.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -27,6 +27,7 @@ class RunReport:
     evals: int
     generations: int
     peer: Result | None = None  # joint runs: the PID arm at the same theta
+    history: list = field(default_factory=list)  # best-cost-so-far per generation
 
     def as_dict(self) -> dict:
         d = {"theta": [float(x) for x in self.theta],
@@ -34,7 +35,8 @@ class RunReport:
              "max_abs_r_err": self.result.max_abs_r_err,
              "final_e_a": self.result.final_e_a,
              "feasible": self.result.feasible,
-             "evals": self.evals, "generations": self.generations}
+             "evals": self.evals, "generations": self.generations,
+             "history": [float(h) for h in self.history]}
         if self.peer is not None:
             d["peer_pid"] = self.peer.as_dict()
         return d
@@ -165,6 +167,8 @@ def run_restart(theta0, space, kind: str, cfg, horizon: int, *, seed: int,
     fused = kind == "pid" and use_cpp_pid
 
     try:
+        best_so_far = float("inf")
+        history: list[float] = []
         while not es.stop():
             xs = es.ask()
             if pool is None:
@@ -174,7 +178,10 @@ def run_restart(theta0, space, kind: str, cfg, horizon: int, *, seed: int,
             else:
                 futures = [pool.submit(_run_batch, [x]) for x in xs]
                 payloads = [f.result()[0] for f in futures]
-            es.tell(xs, [_cost(p, kind) for p in payloads])
+            ys = [_cost(p, kind) for p in payloads]
+            es.tell(xs, ys)
+            best_so_far = min(best_so_far, min(ys))
+            history.append(best_so_far)
     finally:
         if own_pool and pool is not None:
             pool.shutdown(wait=True, cancel_futures=True)
@@ -187,7 +194,8 @@ def run_restart(theta0, space, kind: str, cfg, horizon: int, *, seed: int,
     res, peer = _as_result(final_payloads[0], kind)
     return RunReport(theta=np.asarray(es.result.xbest, float), result=res,
                      peer=peer, evals=int(es.result.evaluations),
-                     generations=int(es.result.iterations))
+                     generations=int(es.result.iterations),
+                     history=history)
 
 
 # ---------------------------------------------------------------------------

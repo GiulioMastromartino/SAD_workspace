@@ -264,6 +264,8 @@ def main() -> None:
                     help="commanded/achieved accel ratio of the jet allocator")
     ap.add_argument("--validate-t", type=float, default=7200.0,
                     help="validation horizon [s] on the full sim")
+    ap.add_argument("--no-plot", action="store_true",
+                    help="skip figure generation")
     ap.add_argument("--resume", action="store_true",
                     help="resume from per-restart checkpoint files in OUTDIR")
     ap.add_argument("--no-checkpoint", dest="checkpoint", action="store_false",
@@ -303,11 +305,16 @@ def main() -> None:
                             "seed": args.seed, "workers": args.workers}}
 
     pid_out = nmpc_out = joint_out = None
+    stage_wall: dict = {}
     if args.stage in ("pid", "all"):
+        _t = time.time()
         pid_out = stage_pid(args, pid_cfg)
+        stage_wall["pid"] = time.time() - _t
         _write("res_stage_pid.json", pid_out)
     if args.stage in ("nmpc", "all"):
+        _t = time.time()
         nmpc_out = stage_nmpc(args, nmpc_cfg)
+        stage_wall["nmpc"] = time.time() - _t
         _write("res_stage_nmpc.json", nmpc_out)
     if args.stage in ("joint", "all"):
         if pid_out is None:
@@ -316,7 +323,9 @@ def main() -> None:
         if nmpc_out is None:
             raise SystemExit("--stage joint needs the stage 2 result; run "
                              "--stage all or pass it back from results")
+        _t = time.time()
         joint_out = stage_joint(args, nmpc_cfg, pid_out, nmpc_out)
+        stage_wall["joint"] = time.time() - _t
 
     if pid_out:
         out["pid"] = pid_out
@@ -329,8 +338,14 @@ def main() -> None:
                                            args.validate_t, args.nmpc_backend)
 
     out["wall_seconds"] = time.time() - t_start
+    out["stage_wall_seconds"] = stage_wall
     path = _write("res_optimization.json", out)
     _log(f"\nwrote {path}  ({out['wall_seconds'] / 60:.1f} min)")
+    if not args.no_plot and pid_out and nmpc_out:
+        from .optimization.plots import make_all_figures
+        figs = make_all_figures(out, OUTDIR)
+        for f in figs:
+            _log(f"[info] wrote {f}")
 
 
 if __name__ == "__main__":

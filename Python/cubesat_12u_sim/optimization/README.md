@@ -197,7 +197,20 @@ Options:
 | `--seed` | 20261007 | RNG seed |
 
 Output: `Python/results_optimization/res_optimization.json` — per-stage
-parameters, every restart, and the validation table.
+parameters, every restart (with per-generation convergence history), and the
+validation table. Per-stage JSON (`res_stage_pid.json`, `res_stage_nmpc.json`)
+lands after each stage; per-restart checkpoints (`ckpt_*.jsonl`) land after
+each restart — `--resume` picks up where a kill left off.
+
+Figures (no re-running needed:
+`./env/bin/python -m cubesat_12u_sim.optimization.plots res_optimization.json`):
+
+| file | content |
+|---|---|
+| `fig_opt_convergence.png` | optimizer: best-cost-so-far vs evals, every restart |
+| `fig_opt_horizons.png` | controller: NMPC horizon sweep, best dv/box per H |
+| `fig_opt_validation.png` | controller: validation arms (dv, propellant, box, e_a) |
+| `fig_opt_trajectories.png` | controller: winner re-simulations (r err, e_a, dv) |
 
 ---
 
