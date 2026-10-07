@@ -52,14 +52,15 @@ def validate_pid(theta, space, *, t_end: float = 7200.0, dt_outer: float = 10.0,
 
 
 def validate_nmpc(theta, space, horizon: int, *, t_end: float = 7200.0,
-                  dt_outer: float = 10.0, dt_inner: float = 1.0) -> dict:
+                  dt_outer: float = 10.0, dt_inner: float = 1.0,
+                  backend: str = "numpy") -> dict:
     """HierarchicalController through thruster allocation."""
     from ..hierarchical import HierarchicalController
     from .objective import make_nmpc
     from .objective import EvalConfig
 
     cfg = EvalConfig(dt_outer=dt_outer, dt_inner=dt_inner)
-    ctrl = make_nmpc(space.from_theta(theta), cfg, horizon)
+    ctrl = make_nmpc(space.from_theta(theta), cfg, horizon, backend=backend)
     ta = _make_integrator(_y0())
     y = _y0()
     dv, max_err = 0.0, 0.0

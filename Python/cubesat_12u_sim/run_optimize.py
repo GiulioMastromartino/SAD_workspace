@@ -131,6 +131,12 @@ def stage_nmpc(args, cfg: EvalConfig) -> dict:
     best_rep = None
     best_theta = None
     best_h = None
+    from .optimization.nmpcbatch import available as _cpp_nmpc_ok
+    nmpc_backend = args.nmpc_backend
+    if nmpc_backend == "cpp" and not _cpp_nmpc_ok:
+        _log("  warning: _nmpcbatch unavailable, falling back to numpy")
+        nmpc_backend = "numpy"
+    _log(f"  nmpc backend: {'heyoka-cpp' if nmpc_backend == 'cpp' else 'numpy-rk4'}")
     for h in NMPC_HORIZONS:
         _log(f"  -- horizon H={h} --")
         ckpt = _ckpt_path(args, f"nmpc_h{h}")
@@ -138,7 +144,8 @@ def stage_nmpc(args, cfg: EvalConfig) -> dict:
         rep, reports = multistart(
             NMPC_SPACE, "nmpc", cfg, horizon=h, restarts=args.restarts,
             seed=args.seed, maxiter=args.maxiter, workers=args.workers,
-            popsize=args.popsize, checkpoint_path=ckpt, skip_completed=skip)
+            popsize=args.popsize, checkpoint_path=ckpt, skip_completed=skip,
+            nmpc_backend=nmpc_backend)
         _log(f"     best -> {_fmt(rep.result)}")
         per_horizon.append({"horizon": h, "theta": [float(x) for x in rep.theta],
                             "result": rep.result.as_dict(),
@@ -171,11 +178,17 @@ def stage_joint(args, cfg: EvalConfig, pid_out: dict, nmpc_out: dict) -> dict:
                            np.asarray(pid_out["theta"], float)])
     ckpt = _ckpt_path(args, "joint")
     skip = _resume_count(args, ckpt, args.restarts)
+    from .optimization.nmpcbatch import available as _cpp_nmpc_ok2
+    nmpc_backend = args.nmpc_backend
+    if nmpc_backend == "cpp" and not _cpp_nmpc_ok2:
+        _log("  warning: _nmpcbatch unavailable, falling back to numpy")
+        nmpc_backend = "numpy"
     best, reports = multistart(
         JOINT_SPACE, "joint", cfg, horizon=h, restarts=args.restarts,
         seed=args.seed, maxiter=args.maxiter, workers=args.workers,
         popsize=args.popsize, theta_seed=seed,
-        checkpoint_path=ckpt, skip_completed=skip)
+        checkpoint_path=ckpt, skip_completed=skip,
+        nmpc_backend=nmpc_backend)
     _log(f"  best NMPC -> {_fmt(best.result)}")
     if best.peer is not None:
         _log(f"  peer PID  -> {_fmt(best.peer)}")
@@ -256,6 +269,9 @@ def main() -> None:
     ap.add_argument("--pid-backend", default="cpp", choices=["cpp", "numpy"],
                     help="PID-arm evaluator (cpp = fused C++ batch, gated by "
                          "parity test; numpy = reference)")
+    ap.add_argument("--nmpc-backend", default="numpy", choices=["cpp", "numpy"],
+                    help="NMPC-arm rollout (cpp = Heyoka C++ batch cost+grad, "
+                         "~11x per solve warm; numpy = RK4 reference)")
     args = ap.parse_args()
 
     nmpc_cfg = EvalConfig(t_days=args.days, spec_box=args.spec_box,
@@ -278,6 +294,7 @@ def main() -> None:
                             "alloc_eff": nmpc_cfg.alloc_eff,
                             "alloc_eff_measured": measured,
                             "pid_backend": args.pid_backend,
+                            "nmpc_backend": args.nmpc_backend,
                             "nmpc_dt": [nmpc_cfg.dt_outer, nmpc_cfg.dt_inner],
                             "pid_dt": [pid_cfg.dt_outer, pid_cfg.dt_inner],
                             "restarts": args.restarts, "maxiter": args.maxiter,

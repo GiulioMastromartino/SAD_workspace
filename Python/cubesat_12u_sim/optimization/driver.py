@@ -76,6 +76,7 @@ def _run_batch(thetas) -> list[dict]:
 
     kind, cfg, horizon = _W["kind"], _W["cfg"], _W["horizon"]
     lb, ub, cache = _W["lb"], _W["ub"], _W["cache"]
+    nmpc_backend = _W.get("nmpc_backend", "numpy")
     if kind == "pid" and _W.get("use_cpp_pid"):
         from .pidbatch import available as _cpp_ok, evaluate_pid_batch
         from .params import PID_SPACE
@@ -89,9 +90,11 @@ def _run_batch(thetas) -> list[dict]:
         if kind == "pid":
             out.append(evaluate_pid(th, cfg, cache).as_dict())
         elif kind == "nmpc":
-            out.append(evaluate_nmpc(th, cfg, horizon, cache).as_dict())
+            out.append(evaluate_nmpc(th, cfg, horizon, cache,
+                                     backend=nmpc_backend).as_dict())
         else:
-            res_n, res_p = evaluate_joint(th, cfg, horizon, cache)
+            res_n, res_p = evaluate_joint(th, cfg, horizon, cache,
+                                          nmpc_backend=nmpc_backend)
             out.append({"nmpc": res_n.as_dict(), "pid": res_p.as_dict()})
     return out
 
@@ -103,7 +106,8 @@ def _run_batch(thetas) -> list[dict]:
 def run_restart(theta0, space, kind: str, cfg, horizon: int, *, seed: int,
                 maxiter: int, popsize: int | None = None,
                 workers: int = 1, sigma0: float = 0.3,
-                use_cpp_pid: bool = False) -> RunReport:
+                use_cpp_pid: bool = False,
+                nmpc_backend: str = "numpy") -> RunReport:
     """One CMA-ES run from ``theta0``. Never raises: caller handles failure."""
     import cma
 
@@ -113,7 +117,8 @@ def run_restart(theta0, space, kind: str, cfg, horizon: int, *, seed: int,
     n = len(space)
 
     payload = {"kind": kind, "cfg": cfg, "horizon": horizon,
-               "lb": lb, "ub": ub, "use_cpp_pid": bool(use_cpp_pid)}
+               "lb": lb, "ub": ub, "use_cpp_pid": bool(use_cpp_pid),
+               "nmpc_backend": nmpc_backend}
     # cma >= 3 takes bounds/popsize/seed through the options dict, not as
     # positional args.
     inopts = {"bounds": [list(lb), list(ub)],
@@ -166,7 +171,8 @@ def multistart(space, kind: str, cfg, horizon: int, *, restarts: int, seed: int,
                theta_seed=None, verbose: bool = True,
                checkpoint_path: str | None = None,
                skip_completed: int = 0,
-               use_cpp_pid: bool = False) -> tuple[RunReport, list]:
+               use_cpp_pid: bool = False,
+               nmpc_backend: str = "numpy") -> tuple[RunReport, list]:
     """Run ``restarts`` CMA-ES runs; restart 0 seeds from ``theta_seed``.
 
     Returns ``(best_report, all_reports)``.
@@ -220,7 +226,8 @@ def multistart(space, kind: str, cfg, horizon: int, *, restarts: int, seed: int,
         try:
             rep = run_restart(t0, space, kind, cfg, horizon, seed=seed + i,
                               maxiter=maxiter, popsize=popsize, workers=workers,
-                              use_cpp_pid=use_cpp_pid)
+                              use_cpp_pid=use_cpp_pid,
+                              nmpc_backend=nmpc_backend)
         except Exception as exc:  # one broken restart must not sink the sweep
             if verbose:
                 print(f"    restart {i}: FAILED ({type(exc).__name__}: {exc})")

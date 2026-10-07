@@ -68,6 +68,12 @@ if ONLY in (None, "pidbatch"):
         ["cubesat_12u_sim/cxxdrive/pid_batch.cpp"],
         cxx_std=17,
     ))
+if ONLY in (None, "nmpcbatch"):
+    ext_modules.append(Pybind11Extension(
+        "cubesat_12u_sim.cxxdrive._nmpcbatch",
+        ["cubesat_12u_sim/cxxdrive/nmpc_batch.cpp"],
+        cxx_std=17,
+    ))
 
 setup(
     name="cxxdrive",

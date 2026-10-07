@@ -161,14 +161,20 @@ def make_pid(params: dict) -> TunedOrbitPID:
     return TunedOrbitPID(params, box_r=params["box_r"])
 
 
-def make_nmpc(params: dict, cfg: EvalConfig, horizon: int) -> HierarchicalController:
+def make_nmpc(params: dict, cfg: EvalConfig, horizon: int,
+              backend: str = "numpy") -> HierarchicalController:
+    from ..nmpc import ScipyShootingBackend
     ncfg = NMPCConfig(dt_outer=cfg.dt_outer, horizon=int(horizon),
                       q_pos=params["q_pos"], q_vel=params["q_vel"],
                       r_fuel=params["r_fuel"], db_a=params["db_a"],
                       maxiter=cfg.maxiter)
     trim = FastTrimPID(authority=params["trim_a_max"],
                        dv_budget=params["trim_dv_budget"])
-    return HierarchicalController(ncfg, trim)
+    if backend == "cpp":
+        be = ScipyShootingBackend(use_cpp=True)
+    else:
+        be = ScipyShootingBackend(use_cpp=False)
+    return HierarchicalController(ncfg, trim, backend=be)
 
 
 # ---------------------------------------------------------------------------
@@ -263,15 +269,17 @@ def evaluate_pid(theta, cfg: EvalConfig, cache: dict | None = None,
 
 
 def evaluate_nmpc(theta, cfg: EvalConfig, horizon: int, cache: dict | None = None,
-                  space: ParamSpace = NMPC_SPACE) -> Result:
+                  space: ParamSpace = NMPC_SPACE,
+                  backend: str = "numpy") -> Result:
     params = space.from_theta(theta)
-    key = ("nmpc", cfg.fingerprint(), int(horizon),
+    key = ("nmpc", backend, cfg.fingerprint(), int(horizon),
            np.asarray(theta, float).round(9).tobytes())
-    return _evaluate(lambda: make_nmpc(params, cfg, horizon), cfg, cache, key)
+    return _evaluate(lambda: make_nmpc(params, cfg, horizon, backend=backend),
+                     cfg, cache, key)
 
 
 def evaluate_joint(theta, cfg: EvalConfig, horizon: int,
-                   cache: dict | None = None):
+                   cache: dict | None = None, nmpc_backend: str = "numpy"):
     """Evaluate both arms from one concatenated vector (NMPC params first).
 
     Returns ``(nmpc_result, pid_result)``. The NMPC result is the objective;
@@ -280,5 +288,6 @@ def evaluate_joint(theta, cfg: EvalConfig, horizon: int,
     """
     theta = np.asarray(theta, float)
     split = len(NMPC_SPACE)
-    return (evaluate_nmpc(theta[:split], cfg, horizon, cache),
+    return (evaluate_nmpc(theta[:split], cfg, horizon, cache,
+                           backend=nmpc_backend),
             evaluate_pid(theta[split:], cfg, cache))

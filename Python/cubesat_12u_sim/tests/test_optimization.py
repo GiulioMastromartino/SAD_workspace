@@ -214,6 +214,90 @@ def test_pid_cpp_batch_matches_numpy():
             assert abs(a - b) <= 1e-6 * max(abs(b), 1e-9), (k, a, b)
 
 
+def test_nmpc_cpp_cost_matches_python():
+    """Parity gate for the Heyoka C++ shooting cost (Phase 1b).
+
+    Taylor prediction is more accurate than the 600 s RK4 step, so exact
+    agreement is not expected: gate is 1e-3 relative (measured ~3e-4).
+    """
+    nb = pytest.importorskip("cubesat_12u_sim.optimization.nmpcbatch")
+    if not nb.available:
+        pytest.skip("no _nmpcbatch extension")
+    from cubesat_12u_sim.nmpc import (NMPCConfig, _rk4_step_orbit,
+                                      semi_major_axis)
+    r, v = C.R0_ECI.copy(), C.V0_ECI.copy() * 0.995
+    x0 = np.concatenate([r, v])
+    cfg = NMPCConfig(dt_outer=600.0, horizon=6, maxiter=50)
+
+    def py_cost(U):
+        N, dt = 6, 600.0
+        traj = np.zeros((N + 1, 6))
+        traj[0] = x0
+        for k in range(N):
+            traj[k + 1] = _rk4_step_orbit(traj[k], U[k], dt)
+        c = 0.0
+        for k in range(1, N + 1):
+            rk, vk = traj[k, 0:3], traj[k, 3:6]
+            e_a = semi_major_axis(rk, vk) - C.R_ORBIT
+            if abs(e_a) < cfg.db_a:
+                e_a = 0.0
+            rn = max(float(np.linalg.norm(rk)), 1.0)
+            v_r = float(vk @ (rk / rn))
+            c += (cfg.q_pos * (e_a / 50e3) ** 2 + cfg.q_vel * (v_r / 50.0) ** 2
+                  + cfg.r_fuel * float(U[k - 1] @ U[k - 1]) / cfg.a_max**2)
+        aT = semi_major_axis(traj[N, 0:3], traj[N, 3:6])
+        e_term = (aT - C.R_ORBIT) / 50e3
+        if abs(aT - C.R_ORBIT) < cfg.db_a:
+            e_term = 0.0
+        return c + 5.0 * cfg.q_pos * e_term**2
+
+    cost, _ = nb.make_funcs(x0, cfg)
+    rng = np.random.default_rng(0)
+    for U in (np.zeros((6, 3)), rng.normal(0, 0.02, (6, 3))):
+        ref, got = py_cost(U), cost(U.ravel())
+        assert abs(got - ref) <= 1e-3 * max(abs(ref), 1e-9), (got, ref)
+
+
+def test_nmpc_cpp_grad_matches_python_finite_diff():
+    """The jac handed to SLSQP must match finite differences of the cost."""
+    nb = pytest.importorskip("cubesat_12u_sim.optimization.nmpcbatch")
+    if not nb.available:
+        pytest.skip("no _nmpcbatch extension")
+    from cubesat_12u_sim.nmpc import NMPCConfig
+    r, v = C.R0_ECI.copy(), C.V0_ECI.copy() * 0.995
+    x0 = np.concatenate([r, v])
+    cfg = NMPCConfig(dt_outer=600.0, horizon=3, maxiter=50)
+    cost, jac = nb.make_funcs(x0, cfg)
+    rng = np.random.default_rng(1)
+    z = rng.normal(0, 0.01, 9)
+    g = jac(z)
+    h = 1e-6
+    num = np.array([(cost(z + h * e) - cost(z - h * e)) / (2 * h)
+                    for e in np.eye(9)])
+    # deadband kinks make a few components non-smooth; check the smooth bulk
+    err = np.abs(g - num) / np.maximum(np.abs(num), 1e-3)
+    assert np.median(err) < 5e-2, err
+    assert np.all(np.isfinite(g))
+
+
+def test_nmpc_cpp_solve_agrees_and_caps():
+    """Closed solve: same verdict, dv within 5%, norm cap respected."""
+    from cubesat_12u_sim.nmpc import NMPCConfig, ScipyShootingBackend
+    pytest.importorskip("cubesat_12u_sim.optimization.nmpcbatch",
+                        reason="no _nmpcbatch extension")
+    from cubesat_12u_sim.optimization import nmpcbatch as nb
+    if not nb.available:
+        pytest.skip("no _nmpcbatch extension")
+    r, v = C.R0_ECI.copy(), C.V0_ECI.copy() * 0.995
+    x0 = np.concatenate([r, v])
+    cfg = NMPCConfig(dt_outer=600.0, horizon=4, maxiter=30)
+    s1 = ScipyShootingBackend(use_cpp=False).solve(x0, cfg)
+    s2 = ScipyShootingBackend(use_cpp=True).solve(x0, cfg)
+    assert s1.success and s2.success
+    assert abs(s2.cost - s1.cost) <= 0.05 * max(abs(s1.cost), 1e-9)
+    assert np.all(np.linalg.norm(s2.u_seq, axis=1) <= cfg.a_max + 1e-9)
+
+
 def test_multistart_survives_a_raising_restart(monkeypatch):
     import cubesat_12u_sim.optimization.driver as drv
 

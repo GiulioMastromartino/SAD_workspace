@@ -189,13 +189,49 @@ Options:
 | `--days` | 0.5 | closed-loop horizon for the search |
 | `--spec-box` | 25e3 | box half-width [m] (feasibility) |
 | `--alloc-eff` | 0.5 | commanded/achieved ratio of the allocator |
+| `--pid-backend` | `cpp` | `cpp` = fused C++ batch (§10), `numpy` = reference |
+| `--nmpc-backend` | `numpy` | `cpp` = Heyoka C++ batch cost+grad (§10), `numpy` = RK4 reference |
 | `--validate-t` | 7200 | validation horizon [s] on the full sim |
+| `--resume` | off | resume from per-restart checkpoint files |
+| `--no-checkpoint` | off | disable per-restart checkpoint files |
 | `--seed` | 20261007 | RNG seed |
 
 Output: `Python/results_optimization/res_optimization.json` — per-stage
 parameters, every restart, and the validation table.
 
 ---
+
+## 10. C++ acceleration (Heyoka path + fused PID)
+
+Two batch kernels in `cxxdrive/`, built with
+`./env/bin/python cubesat_12u_sim/cxxdrive/setup.py build_ext --inplace`:
+
+| kernel | what | measured |
+
+| kernel | what | measured |
+|---|---|---|
+| `_pidbatch.pid_batch_eval` | whole CMA-ES population (RTN law + RK4 + score) in one call | 10 evals in 2.5 ms vs 1330 ms numpy (~530x); parity 1.9e-9 |
+| `_nmpcbatch.cost_batch` / `grad_batch` | shooting cost + forward-diff gradient on `heyoka::taylor_adaptive_batch` (6-state orbit system, same family as `cxxdrive/campaign.cpp`) | warm solve 8 ms vs 90 ms numpy (~11x); cost parity 3e-4, solve cost within 0.2% |
+
+Notes:
+
+- The NMPC cost intentionally keeps `norm_penalty=0`: the norm cap stays a
+  hard scipy constraint, identical to the numpy backend. Taylor prediction is
+  more accurate than the 600 s RK4 step, so exact cost equality is not
+  expected — the gates are cost ≤1e-3, same feasibility verdict, closed-loop
+  dv within 5%.
+- `_nmpcbatch` needs `import heyoka` first (it links libheyoka with
+  dynamic_lookup — same pre-existing requirement as `_cxxdrive`).
+- Batch templates JIT once per worker (~7 s cold, ~0.17 s warm from disk
+  cache): with a fresh pool per restart this is repaid per process, so the
+  first solve in each worker is slow and the rest are fast.
+- The PID kernel is plain-C++ RK4, not Taylor: at these step sizes Taylor
+  buys nothing over RK4 per step, while the exact RK4 port preserves the
+  tuned numbers bit-near.
+- Variational-equation analytic gradients and CMA-ES-as-online-solver were
+  evaluated and deferred: the batched finite-difference `jac` already
+  removed the dominant cost (19 Python round-trips per SLSQP iteration → 1
+  C++ call).
 
 ## 8. Design choices
 

@@ -107,8 +107,12 @@ class HierarchicalController:
 
     def __init__(self, nmpc_cfg: NMPCConfig | None = None,
                  trim: FastTrimPID | None = None,
-                 tau_damp: float | None = None):
-        self.nmpc = HighLevelNMPC(nmpc_cfg or NMPCConfig())
+                 tau_damp: float | None = None,
+                 backend=None):
+        if backend is not None:
+            self.nmpc = HighLevelNMPC(nmpc_cfg or NMPCConfig(), backend=backend)
+        else:
+            self.nmpc = HighLevelNMPC(nmpc_cfg or NMPCConfig())
         self.trim = trim or FastTrimPID()
         self.tau_damp = float(tau_damp if tau_damp is not None else C.TRIM_TAU_MAX)
         self._bulk_a = np.zeros(3)

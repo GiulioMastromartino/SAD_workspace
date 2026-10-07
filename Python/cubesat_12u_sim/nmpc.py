@@ -136,7 +136,12 @@ class ScipyShootingBackend(SolverBackend):
       q_pos*(db(e_a)/50km)^2 + q_vel*(v_radial/50m/s)^2 + r_fuel*|a_k/a_max|^2,
     where e_a = a_osc(r_k,v_k) - R_ORBIT with deadband db_a (coast inside),
     v_radial = v_k.R_hat_k (eccentricity damping only). Plus x5 terminal
-    energy weight. Dynamics: RK4 Kepler rollout.
+    energy weight.
+
+    Rollout: numpy RK4 by default; ``use_cpp=True`` evaluates cost and
+    gradient through the Heyoka C++ batch path instead (same cost function,
+    Taylor prediction at tol=1e-12 rather than RK4 — the more accurate of the
+    two, and the same family as the validation simulator).
 
     Constraint: |a_k| <= a_max as a true norm (one inequality per stage, with
     analytic Jacobian), NOT a per-axis box — a box admits diagonal commands at
@@ -144,8 +149,9 @@ class ScipyShootingBackend(SolverBackend):
     speed.
     """
 
-    def __init__(self):
+    def __init__(self, use_cpp: bool = False):
         self._warm: np.ndarray | None = None
+        self.use_cpp = bool(use_cpp)
 
     def solve(self, x0: np.ndarray, cfg: NMPCConfig) -> NMPCSolution:
         from scipy.optimize import NonlinearConstraint, minimize
@@ -215,9 +221,23 @@ class ScipyShootingBackend(SolverBackend):
                 e_term = 0.0
             return float(c + 5.0 * cfg.q_pos * e_term**2)
 
+        # C++ Heyoka path: cost + forward-diff gradient in one batch call
+        # each (2 C++ calls per SLSQP iteration instead of ~20 Python ones).
+        # Falls back to the Python closures when unavailable or disabled.
+        jac_fn = None
+        if self.use_cpp:
+            try:
+                from .optimization.nmpcbatch import make_funcs
+                cost_cpp, jac_cpp = make_funcs(x0, cfg)
+                if cost_cpp is not None:
+                    cost, jac_fn = cost_cpp, jac_cpp
+            except Exception:
+                jac_fn = None
+
         res = minimize(cost, z0, method=cfg.solver,
                        bounds=bounds,
                        constraints=constraints,
+                       jac=jac_fn,
                        options={"maxiter": cfg.maxiter, "disp": False})
         success = bool(res.success)
         U_opt = res.x.reshape(N, 3) if success else np.zeros((N, 3))
