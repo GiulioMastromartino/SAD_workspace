@@ -213,21 +213,23 @@ def stage_joint(args, cfg: EvalConfig, pid_out: dict, nmpc_out: dict) -> dict:
 # ---------------------------------------------------------------------------
 
 def run_validation(pid_out: dict, nmpc_out: dict, joint_out: dict,
-                   t_end: float) -> dict:
+                   t_end: float, nmpc_backend: str = "numpy") -> dict:
     _log(f"\n=== validation: heyoka + thruster allocation, t_end={t_end:.0f} s ===")
     rows = []
     combos = [
         ("PID (tuned)", validate_pid(pid_out["theta"], PID_SPACE, t_end=t_end)),
         ("NMPC (tuned)", validate_nmpc(nmpc_out["theta"], NMPC_SPACE,
-                                       nmpc_out["horizon"], t_end=t_end)),
+                                       nmpc_out["horizon"], t_end=t_end,
+                                       backend=nmpc_backend)),
         ("NMPC (config defaults)", validate_nmpc(
-            NMPC_SPACE.seed_theta(), NMPC_SPACE, 6, t_end=t_end)),
+            NMPC_SPACE.seed_theta(), NMPC_SPACE, 6, t_end=t_end,
+            backend=nmpc_backend)),
     ]
     if joint_out:
         split = len(NMPC_SPACE)
         combos.append(("NMPC (joint)", validate_nmpc(
             np.asarray(joint_out["theta"])[:split], NMPC_SPACE,
-            joint_out["horizon"], t_end=t_end)))
+            joint_out["horizon"], t_end=t_end, backend=nmpc_backend)))
         combos.append(("PID (joint)", validate_pid(
             np.asarray(joint_out["theta"])[split:], PID_SPACE, t_end=t_end)))
 
@@ -324,7 +326,7 @@ def main() -> None:
         out["joint"] = joint_out
     if pid_out and nmpc_out:
         out["validation"] = run_validation(pid_out, nmpc_out, joint_out,
-                                           args.validate_t)
+                                           args.validate_t, args.nmpc_backend)
 
     out["wall_seconds"] = time.time() - t_start
     path = _write("res_optimization.json", out)

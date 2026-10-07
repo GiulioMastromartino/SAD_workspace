@@ -45,8 +45,24 @@ def rank_key(res: Result) -> tuple:
     return (0 if res.feasible else 1, res.cost)
 
 
+def _bounds(space):
+    lb, ub = space.bounds()
+    return lb + 1e-12, ub - 1e-12  # cma wants bounds strictly outside the domain
+
+
 def _cost(payload: dict, kind: str) -> float:
     return float(payload["nmpc"]["cost"] if kind == "joint" else payload["cost"])
+
+
+def _bounds(space):
+    lb, ub = space.bounds()
+    return lb + 1e-12, ub - 1e-12  # cma wants bounds strictly outside the domain
+
+
+def _make_payload(kind, cfg, horizon, lb, ub, use_cpp_pid, nmpc_backend):
+    return {"kind": kind, "cfg": cfg, "horizon": horizon,
+            "lb": lb, "ub": ub, "use_cpp_pid": bool(use_cpp_pid),
+            "nmpc_backend": nmpc_backend}
 
 
 def _as_result(payload: dict, kind: str) -> tuple[Result, Result | None]:
@@ -107,18 +123,21 @@ def run_restart(theta0, space, kind: str, cfg, horizon: int, *, seed: int,
                 maxiter: int, popsize: int | None = None,
                 workers: int = 1, sigma0: float = 0.3,
                 use_cpp_pid: bool = False,
-                nmpc_backend: str = "numpy") -> RunReport:
-    """One CMA-ES run from ``theta0``. Never raises: caller handles failure."""
+                nmpc_backend: str = "numpy",
+                _executor=None) -> RunReport:
+    """One CMA-ES run from ``theta0``. Never raises: caller handles failure.
+
+    ``_executor``: shared pool from :func:`multistart` (kept warm across
+    restarts so worker JIT is paid once per stage, not once per restart).
+    When omitted and ``workers > 1`` a private pool is created instead.
+    """
     import cma
 
-    lb, ub = space.bounds()
-    lb = lb + 1e-12          # cma wants bounds strictly outside the domain
-    ub = ub - 1e-12
+    lb, ub = _bounds(space)
     n = len(space)
 
-    payload = {"kind": kind, "cfg": cfg, "horizon": horizon,
-               "lb": lb, "ub": ub, "use_cpp_pid": bool(use_cpp_pid),
-               "nmpc_backend": nmpc_backend}
+    payload = _make_payload(kind, cfg, horizon, lb, ub, use_cpp_pid,
+                            nmpc_backend)
     # cma >= 3 takes bounds/popsize/seed through the options dict, not as
     # positional args.
     inopts = {"bounds": [list(lb), list(ub)],
@@ -129,26 +148,35 @@ def run_restart(theta0, space, kind: str, cfg, horizon: int, *, seed: int,
     es = cma.CMAEvolutionStrategy(list(np.clip(theta0, lb, ub)), sigma0,
                                   inopts=inopts)
 
-    pool = None
-    if workers > 1:
-        from concurrent.futures import ProcessPoolExecutor
-        pool = ProcessPoolExecutor(max_workers=workers,
-                                   initializer=_init_worker,
-                                   initargs=(payload,))
-    else:
-        _init_worker(payload)
+    pool = _executor
+    own_pool = False
+    if pool is None:
+        if workers > 1:
+            from concurrent.futures import ProcessPoolExecutor
+            pool = ProcessPoolExecutor(max_workers=workers,
+                                       initializer=_init_worker,
+                                       initargs=(payload,))
+            own_pool = True
+        else:
+            _init_worker(payload)
+
+    # Whole-population single future when the evaluator is a fused batch
+    # kernel (pid-cpp): 1 IPC round-trip per generation instead of popsize.
+    fused = kind == "pid" and use_cpp_pid
 
     try:
         while not es.stop():
             xs = es.ask()
             if pool is None:
                 payloads = _run_batch(xs)
+            elif fused:
+                payloads = pool.submit(_run_batch, list(xs)).result()
             else:
                 futures = [pool.submit(_run_batch, [x]) for x in xs]
                 payloads = [f.result()[0] for f in futures]
             es.tell(xs, [_cost(p, kind) for p in payloads])
     finally:
-        if pool is not None:
+        if own_pool and pool is not None:
             pool.shutdown(wait=True, cancel_futures=True)
 
     # Re-evaluate the reported best so its Result is a fresh evaluation of the
@@ -215,41 +243,57 @@ def multistart(space, kind: str, cfg, horizon: int, *, restarts: int, seed: int,
             print(f"    resumed {len(reports)} restart(s) from {checkpoint_path}")
 
     start_at = len(reports) if skip_completed else 0
-    for i in range(start_at, restarts):
-        rng = np.random.default_rng(seed + 1000 * i)
-        if i == 0 and theta_seed is not None:
-            t0 = np.clip(np.asarray(theta_seed, float), *space.bounds())
-        elif i == 0:
-            t0 = space.seed_theta()
-        else:
-            t0 = space.random_theta(rng)
-        try:
-            rep = run_restart(t0, space, kind, cfg, horizon, seed=seed + i,
-                              maxiter=maxiter, popsize=popsize, workers=workers,
-                              use_cpp_pid=use_cpp_pid,
-                              nmpc_backend=nmpc_backend)
-        except Exception as exc:  # one broken restart must not sink the sweep
+    # One pool for all restarts in this sweep: workers stay warm (C++ JIT
+    # templates, imports) across restarts instead of paying startup per
+    # restart. Payload is identical for every restart (only theta0/seed vary).
+    pool = None
+    if workers > 1 and start_at < restarts:
+        from concurrent.futures import ProcessPoolExecutor
+        lb, ub = _bounds(space)
+        pool = ProcessPoolExecutor(
+            max_workers=workers, initializer=_init_worker,
+            initargs=(_make_payload(kind, cfg, horizon, lb, ub, use_cpp_pid,
+                                    nmpc_backend),))
+    try:
+        for i in range(start_at, restarts):
+            rng = np.random.default_rng(seed + 1000 * i)
+            if i == 0 and theta_seed is not None:
+                t0 = np.clip(np.asarray(theta_seed, float), *space.bounds())
+            elif i == 0:
+                t0 = space.seed_theta()
+            else:
+                t0 = space.random_theta(rng)
+            try:
+                rep = run_restart(t0, space, kind, cfg, horizon, seed=seed + i,
+                                  maxiter=maxiter, popsize=popsize, workers=workers,
+                                  use_cpp_pid=use_cpp_pid,
+                                  nmpc_backend=nmpc_backend,
+                                  _executor=pool)
+            except Exception as exc:  # one broken restart must not sink the sweep
+                if verbose:
+                    print(f"    restart {i}: FAILED ({type(exc).__name__}: {exc})")
+                continue
+            reports.append(rep)
+            if checkpoint_path:
+                _d = rep.as_dict()
+                _d["restart"] = i
+                _d["kind"] = kind
+                _d["horizon"] = horizon
+                with open(checkpoint_path, "a") as _fh:
+                    _fh.write(_json.dumps(_d, default=float) + "\n")
             if verbose:
-                print(f"    restart {i}: FAILED ({type(exc).__name__}: {exc})")
-            continue
-        reports.append(rep)
-        if checkpoint_path:
-            _d = rep.as_dict()
-            _d["restart"] = i
-            _d["kind"] = kind
-            _d["horizon"] = horizon
-            with open(checkpoint_path, "a") as _fh:
-                _fh.write(_json.dumps(_d, default=float) + "\n")
-        if verbose:
-            r = rep.result
-            extra = ""
-            if rep.peer is not None:
-                extra = f" | PID dv={rep.peer.dv:7.3f} box={rep.peer.max_abs_r_err / 1e3:6.2f} km"
-            print(f"    restart {i}: cost={r.cost:9.3f} dv={r.dv:7.3f} m/s "
-                  f"box={r.max_abs_r_err / 1e3:6.2f} km "
-                  f"e_a={r.final_e_a / 1e3:8.3f} km "
-                  f"{'FEASIBLE' if r.feasible else 'INFEASIBLE'}{extra} "
-                  f"({rep.evals} evals)")
+                r = rep.result
+                extra = ""
+                if rep.peer is not None:
+                    extra = f" | PID dv={rep.peer.dv:7.3f} box={rep.peer.max_abs_r_err / 1e3:6.2f} km"
+                print(f"    restart {i}: cost={r.cost:9.3f} dv={r.dv:7.3f} m/s "
+                      f"box={r.max_abs_r_err / 1e3:6.2f} km "
+                      f"e_a={r.final_e_a / 1e3:8.3f} km "
+                      f"{'FEASIBLE' if r.feasible else 'INFEASIBLE'}{extra} "
+                      f"({rep.evals} evals)")
+    finally:
+        if pool is not None:
+            pool.shutdown(wait=True, cancel_futures=True)
     if not reports:
         raise RuntimeError("every CMA-ES restart failed")
     best = min(reports, key=lambda r: rank_key(r.result))
