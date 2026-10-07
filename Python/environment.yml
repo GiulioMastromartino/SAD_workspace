@@ -1,0 +1,18 @@
+# Reproducible spec for SAD/Project/Python/env
+# Created from LAB02_ASSA_P env (TestEnv/venv):
+#   micromamba create -y -p ./env -c conda-forge python=3.11 heyoka.py pip numpy scipy matplotlib sympy
+# Activate with: micromamba activate /Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env
+# Or run: micromamba run -p ./env python script.py
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - heyoka.py
+  - pip
+  - numpy
+  - scipy
+  - matplotlib
+  - sympy
+  - pip:
+      - bsk
+      - pytest

@@ -1,0 +1,31 @@
+# --- conda / virtualenv (Python/env is ~1.8 GB) ---
+env/
+.venv/
+venv/
+
+# --- build artefacts ---
+build/
+dist/
+*.egg-info/
+*.so
+*.dylib
+*.pyd
+*.o
+
+# --- python caches ---
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# --- OS / editor noise ---
+.DS_Store
+.cache/
+.vscode/
+.idea/
+
+# --- optimisation scratch (regenerable, results are committed) ---
+*.log
+!*.log.md

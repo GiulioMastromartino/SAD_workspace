@@ -1,0 +1,130 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{titlesec}
+\usepackage{fancyhdr} % Package for custom headers
+
+% --- VARIABLE DEFINITIONS (EDIT HERE) ---
+% Insert your group number here.
+% It will automatically update in the title page and header.
+\newcommand{\GroupNumber}{00}
+\newcommand{\ProjectNumber}{00}
+
+% --- PAGE MARGINS ---
+\geometry{left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
+
+% --- HEADER CONFIGURATION ---
+\setlength{\headheight}{15pt} % Avoids header height warning
+\pagestyle{fancy} % Activate custom style
+\fancyhf{} % Clear default header and footer content
+
+% Left header
+\fancyhead[L]{Project group n. \GroupNumber}
+% Right header (course name)
+\fancyhead[R]{Spacecraft Attitude Dynamics}
+% Page number in footer center
+\fancyfoot[C]{\thepage}
+
+% Uncomment to remove the horizontal line in the header
+% \renewcommand{\headrulewidth}{0pt}
+
+\begin{document}
+
+% --- ROMAN NUMBERING FOR FRONT MATTER ---
+\pagenumbering{Roman}
+
+% --- TITLE PAGE ---
+\begin{titlepage}
+    % Use 'plain' style here if you do not want headers on the title page
+    \thispagestyle{plain}
+
+    \centering
+    {\LARGE \textbf{Politecnico di Milano}\par}
+    \vspace{1cm}
+    {\Large Spacecraft Attitude Dynamics\par}
+    \vspace{0.5cm}
+    {\large Academic Year 2025/2026\par}
+
+    \vspace{2cm}
+
+    % Group and Project number
+    \begin{flushleft}
+        \large
+        \textbf{Project group n.:} \GroupNumber \\[0.5cm]
+        \textbf{Project n.:} \ProjectNumber
+    \end{flushleft}
+
+    \vspace{0.5cm}
+
+    % --- Team Members Table ---
+    \begin{flushleft}
+        \textbf{Team members:} \\
+        \textit{This table is mandatory}
+    \end{flushleft}
+
+    \begin{tabularx}{\textwidth}{|X|X|X|X|}
+        \hline
+        \textbf{Person code} & \textbf{Surname} & \textbf{Name} & \textbf{Bachelor (type and University)} \\
+        \hline
+        & & & \\ \hline
+        & & & \\ \hline
+        & & & \\ \hline
+        & & & \\ \hline
+    \end{tabularx}
+
+    \vspace{1cm}
+
+    % --- Project Specifications Table ---
+    \begin{flushleft}
+        \textbf{Project specifications:} \\
+        \textit{This table is mandatory}
+    \end{flushleft}
+
+    \begin{tabularx}{\textwidth}{|l|X|X|X|}
+        \hline
+        & \textbf{Assigned specification} & \textbf{Modifications (if any)} & \textbf{Motivation for modification} \\
+        \hline
+        \textbf{Platform} & & & \\ \hline
+        \textbf{Attitude parameters} & & & \\ \hline
+        \textbf{Mandatory sensor} & & & \\ \hline
+        \textbf{Actuators} & & & \\ \hline
+    \end{tabularx}
+
+    \vspace{1cm}
+
+    % --- Work Distribution Table ---
+    \begin{flushleft}
+        \textbf{Team members work distribution (if applicable):}
+    \end{flushleft}
+
+    \begin{tabularx}{\textwidth}{|X|X|X|}
+        \hline
+        \textbf{Surname} & \textbf{Name} & \textbf{Specific role in project} \\
+        \hline
+        & & \\ \hline
+        & & \\ \hline
+        & & \\ \hline
+        & & \\ \hline
+    \end{tabularx}
+
+    \vfill
+\end{titlepage}
+
+% --- FIX PAGE COUNTER AFTER TITLE PAGE ---
+\setcounter{page}{2}
+
+% --- TABLE OF CONTENTS ---
+\tableofcontents
+\newpage
+
+% --- ARABIC NUMBERING FOR MAIN REPORT ---
+\pagenumbering{arabic}
+
+% --- REPORT START ---
+\section{Introduction}
+Here the report begins. The maximum length is 20 pages.
+
+\end{document}

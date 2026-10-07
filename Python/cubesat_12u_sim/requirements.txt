@@ -1,0 +1,7 @@
+numpy
+scipy
+matplotlib
+sympy
+bsk
+pytest
+# heyoka.py optional (conda-forge) for fast Taylor propagation
