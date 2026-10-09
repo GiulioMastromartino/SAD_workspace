@@ -138,19 +138,25 @@ def fig_validation(results: dict, path: str) -> str:
 
 
 def _resimulate(label: str, kind: str, theta, space, horizon: int,
-                cfg) -> dict:
-    """Closed-loop histories at search resolution for the winner plots."""
-    from .. import config as C
-    from ..nmpc import _rk4_step_orbit, semi_major_axis
+                cfg, backend: str = "numpy") -> dict:
+    """Closed-loop histories at search resolution for the winner plots.
+
+    ``backend`` must be the *effective* backend the sweep used. Without it this
+    re-simulation silently defaults to the numpy RK4 closures even when the
+    sweep ran the Heyoka C++ path, so the plotted curve is a different
+    controller from the one that was tuned and measured — and 16x slower, which
+    is how it was noticed.
+    """
+    from cubesat_12u_sim.core import config as C
+    from cubesat_12u_sim.control.nmpc import _rk4_step_orbit, semi_major_axis
     from .objective import initial_state, make_nmpc, make_pid
 
     if kind == "pid":
         ctrl = make_pid(space.from_theta(np.asarray(theta, float)))
         fn = ctrl.accel_command
     else:
-        from .objective import EvalConfig
         ctrl = make_nmpc(space.from_theta(np.asarray(theta, float)), cfg,
-                         horizon)
+                         horizon, backend=backend)
         fn = ctrl.accel_command
     dt = cfg.dt_inner
     n = int(round(cfg.t_end / dt))
@@ -180,6 +186,10 @@ def fig_trajectories(results: dict, path: str, cfg=None) -> str:
     from .params import NMPC_SPACE, PID_SPACE
     pid = results.get("pid")
     nmpc = results.get("nmpc")
+    # the effective backend, so the re-simulation matches the sweep
+    backend = (results.get("config", {}).get("nmpc_backend")
+               or results.get("validation", {}).get("backend", {}).get("used")
+               or "numpy")
     cfgs = {"pid": PID_SEARCH_CFG,
             "nmpc": EvalConfig(t_days=results["config"]["days"],
                                spec_box=results["config"]["spec_box"],
@@ -191,7 +201,8 @@ def fig_trajectories(results: dict, path: str, cfg=None) -> str:
     if nmpc:
         series.append(_resimulate(f"NMPC H={nmpc['horizon']} (tuned)", "nmpc",
                                   nmpc["theta"], NMPC_SPACE,
-                                  int(nmpc["horizon"]), cfgs["nmpc"]))
+                                  int(nmpc["horizon"]), cfgs["nmpc"],
+                                  backend=backend))
     fig, ax = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
     for s in series:
         t_d = np.asarray(s["t"]) / 86400.0

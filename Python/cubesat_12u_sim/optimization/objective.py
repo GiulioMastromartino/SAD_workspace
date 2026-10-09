@@ -35,16 +35,24 @@ from dataclasses import asdict, dataclass
 
 import numpy as np
 
-from .. import config as C
-from ..actuators import allocation_pinv, jets_to_wrench
-from ..controller import OrbitPID, rtn_frame
-from ..hierarchical import FastTrimPID, HierarchicalController
-from ..nmpc import (NMPCConfig, _rk4_step_orbit, semi_major_axis)
+from cubesat_12u_sim.core import config as C
+from cubesat_12u_sim.core.actuators import allocation_pinv, jets_to_wrench
+from cubesat_12u_sim.control.controller import OrbitPID, rtn_frame
+from cubesat_12u_sim.control.hierarchical import FastTrimPID, HierarchicalController
+from cubesat_12u_sim.control.nmpc import (NMPCConfig, _rk4_step_orbit, semi_major_axis)
+from cubesat_12u_sim.tuning.profiling import profiler as _prof
 
 from .params import NMPC_SPACE, PID_SPACE, ParamSpace
 
 PENALTY_INFEASIBLE = 1e9
 GAIN_KEYS = ("kp_r", "ki_r", "kd_r", "kp_t", "ki_t", "kp_n", "ki_n", "kd_n")
+
+# NMPC position-tracking cost shape. Fixed rather than searched: linear inside
+# TRACK_FRAC of the box, logarithmic out to the edge, with the edge costing
+# TRACK_EDGE m/s (67% of a 30 m/s fuel budget). Defined here so the numpy
+# reference and the C++ kernels agree on one source of truth.
+TRACK_EDGE = 20.0
+TRACK_FRAC = 0.2
 
 
 @dataclass(frozen=True)
@@ -163,17 +171,21 @@ def make_pid(params: dict) -> TunedOrbitPID:
 
 def make_nmpc(params: dict, cfg: EvalConfig, horizon: int,
               backend: str = "numpy") -> HierarchicalController:
-    from ..nmpc import ScipyShootingBackend
+    from cubesat_12u_sim.control.nmpc import ScipyShootingBackend
+    # The cost weights are no longer free parameters: the planner optimises the
+    # scorer's cost, so they come from EvalConfig (w_viol/w_final) rather than
+    # from the search space. See nmpc_solve.cpp shoot_cost.
     ncfg = NMPCConfig(dt_outer=cfg.dt_outer, horizon=int(horizon),
-                      q_pos=params["q_pos"], q_vel=params["q_vel"],
-                      r_fuel=params["r_fuel"], db_a=params["db_a"],
-                      maxiter=cfg.maxiter)
+                      w_track=TRACK_EDGE, w_track_frac=TRACK_FRAC,
+                      w_final=cfg.w_final, box_ref=cfg.spec_box,
+                      db_a=params["db_a"], maxiter=cfg.maxiter)
     trim = FastTrimPID(authority=params["trim_a_max"],
                        dv_budget=params["trim_dv_budget"])
-    if backend == "cpp":
-        be = ScipyShootingBackend(use_cpp=True)
-    else:
-        be = ScipyShootingBackend(use_cpp=False)
+    # Any non-numpy backend means the C++ cost/gradient: "cxx" is only a
+    # whole-sim dispatch strategy, and its prediction is the same Heyoka Taylor
+    # one, so it maps here too. Keying on "cpp" alone would silently hand a cxx
+    # run the numpy closures.
+    be = ScipyShootingBackend(use_cpp=(backend != "numpy"))
     return HierarchicalController(ncfg, trim, backend=be)
 
 
@@ -187,14 +199,16 @@ def measure_alloc_eff(n_samples: int = 64, seed: int = 0) -> float:
     Reported in the results JSON so the surrogate's fidelity is visible rather
     than assumed. Currently 0.5 for this geometry.
     """
-    rng = np.random.default_rng(seed)
-    ratios = []
-    for _ in range(n_samples):
-        e = rng.normal(size=3)
-        e /= np.linalg.norm(e)
-        F = e * (C.PID_A_MAX * C.MASS)
-        Fa, _ = jets_to_wrench(allocation_pinv(F, np.zeros(3)))
-        ratios.append(float(np.linalg.norm(Fa) / np.linalg.norm(F)))
+    _p = _prof()
+    with _p.section("alloc_eff"):
+        rng = np.random.default_rng(seed)
+        ratios = []
+        for _ in range(n_samples):
+            e = rng.normal(size=3)
+            e /= np.linalg.norm(e)
+            F = e * (C.PID_A_MAX * C.MASS)
+            Fa, _ = jets_to_wrench(allocation_pinv(F, np.zeros(3)))
+            ratios.append(float(np.linalg.norm(Fa) / np.linalg.norm(F)))
     return float(np.mean(ratios))
 
 
@@ -214,23 +228,39 @@ def simulate(accel_fn, cfg: EvalConfig) -> tuple[np.ndarray, float, float]:
     optimiser would size every gain for a vehicle with twice the real
     authority, and the tuned result would fail the full-simulation check.
     """
-    x = initial_state(cfg.v_frac)
-    dt = cfg.dt_inner
-    n_steps = int(round(cfg.t_end / dt))
-    eff = cfg.alloc_eff
-    dv = 0.0
-    max_abs_r_err = 0.0
-    for _ in range(n_steps):
-        a = np.asarray(accel_fn(x[0:3], x[3:6], dt), float) * eff
-        if not np.all(np.isfinite(a)):
-            return x, float("inf"), float("inf")
-        dv += float(np.linalg.norm(a)) * dt
-        x = _rk4_step_orbit(x, a, dt)
-        if not np.all(np.isfinite(x)):
-            return x, float("inf"), float("inf")
-        err = abs(float(np.linalg.norm(x[0:3])) - C.R_ORBIT)
-        if err > max_abs_r_err:
-            max_abs_r_err = err
+    _p = _prof()
+    with _p.section("sim"):
+        x = initial_state(cfg.v_frac)
+        dt = cfg.dt_inner
+        n_steps = int(round(cfg.t_end / dt))
+        eff = cfg.alloc_eff
+        dv = 0.0
+        max_abs_r_err = 0.0
+        # The clock pair goes around the step, but nothing is reported per step:
+        # what gets read is the accumulated mean over the whole rollout, which
+        # is the only version of a sub-millisecond region worth quoting.
+        # begin()/end() rather than section(): the control law opens its own
+        # sections (ctrl.tick, nmpc.solve, ...), and those must nest *inside*
+        # accel. Timing the step with a clock pair and publishing it as a flat
+        # sibling would double-count the solver, and the per-step number would
+        # be far too small to be a measurement on its own -- what is useful is
+        # the accumulated mean over the whole rollout.
+        for _ in range(n_steps):
+            _p.begin("accel")
+            a = np.asarray(accel_fn(x[0:3], x[3:6], dt), float) * eff
+            _p.end()
+            _p.count("steps", 1)
+            if not np.all(np.isfinite(a)):
+                return x, float("inf"), float("inf")
+            dv += float(np.linalg.norm(a)) * dt
+            _p.begin("rk4")
+            x = _rk4_step_orbit(x, a, dt)
+            _p.end()
+            if not np.all(np.isfinite(x)):
+                return x, float("inf"), float("inf")
+            err = abs(float(np.linalg.norm(x[0:3])) - C.R_ORBIT)
+            if err > max_abs_r_err:
+                max_abs_r_err = err
     return x, dv, max_abs_r_err
 
 
@@ -252,13 +282,24 @@ def score(dv: float, max_abs_r_err: float, final_e_a: float,
 
 
 def _evaluate(make_ctrl, cfg: EvalConfig, cache: dict | None, key) -> Result:
-    if cache is not None and key in cache:
-        return cache[key]
-    x, dv, max_err = simulate(make_ctrl().accel_command, cfg)
-    res = score(dv, max_err, semi_major_axis(x[0:3], x[3:6]) - C.R_ORBIT, cfg)
-    if cache is not None:
-        cache[key] = res
-    return res
+    _p = _prof()
+    with _p.section("eval"):
+        if cache is not None and key in cache:
+            # Cache hits are the reason a resumed sweep is cheap, so they are
+            # counted separately: eval.calls - hits is how many candidates were
+            # actually simulated, and the rollout sections only reflect those.
+            _p.count("cache_hit")
+            return cache[key]
+        _p.count("cache_miss")
+        with _p.section("build_controller"):
+            accel_fn = make_ctrl().accel_command
+        x, dv, max_err = simulate(accel_fn, cfg)
+        with _p.section("score"):
+            res = score(dv, max_err, semi_major_axis(x[0:3], x[3:6]) - C.R_ORBIT,
+                        cfg)
+        if cache is not None:
+            cache[key] = res
+        return res
 
 
 def evaluate_pid(theta, cfg: EvalConfig, cache: dict | None = None,

@@ -9,7 +9,7 @@ from __future__ import annotations
 import numpy as np
 
 try:
-    from ..cxxdrive import _pidbatch
+    from cubesat_12u_sim.native.cxxdrive import _pidbatch
 
     available = True
 except Exception:
@@ -20,8 +20,8 @@ except Exception:
 def evaluate_pid_batch(thetas, cfg, space) -> list:
     """Evaluate a batch of log-space vectors; returns :class:`Result` list."""
     from .objective import Result, initial_state, score
-    from .. import config as C
-    from ..nmpc import semi_major_axis
+    from cubesat_12u_sim.core import config as C
+    from cubesat_12u_sim.control.nmpc import semi_major_axis
 
     thetas = [np.asarray(t, float) for t in thetas]
     P = np.array([[space.from_theta(t)[k] for k in space.names]

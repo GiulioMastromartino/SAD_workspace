@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from cubesat_12u_sim import config as C
+from cubesat_12u_sim.core import config as C
 from cubesat_12u_sim.optimization import objective as O
 from cubesat_12u_sim.optimization.driver import rank_key, multistart
 from cubesat_12u_sim.optimization.params import (NMPC_SPACE, PID_SPACE,
@@ -131,7 +131,7 @@ def test_evaluation_is_deterministic():
 
 def test_tuned_pid_matches_stock_orbit_pid_control_law():
     """Instance-local gains must not change the law itself."""
-    from cubesat_12u_sim.controller import OrbitPID
+    from cubesat_12u_sim.control.controller import OrbitPID
     gains = PID_SPACE.from_theta(PID_SPACE.seed_theta())
     tuned = O.make_pid(dict(gains))
     stock = OrbitPID(box_r=gains["box_r"])
@@ -144,7 +144,7 @@ def test_tuned_pid_matches_stock_orbit_pid_control_law():
 
 
 def test_tuned_pid_gains_do_not_leak_into_config():
-    from cubesat_12u_sim.controller import OrbitPID
+    from cubesat_12u_sim.control.controller import OrbitPID
     before = (C.PID_KP_R, C.PID_KD_R)
     theta = PID_SPACE.random_theta(np.random.default_rng(3))
     O.evaluate_pid(theta, O.EvalConfig(t_days=0.01, dt_outer=10.0, dt_inner=10.0))
@@ -223,33 +223,46 @@ def test_nmpc_cpp_cost_matches_python():
     nb = pytest.importorskip("cubesat_12u_sim.optimization.nmpcbatch")
     if not nb.available:
         pytest.skip("no _nmpcbatch extension")
-    from cubesat_12u_sim.nmpc import (NMPCConfig, _rk4_step_orbit,
+    from cubesat_12u_sim.control.nmpc import (NMPCConfig, _rk4_step_orbit,
                                       semi_major_axis)
     r, v = C.R0_ECI.copy(), C.V0_ECI.copy() * 0.995
     x0 = np.concatenate([r, v])
     cfg = NMPCConfig(dt_outer=600.0, horizon=6, maxiter=50)
 
     def py_cost(U):
+        """Longhand reference for the C++ kernel's cost.
+
+        Written out from the cost definition rather than by calling adjoint's
+        helpers, so it is an independent expression: fuel is quadratic below
+        the knee and exponential above, position is radius-error tracking that
+        is linear inside ``box_frac`` and logarithmic beyond.
+        """
         N, dt = 6, 600.0
         traj = np.zeros((N + 1, 6))
         traj[0] = x0
         for k in range(N):
             traj[k + 1] = _rk4_step_orbit(traj[k], U[k], dt)
+        knee = float(__import__("cubesat_12u_sim.control.adjoint",
+                                fromlist=["FUEL_KNEE"]).FUEL_KNEE)
+        g1 = (1.0 if 1.0 <= knee else knee * knee * np.exp(1.0 - knee))
+        A_fuel = cfg.a_max * dt
+        s = cfg.w_track / (cfg.w_track_frac *
+                           (1.0 + np.log(1.0 / cfg.w_track_frac)))
         c = 0.0
         for k in range(1, N + 1):
-            rk, vk = traj[k, 0:3], traj[k, 3:6]
-            e_a = semi_major_axis(rk, vk) - C.R_ORBIT
-            if abs(e_a) < cfg.db_a:
-                e_a = 0.0
-            rn = max(float(np.linalg.norm(rk)), 1.0)
-            v_r = float(vk @ (rk / rn))
-            c += (cfg.q_pos * (e_a / 50e3) ** 2 + cfg.q_vel * (v_r / 50.0) ** 2
-                  + cfg.r_fuel * float(U[k - 1] @ U[k - 1]) / cfg.a_max**2)
+            rk = traj[k, 0:3]
+            xf = float(np.linalg.norm(U[k - 1])) / cfg.a_max
+            g = (xf * xf if xf <= knee else knee * knee * np.exp(xf - knee))
+            c += A_fuel * g / g1
+            xr = abs(float(np.linalg.norm(rk)) - C.R_ORBIT) / cfg.box_ref
+            c += (s * xr if xr <= cfg.w_track_frac
+                  else s * cfg.w_track_frac *
+                  (1.0 + np.log(xr / cfg.w_track_frac)))
         aT = semi_major_axis(traj[N, 0:3], traj[N, 3:6])
         e_term = (aT - C.R_ORBIT) / 50e3
         if abs(aT - C.R_ORBIT) < cfg.db_a:
             e_term = 0.0
-        return c + 5.0 * cfg.q_pos * e_term**2
+        return c + cfg.w_final * e_term**2
 
     cost, _, _, _ = nb.make_funcs(x0, cfg)
     rng = np.random.default_rng(0)
@@ -263,7 +276,7 @@ def test_nmpc_cpp_grad_matches_python_finite_diff():
     nb = pytest.importorskip("cubesat_12u_sim.optimization.nmpcbatch")
     if not nb.available:
         pytest.skip("no _nmpcbatch extension")
-    from cubesat_12u_sim.nmpc import NMPCConfig
+    from cubesat_12u_sim.control.nmpc import NMPCConfig
     r, v = C.R0_ECI.copy(), C.V0_ECI.copy() * 0.995
     x0 = np.concatenate([r, v])
     cfg = NMPCConfig(dt_outer=600.0, horizon=3, maxiter=50)
@@ -317,7 +330,7 @@ def test_nmpc_stacked_normviol_matches_lambdas():
     if not nb.available:
         pytest.skip("no _nmpcbatch extension")
     import heyoka  # noqa: F401  (libheyoka for dynamic_lookup)
-    from cubesat_12u_sim.cxxdrive import _nmpcbatch
+    from cubesat_12u_sim.native.cxxdrive import _nmpcbatch
     rng = np.random.default_rng(2)
     N, B = 6, 3
     Z = np.ascontiguousarray(rng.normal(0, 0.03, (B, 3 * N)))
@@ -337,7 +350,7 @@ def test_nmpc_stacked_normviol_matches_lambdas():
 
 def test_nmpc_cpp_solve_agrees_and_caps():
     """Closed solve: same verdict, dv within 5%, norm cap respected."""
-    from cubesat_12u_sim.nmpc import NMPCConfig, ScipyShootingBackend
+    from cubesat_12u_sim.control.nmpc import NMPCConfig, ScipyShootingBackend
     pytest.importorskip("cubesat_12u_sim.optimization.nmpcbatch",
                         reason="no _nmpcbatch extension")
     from cubesat_12u_sim.optimization import nmpcbatch as nb

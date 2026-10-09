@@ -190,11 +190,14 @@ Options:
 | `--spec-box` | 25e3 | box half-width [m] (feasibility) |
 | `--alloc-eff` | 0.5 | commanded/achieved ratio of the allocator |
 | `--pid-backend` | `cpp` | `cpp` = fused C++ batch (§10), `numpy` = reference |
-| `--nmpc-backend` | `numpy` | `cpp` = Heyoka C++ batch cost+grad (§10), `cxx` = full C++ sim with embedded NLopt-SLSQP + early abort (§10), `numpy` = RK4 reference |
+| `--nmpc-backend` | `cpp` | `cpp` = Heyoka C++ batch cost+grad (§10), `cxx` = full C++ sim with embedded NLopt-SLSQP + early abort (§10), `numpy` = RK4 reference |
 | `--validate-t` | 7200 | validation horizon [s] on the full sim |
 | `--resume` | off | resume from per-restart checkpoint files |
 | `--no-checkpoint` | off | disable per-restart checkpoint files |
 | `--seed` | 20261007 | RNG seed |
+| `--no-timing` | off | disable the hierarchical timing profiler (§12) |
+| `--bench-reps` | 0 | repeat one fast sim N times per arm; report mean/std/min/max per section (§12) |
+| `--bench-theta` | `seed` | theta used by `--bench-reps`: `seed` or `tuned` |
 
 Output: `Python/results_optimization/res_optimization.json` — per-stage
 parameters, every restart (with per-generation convergence history), and the
@@ -220,12 +223,33 @@ Two batch kernels in `cxxdrive/`, built with
 `./env/bin/python cubesat_12u_sim/cxxdrive/setup.py build_ext --inplace`:
 
 | kernel | what | measured |
-
-| kernel | what | measured |
 |---|---|---|
 | `_pidbatch.pid_batch_eval` | whole CMA-ES population (RTN law + RK4 + score) in one call | 10 evals in 2.5 ms vs 1330 ms numpy (~530x); parity 1.9e-9 |
 | `_nmpcbatch.cost_batch` / `grad_batch` | shooting cost + forward-diff gradient on `heyoka::taylor_adaptive_batch` (6-state orbit system, same family as `cxxdrive/campaign.cpp`) | warm solve 5 ms vs 90 ms numpy (~18x with stacked constraints); cost parity 3e-4, solve cost within 0.2% |
 | `_nmpcsolve.closed_loop_batch` | **whole NMPC sim in one call**: NLopt-SLSQP bulk plans (warm-started) + trim port + alloc_eff + safe early-abort vs incumbent | warm sim ~0.16 s vs ~1.3 s numpy (~8x); closed-loop dv within 5%, same verdict; deterministic |
+
+### Which backend actually ran
+
+`resolve_backends()` picks the *effective* backends once, before any stage, and
+every stage plus validation uses that value — so the string in the results JSON
+is the one that produced the numbers. `res_optimization.json` records both:
+
+```json
+"nmpc_backend": "cpp", "nmpc_backend_requested": "cpp",
+"backend_fallbacks": []
+```
+
+If an extension is missing the run downgrades, logs a warning, and fills
+`backend_fallbacks`. That field exists because the alternative is worse than no
+record: a run where `_nmpcbatch` fails to load produces numpy-RK4 numbers while
+the config block still reads `"nmpc_backend": "cpp"`. `validation.backend` is
+recorded separately for the same reason — `cxx` cannot drive validation (it
+collapses the whole closed loop into one crossing, and validation steps the real
+12-state heyoka dynamics from Python), so it maps to `cpp`, the nearest
+prediction family.
+
+The default is `cpp` for both arms, matching how the committed sweep in §11 was
+run. `numpy` is the reference path, kept for the parity tests.
 
 Notes:
 
@@ -234,6 +258,15 @@ Notes:
   more accurate than the 600 s RK4 step, so exact cost equality is not
   expected — the gates are cost ≤1e-3, same feasibility verdict, closed-loop
   dv within 5%.
+- The numpy backend has no analytic cost gradient, so `scipy` estimates it by
+  forward differences: **one full N-step RK4 rollout per decision variable per
+  iteration**, i.e. `3N+1` cost calls. Measured `objective_evals_per_solve ÷
+  nit_per_solve` matches `3N+1` closely (8.0/7 at H=2, 39/37 at H=12), and the
+  solve time is exactly that rollout time — at H=12, 1947 rollouts x 414 us =
+  806 ms against a measured 806 ms. `grad_batch` runs the same `3N+1` lanes as
+  one expanded batch inside a single C++ crossing, which is where the ~18x
+  comes from. This is why the default matters: profiling the numpy path
+  characterises the fallback, not the pipeline.
 - `_nmpcsolve` needs `import heyoka` first (libheyoka, same as `_cxxdrive`)
   **and** NLopt at `~/.local/nlopt` (built once from source with cmake;
   the extension rpaths it, so the conda env is untouched).
@@ -318,3 +351,137 @@ noise + multi-IC into the surrogate cost.
 - **`box_r` lower bound is `box_r = 0`.** The config default is "always
   correct"; the log-space floor is 1e−2 m rather than 0, which is the same
   behaviour to within any practical tolerance.
+
+---
+
+## 12. Timing instrumentation
+
+`profiling.py` records a nested section tree through the whole sweep and writes
+it to `res_optimization.json` under `timing`, plus `res_timing.{json,txt}`. It
+exists because until now the only timing that reached disk was `wall_seconds`
+and `stage_wall_seconds`, while every detailed figure in §10 was measured by
+hand and written into this file.
+
+The tree is: `stage_*` > `horizons` > `horizonH{n}` > `restart{i}` >
+`generation` > `ask` / `dispatch` / `tell` > `eval` > `sim` > `accel` / `rk4`,
+and inside `accel` the full control path down to
+`nmpc.solve.minimize`. Parent times are inclusive; `exclusive_s` subtracts
+children, so a level that looks as expensive as its children is not.
+
+Three properties worth knowing:
+
+- **Averages, not per-call numbers.** No timed region is reported per
+  individual step. Timed regions sit far enough above timer resolution, and what
+  is read is `total / calls` accumulated over an entire sweep. `--bench-reps N`
+  repeats a whole fast sim N times and reports mean/std/min/max, which is the
+  only way to put an uncertainty on "one fast sim costs X".
+- **Worker CPU is shipped back.** Candidates run in a `ProcessPoolExecutor`, so
+  each worker serialises its subtree and the parent folds it in. Under
+  parallelism `eval` totals therefore exceed wall time; both are reported,
+  because the gap is the parallelism. A forked worker starts from an empty tree
+  so it cannot report a copy of the parent's sections back.
+- **Overhead is negligible.** One `perf_counter` pair per timed region. A test
+  asserts a timed fast sim costs less than 3x the untimed one.
+
+Per-horizon cost is reported alongside each horizon's `dv` in
+`per_horizon[i]["timing"]`, and flattened into `nmpc.per_horizon_timing`:
+
+| column | meaning |
+|---|---|
+| `wall_s_per_eval` | wall seconds per evaluated candidate |
+| `plans_per_eval` | NMPC replans per candidate (one solve each) |
+| `nit_per_solve` | SLSQP iterations per solve |
+| `ms_per_nit` | per-iteration cost — isolates decision-vector size from iteration count |
+| `objective_evals_per_solve` | `cost()` calls per solve: ~3N+1 on numpy (finite differences), ~1 on cpp |
+| `grad_calls_per_solve` | explicit gradient calls per solve: 0 on numpy, ~1 per iteration on cpp |
+| `lanes_per_grad` | rollouts inside one gradient call: `3N+1` on cpp, batched in C++ |
+
+All rates are normalised by evaluation count. The horizons in a sweep are not
+guaranteed to have run equal work — a failed restart or a resumed one changes
+the denominators — so a raw millisecond total would compare effort rather than
+cost per unit of effort.
+
+Counter placement matters: `cost_evals`/`grad_evals` are incremented inside
+the *closures handed to SLSQP*, including the C++ ones. Attaching them to the
+Python `cost` closure alone made the cpp path report zero, which reads as "no
+work" when it is really `3N+1` Taylor lanes per crossing.
+
+`pred_traj` is off by default (`NMPCConfig.record_pred_traj`): nothing consumes
+it, and it costs N Python RK4 steps per solve immediately after the solver used
+Taylor — measured ~9 % of solve time. `fig_opt_trajectories` re-simulates the
+winners, and passes the effective backend through; it used to default to numpy
+regardless, so the plotted curve was a different controller from the one that
+was tuned (and ~16x slower, which is how it surfaced).
+
+The evaluation cache is shared across pool workers (a `multiprocessing.Manager`
+dict, degrading to per-worker if unavailable). Per-worker caches made the hit
+rate a function of `--workers`, which moved the denominator of every rate above.
+The final re-evaluation deliberately bypasses the cache so it stays a real
+re-evaluation rather than becoming a lookup.
+
+Caveat: rates aggregate over every node with the matching name in the subtree.
+Each restart contributes its own `solve` node, so a first-match lookup would
+pair one restart's call count with iteration counts summed across all of them
+and roughly double every rate. There is a test for exactly that.
+
+---
+
+## 13. Adjoint gradient
+
+The shooting cost has no analytic gradient, so SLSQP finite-differences it: one
+full N-step rollout per decision variable per iteration, `3N+1` lanes. Measured
+on the `cpp` backend at H=12, that is **88.9 % of all Taylor lanes**
+(3368 of 3790 us per solve; `grad_batch` batches the lanes into one crossing but
+does not reduce their number).
+
+`adjoint.py` replaces those `3N+1` perturbed rollouts with one forward rollout
+plus one backward sweep. It is the **exact Jacobian-transpose of the same RK4
+step the forward pass uses** — not a continuous adjoint, which paired with a
+discretised forward pass is an inconsistent gradient and degrades SLSQP. Gravity
+needs no variational system: the orbit is Keplerian, so
+`dg/dr = -mu/|r|^3 (I - 3 rhat rhat^T)` is closed form.
+
+Verified three ways in `tests/test_adjoint.py`: `step_value` against
+`_rk4_step_orbit`, the step Jacobians `S`/`P` against finite differences, and
+the assembled gradient against a central difference of the cost (rel. err ~1e-7
+at N=2..12, with the deadband disabled). Each cost term is checked separately,
+since a wrong gradient on one term hides behind a right gradient on another.
+
+### Measured effect, numpy backend, seed theta, `maxiter=50`
+
+| H | finite differences | adjoint | speedup | nit fd → adjoint | feasible |
+|---|---|---|---|---|---|
+| 2 | 14.8 ms | 7.2 ms | 2.1x | 67 → 51 | both |
+| 4 | 69.9 ms | 22.8 ms | 3.1x | 108 → 73 | both |
+| 6 | 190.1 ms | 46.8 ms | 4.1x | 145 → 107 | **fd fails**, adjoint converges |
+| 8 | 333.2 ms | 75.8 ms | 4.4x | 150 → 136 | **fd fails**, adjoint converges |
+| 12 | 737.3 ms | 125.5 ms | 5.9x | 150 → 140 | both fail |
+
+The adjoint takes **fewer iterations everywhere**, because the gradient is exact.
+At H=6 and H=8 that is the difference between converging and exhausting
+`maxiter` and returning the zero (fallback) plan.
+
+`--nmpc-backend numpy` is now a usable path rather than a 90-second-per-solve
+curiosity. `ScipyShootingBackend(grad="fd")` keeps the reference implementation
+the adjoint is tested against.
+
+### Not yet done: the `cpp` backend
+
+The adjoint is implemented in numpy, and the `cpp` cost/gradient are
+Heyoka Taylor batches. The two cannot be mixed — a Taylor cost with an RK4
+adjoint is exactly the inconsistency above — so `use_cpp=True` still uses
+`grad_batch`. Doing it properly means adding variational equations to
+`taylor_adaptive_batch` in `cxxdrive/nmpc_batch.cpp`, which is **not attempted
+here**: there is no way to compile or test it in the development container, and
+a ~5x on the cpp path is not worth shipping unverified. The numpy adjoint above
+is the reference implementation and the parity gate it would have to pass.
+
+### Caveat: the deadband
+
+`db(e) = 0` for `|e| < db_a`, `e` otherwise, so `db'` is 0 or 1 almost everywhere
+and undefined on the boundary. The adjoint uses that a.e. derivative. A centred
+finite difference whose step straddles the boundary returns something else
+entirely, so the two disagree *at the boundary only* — the parity tests
+deliberately avoid placing the state there. This is a property of the cost
+function, not of the method, but it does mean the two gradient strategies are not
+interchangeable for a plan sitting exactly on the deadband edge.

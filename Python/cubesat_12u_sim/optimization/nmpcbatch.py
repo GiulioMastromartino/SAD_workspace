@@ -13,7 +13,7 @@ import numpy as np
 try:
     import heyoka  # noqa: F401  (loads libheyoka: _nmpcbatch links against
     # it with dynamic_lookup, same as _cxxdrive — bare import fails)
-    from ..cxxdrive import _nmpcbatch
+    from cubesat_12u_sim.native.cxxdrive import _nmpcbatch
 
     available = True
 except Exception:
@@ -27,7 +27,8 @@ def make_funcs(x0: np.ndarray, cfg):
     Returns ``(None, None, None, None)`` when the extension is unavailable.
     Callers must handle the fallback (see ``nmpc.ScipyShootingBackend``).
     """
-    from .. import config as C
+    from cubesat_12u_sim.control import adjoint
+    from cubesat_12u_sim.core import config as C
 
     if not available:
         return None, None, None, None
@@ -36,9 +37,16 @@ def make_funcs(x0: np.ndarray, cfg):
     # norm_penalty=0: the scipy backend enforces |u|<=a_max with a hard
     # NonlinearConstraint (same as the Python cost, which has no penalty term).
     # tol: Heyoka Taylor tolerance for the prediction rollout.
-    args = (dt, N, float(cfg.q_pos), float(cfg.q_vel), float(cfg.r_fuel),
-            float(cfg.db_a), float(cfg.a_max), 0.0,
-            float(C.MU_EARTH), float(C.R_ORBIT), 1e-12)
+    #
+    # The q_pos/q_vel/r_fuel slots are kept positionally but unused: the kernel's
+    # cost now mirrors objective.run_scores (L1 fuel + box hinge), and those
+    # three weights no longer exist in the objective. See nmpc_batch.cpp.
+    fA, fx0, fg1 = adjoint.fuel_params(cfg.a_max, dt)
+    fA *= float(getattr(cfg, 'fuel_scale', 1.0))
+    args = (dt, N, float(cfg.w_track), float(cfg.w_track_frac),
+            float(cfg.w_final), float(cfg.db_a), float(cfg.a_max), 0.0,
+            float(cfg.box_ref), float(C.MU_EARTH), float(C.R_ORBIT), 1e-12,
+            fA, fx0, fg1)
 
     def cost(z: np.ndarray) -> float:
         Z = np.ascontiguousarray(np.asarray(z, float).ravel()[None, :])

@@ -1,6 +1,6 @@
 """Parameter tuning for the 12U ACS controllers.
 
-Entry point is ``cubesat_12u_sim.run_optimize``; see that module for usage.
+Entry point is ``cubesat_12u_sim.tuning.run_optimize``; see that module for usage.
 """
 from .params import (JOINT_SPACE, NMPC_HORIZONS, NMPC_SPACE, PID_SPACE,
                      Param, ParamSpace)

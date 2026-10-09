@@ -10,13 +10,14 @@ from __future__ import annotations
 
 import numpy as np
 
-from .. import config as C
-from ..dynamics import pack_state
-from ..nmpc import semi_major_axis
+from cubesat_12u_sim.core import config as C
+from cubesat_12u_sim.core.dynamics import pack_state
+from cubesat_12u_sim.control.nmpc import semi_major_axis
+from cubesat_12u_sim.tuning.profiling import profiler as _prof
 
 
 def _make_integrator(y0):
-    from ..heyoka_propagate import make_integrator
+    from cubesat_12u_sim.backends.heyoka.heyoka_propagate import make_integrator
     return make_integrator(y0, np.zeros(len(C.THRUSTER_TMAX)))
 
 
@@ -31,21 +32,35 @@ def validate_pid(theta, space, *, t_end: float = 7200.0, dt_outer: float = 10.0,
     """OrbitPID through thruster allocation at the deployment resolution."""
     from .objective import make_pid
 
-    ctrl = make_pid(space.from_theta(theta))
-    ta = _make_integrator(_y0())
-    y = _y0()
-    dv, max_err = 0.0, 0.0
-    n_outer = int(round(t_end / dt_outer))
-    sub = int(round(dt_outer / dt_inner))
-    for _ in range(n_outer):
-        for _ in range(sub):
-            u, F, tau = ctrl.throttle_command(y[0:3], y[3:6], y[6:9], dt_inner)
-            for i, val in enumerate(np.concatenate([F, tau])):
-                ta.pars[i] = float(val)
-            ta.propagate_for(dt_inner)
-            y = np.array(ta.state)
-            dv += float(np.linalg.norm(F) / C.MASS) * dt_inner
-            max_err = max(max_err, abs(float(np.linalg.norm(y[0:3])) - C.R_ORBIT))
+    _p = _prof()
+    with _p.section("validate") as vsec:
+        with _p.section("build"):
+            ctrl = make_pid(space.from_theta(theta))
+            ta = _make_integrator(_y0())
+            y = _y0()
+        dv, max_err = 0.0, 0.0
+        n_outer = int(round(t_end / dt_outer))
+        sub = int(round(dt_outer / dt_inner))
+        # Clocked per tick, reported as accumulated means over the whole run.
+        # A single heyoka propagate_for at dt=1 s is tens of microseconds, so
+        # any per-tick figure would be dominated by the clock. throttle_command
+        # opens its own sections (controller, allocation), and begin()/end()
+        # makes those nest inside "control" rather than overlapping it.
+        for _ in range(n_outer):
+            for _ in range(sub):
+                _p.begin("control")
+                u, F, tau = ctrl.throttle_command(y[0:3], y[3:6], y[6:9], dt_inner)
+                _p.end()
+                for i, val in enumerate(np.concatenate([F, tau])):
+                    ta.pars[i] = float(val)
+                _p.begin("integrate")
+                ta.propagate_for(dt_inner)
+                _p.end()
+                y = np.array(ta.state)
+                dv += float(np.linalg.norm(F) / C.MASS) * dt_inner
+                max_err = max(max_err,
+                              abs(float(np.linalg.norm(y[0:3])) - C.R_ORBIT))
+        _p.count("ticks", n_outer * sub)
     return {"arm": "pid", "dv": dv, "max_abs_r_err": max_err,
             "final_e_a": semi_major_axis(y[0:3], y[3:6]) - C.R_ORBIT,
             "dt_outer": dt_outer, "dt_inner": dt_inner, "t_end": t_end}
@@ -55,27 +70,36 @@ def validate_nmpc(theta, space, horizon: int, *, t_end: float = 7200.0,
                   dt_outer: float = 10.0, dt_inner: float = 1.0,
                   backend: str = "numpy") -> dict:
     """HierarchicalController through thruster allocation."""
-    from ..hierarchical import HierarchicalController
+    from cubesat_12u_sim.control.hierarchical import HierarchicalController
     from .objective import make_nmpc
     from .objective import EvalConfig
 
     cfg = EvalConfig(dt_outer=dt_outer, dt_inner=dt_inner)
-    ctrl = make_nmpc(space.from_theta(theta), cfg, horizon, backend=backend)
-    ta = _make_integrator(_y0())
-    y = _y0()
-    dv, max_err = 0.0, 0.0
-    n_outer = int(round(t_end / dt_outer))
-    sub = int(round(dt_outer / dt_inner))
-    for _ in range(n_outer):
-        for _ in range(sub):
-            u, F, tau = ctrl.throttle_command(y[0:3], y[3:6], y[6:9], dt_inner,
-                                              y[9:12])
-            for i, val in enumerate(np.concatenate([F, tau])):
-                ta.pars[i] = float(val)
-            ta.propagate_for(dt_inner)
-            y = np.array(ta.state)
-            dv += float(np.linalg.norm(F) / C.MASS) * dt_inner
-            max_err = max(max_err, abs(float(np.linalg.norm(y[0:3])) - C.R_ORBIT))
+    _p = _prof()
+    with _p.section("validate") as vsec:
+        with _p.section("build"):
+            ctrl = make_nmpc(space.from_theta(theta), cfg, horizon, backend=backend)
+            ta = _make_integrator(_y0())
+            y = _y0()
+        dv, max_err = 0.0, 0.0
+        n_outer = int(round(t_end / dt_outer))
+        sub = int(round(dt_outer / dt_inner))
+        for _ in range(n_outer):
+            for _ in range(sub):
+                _p.begin("control")
+                u, F, tau = ctrl.throttle_command(y[0:3], y[3:6], y[6:9], dt_inner,
+                                                  y[9:12])
+                _p.end()
+                for i, val in enumerate(np.concatenate([F, tau])):
+                    ta.pars[i] = float(val)
+                _p.begin("integrate")
+                ta.propagate_for(dt_inner)
+                _p.end()
+                y = np.array(ta.state)
+                dv += float(np.linalg.norm(F) / C.MASS) * dt_inner
+                max_err = max(max_err,
+                              abs(float(np.linalg.norm(y[0:3])) - C.R_ORBIT))
+        _p.count("ticks", n_outer * sub)
     split = ctrl.fuel_split
     return {"arm": "nmpc", "dv": dv, "max_abs_r_err": max_err,
             "final_e_a": semi_major_axis(y[0:3], y[3:6]) - C.R_ORBIT,
