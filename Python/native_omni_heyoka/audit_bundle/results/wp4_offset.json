@@ -1,0 +1,388 @@
+{
+  "name": "wp4_offset",
+  "timestamp_utc": "2026-10-12T14:40:39.513339+00:00",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-12T14:40:39.513381+00:00",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "probe": "wp4_offset",
+    "env": {
+      "timestamp_utc": "2026-10-12T14:40:38.165553+00:00",
+      "platform": "macOS-27.0-arm64-arm-64bit",
+      "os_tag": "macOS",
+      "machine": "arm64",
+      "python": "3.11.16",
+      "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+      "heyoka": "7.12.1",
+      "basilisk": "2.12.0",
+      "basilisk_importable": true,
+      "numpy_importable": true,
+      "bsk_sdk": {
+        "present": true,
+        "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+        "includes": []
+      }
+    },
+    "p_wp41_rw_census": {
+      "id": "P-WP4.1",
+      "ticks": 20,
+      "dt": 0.1,
+      "rw_log_expected_23": [
+        "rWB_B",
+        "gsHat_B",
+        "w2Hat0_B",
+        "w3Hat0_B",
+        "mass",
+        "theta",
+        "Omega",
+        "Js",
+        "Jt",
+        "Jg",
+        "U_s",
+        "U_d",
+        "d",
+        "J13",
+        "u_current",
+        "frictionTorque",
+        "u_max",
+        "u_min",
+        "u_f",
+        "Omega_max",
+        "P_max",
+        "linearFrictionRatio",
+        "RWModel"
+      ],
+      "rw_log_static_fields": [
+        "J13",
+        "Jg",
+        "Js",
+        "Jt",
+        "Omega",
+        "Omega_max",
+        "P_max",
+        "RWModel",
+        "U_d",
+        "U_s",
+        "d",
+        "frictionTorque",
+        "gsHat_B",
+        "linearFrictionRatio",
+        "mass",
+        "rWB_B",
+        "theta",
+        "this",
+        "thisown",
+        "u_current",
+        "u_f",
+        "u_max",
+        "u_min",
+        "w2Hat0_B",
+        "w3Hat0_B"
+      ],
+      "rw_log_static_count": 25,
+      "rw_log_missing_vs_23": [],
+      "rw_log_extra_vs_23": [
+        "this",
+        "thisown"
+      ],
+      "n_rw_out_msgs": 3,
+      "sample_tick_0": {
+        "wheel_0": {
+          "u_current": 0.02,
+          "Omega": 10.471975511965976,
+          "frictionTorque": -0.0,
+          "theta": 0.0,
+          "Js": 0.07957747154594767
+        },
+        "wheel_1": {
+          "u_current": -0.015,
+          "Omega": 10.471975511965976,
+          "frictionTorque": -0.0,
+          "theta": 0.0,
+          "Js": 0.07957747154594767
+        },
+        "wheel_2": {
+          "u_current": 0.01,
+          "Omega": 10.471975511965976,
+          "frictionTorque": -0.0,
+          "theta": 0.0,
+          "Js": 0.07957747154594767
+        }
+      },
+      "rw_speed_tick_0": [
+        10.471975511965976,
+        10.471975511965976,
+        10.471975511965976
+      ],
+      "rw_speed_nticks": 21,
+      "status": "ok"
+    },
+    "p_wp42_b_vs_c": {
+      "id": "P-WP4.2",
+      "offset_cmd": [
+        0.1,
+        0.0,
+        0.0
+      ],
+      "ticks": 10,
+      "dt": 0.1,
+      "offset_attr": "set",
+      "r_BN_tick0": [
+        -4020338.7881015013,
+        7490566.735959532,
+        5248299.191119038
+      ],
+      "r_CN_tick0": [
+        -4020338.690396647,
+        7490566.741852515,
+        5248299.211589362
+      ],
+      "rBN_minus_rCN_tick0": [
+        -0.09770485432818532,
+        -0.005892983637750149,
+        -0.020470323972404003
+      ],
+      "rBN_minus_rCN_norm": 0.0999999998949094,
+      "omegaDot_BN_B_tick0": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "TotalAccumDV_BN_B_tick0": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "TotalAccumDVBdy_tick0": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "TotalAccumDV_CN_N_tick0": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "nonConservativeAccelpntB_B_tick0": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "v_BN_N_tick0": [
+        -5199.777110999002,
+        -3436.6816466502123,
+        1041.576797890685
+      ],
+      "v_CN_N_tick0": [
+        -5199.777110999002,
+        -3436.6816466502123,
+        1041.576797890685
+      ],
+      "status": "ok",
+      "downstream_consumers": {
+        "r_BN_N": {
+          "n_files": 0,
+          "files": []
+        },
+        "r_CN_N": {
+          "n_files": 17,
+          "files": [
+            "cubesat_12u_sim/backends/basilisk/bsk_rw_stock.py",
+            "cubesat_12u_sim/backends/basilisk/basilisk_sim.py",
+            "cubesat_12u_sim/backends/heyoka/heyoka_dynamics.py",
+            "cubesat_12u_sim/backends/heyoka/heyoka_sidecar.py",
+            "cubesat_12u_sim/backends/cpp/cpp_rw.py",
+            "cubesat_12u_sim/backends/cpp/cpp_native.py",
+            "cubesat_12u_sim/backends/cpp/cpp_basilisk.py",
+            "cubesat_12u_sim/tests/test_rw_mirror.py",
+            "cubesat_12u_sim/tests/test_native_rw.py",
+            "cubesat_12u_sim/benchmarks/run_cpp_rw_compare.py",
+            "cubesat_12u_sim/benchmarks/run_rw_compare.py",
+            "cubesat_12u_sim/tuning/run_rw_timing.py",
+            "cubesat_12u_sim/tuning/run_dissect.py",
+            "cubesat_12u_sim/tuning/run_timing_compare.py",
+            "cubesat_12u_sim/tuning/run_warm_compare.py",
+            "cubesat_12u_sim/uncertainty/monte_carlo.py",
+            "cubesat_12u_sim/uncertainty/native_mc.py"
+          ]
+        },
+        "scStateInMsg": {
+          "n_files": 10,
+          "files": [
+            "cubesat_12u_sim/backends/basilisk/bsk_rw_stock.py",
+            "cubesat_12u_sim/backends/basilisk/basilisk_sim.py",
+            "cubesat_12u_sim/backends/heyoka/heyoka_dynamics.py",
+            "cubesat_12u_sim/backends/heyoka/heyoka_sidecar.py",
+            "cubesat_12u_sim/backends/cpp/cpp_rw.py",
+            "cubesat_12u_sim/backends/cpp/cpp_native.py",
+            "cubesat_12u_sim/backends/cpp/cpp_basilisk.py",
+            "cubesat_12u_sim/tuning/run_dissect.py",
+            "cubesat_12u_sim/uncertainty/monte_carlo.py",
+            "cubesat_12u_sim/uncertainty/native_mc.py"
+          ]
+        },
+        "attOutMsg": {
+          "n_files": 9,
+          "files": [
+            "cubesat_12u_sim/backends/basilisk/bsk_rw_stock.py",
+            "cubesat_12u_sim/backends/basilisk/basilisk_sim.py",
+            "cubesat_12u_sim/backends/heyoka/heyoka_dynamics.py",
+            "cubesat_12u_sim/backends/cpp/cpp_rw.py",
+            "cubesat_12u_sim/backends/cpp/cpp_native.py",
+            "cubesat_12u_sim/backends/cpp/cpp_basilisk.py",
+            "cubesat_12u_sim/tuning/run_dissect.py",
+            "cubesat_12u_sim/uncertainty/monte_carlo.py",
+            "cubesat_12u_sim/uncertainty/native_mc.py"
+          ]
+        },
+        "imuSensor": {
+          "n_files": 5,
+          "files": [
+            "cubesat_12u_sim/backends/basilisk/basilisk_sim.py",
+            "cubesat_12u_sim/backends/heyoka/heyoka_dynamics.py",
+            "cubesat_12u_sim/backends/cpp/cpp_basilisk.py",
+            "cubesat_12u_sim/uncertainty/monte_carlo.py",
+            "cubesat_12u_sim/uncertainty/native_mc.py"
+          ]
+        },
+        "coarseSunSensor": {
+          "n_files": 5,
+          "files": [
+            "cubesat_12u_sim/backends/basilisk/basilisk_sim.py",
+            "cubesat_12u_sim/backends/heyoka/heyoka_dynamics.py",
+            "cubesat_12u_sim/backends/cpp/cpp_basilisk.py",
+            "cubesat_12u_sim/uncertainty/monte_carlo.py",
+            "cubesat_12u_sim/uncertainty/native_mc.py"
+          ]
+        },
+        "simpleNav": {
+          "n_files": 5,
+          "files": [
+            "cubesat_12u_sim/backends/basilisk/bsk_rw_stock.py",
+            "cubesat_12u_sim/backends/heyoka/heyoka_rw.py",
+            "cubesat_12u_sim/backends/cpp/cpp_rw.py",
+            "cubesat_12u_sim/backends/cpp/cpp_native.py",
+            "cubesat_12u_sim/tuning/run_dissect.py"
+          ]
+        },
+        "r_BcB_B": {
+          "n_files": 10,
+          "files": [
+            "cubesat_12u_sim/backends/basilisk/bsk_rw_stock.py",
+            "cubesat_12u_sim/backends/basilisk/basilisk_sim.py",
+            "cubesat_12u_sim/backends/heyoka/heyoka_dynamics.py",
+            "cubesat_12u_sim/backends/cpp/cpp_rw.py",
+            "cubesat_12u_sim/backends/cpp/cpp_native.py",
+            "cubesat_12u_sim/backends/cpp/cpp_basilisk.py",
+            "cubesat_12u_sim/tests/test_native_rw.py",
+            "cubesat_12u_sim/tuning/run_dissect.py",
+            "cubesat_12u_sim/uncertainty/monte_carlo.py",
+            "cubesat_12u_sim/uncertainty/native_mc.py"
+          ]
+        }
+      }
+    },
+    "p_wp43_aggregate": {
+      "id": "P-WP4.3",
+      "ticks": 10,
+      "dt": 0.1,
+      "hub_offset": "set",
+      "wheel_offsets": "set rWB_B!=0 x2",
+      "mass_props_msg": "record-missing: AttributeError: 'Spacecraft' object has no attribute 'massPropsOutMsg'",
+      "massprops_read": "record-missing",
+      "fuel_msg_fields": [
+        "fuelMass",
+        "fuelMassDot",
+        "maxFuelMass",
+        "this",
+        "thisown"
+      ],
+      "cPrime_note": "record-missing: no depletion run here; cPrime smoke needs fuelTank + thruster burn",
+      "status": "ok"
+    },
+    "p_wp44_moment_arm": {
+      "id": "P-WP4.4",
+      "ticks": 10,
+      "dt": 0.1,
+      "r_thr_B": [
+        0.5,
+        0.0,
+        1.0
+      ],
+      "t_hat": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "hub_offset": "set",
+      "thr_out_subscribed": true,
+      "thrustTorquePntB_B_tick0": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "thrustTorquePntB_B_steady": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "thrustForce_B_tick0": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "thrustForce_B_steady": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "thrustFactor_tick0": 0.0,
+      "thrustFactor_steady": 0.0,
+      "expect_unshifted_r_thr_x_F": [
+        0.0,
+        -0.5,
+        0.0
+      ],
+      "tel_minus_expect": [
+        0.0,
+        0.5,
+        0.0
+      ],
+      "omega_BN_B_tick0": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "omega_BN_B_tick1": [
+        1.7544265080495312e-24,
+        -4.999999999999716e-05,
+        -4.736951571734001e-18
+      ],
+      "omegaDot_fd_tick0": [
+        1.754426508049531e-23,
+        -0.0004999999999999716,
+        -4.736951571734001e-17
+      ],
+      "arm_note": "telemetry about B must equal unshifted r_thr x F; achieved omegaDot is about CoM, shifted by (r_thr-c_B) x F",
+      "status": "ok"
+    }
+  }
+}

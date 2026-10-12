@@ -1,0 +1,436 @@
+{
+  "name": "wp45_combo",
+  "timestamp_utc": "2026-10-12T15:45:50.839397+00:00",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-12T15:45:50.839407+00:00",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "env": {
+      "timestamp_utc": "2026-10-12T15:45:47.796890+00:00",
+      "platform": "macOS-27.0-arm64-arm-64bit",
+      "os_tag": "macOS",
+      "machine": "arm64",
+      "python": "3.11.16",
+      "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+      "heyoka": "7.12.1",
+      "basilisk": "2.12.0",
+      "basilisk_importable": true,
+      "numpy_importable": true,
+      "bsk_sdk": {
+        "present": true,
+        "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+        "includes": []
+      }
+    },
+    "probe": "wp45_combo",
+    "dt": 0.1,
+    "ticks_cap": 40,
+    "hub_offset": [
+      0.1,
+      0.0,
+      0.0
+    ],
+    "open_question": "do stock drag/SRP torque arms shift by -c_B like (r-c)xF, or stay unshifted? decided below from stock-direct offset-vs-no-offset comparison",
+    "drag_offset": {
+      "id": "drag-offset",
+      "dt": 0.1,
+      "ticks": 10,
+      "hub_offset": [
+        0.1,
+        0.0,
+        0.0
+      ],
+      "comOffset": [
+        0.05,
+        0.0,
+        0.0
+      ],
+      "Cd": 2.2,
+      "A": 1.0,
+      "fixture": "LEO R=6778137 m V=7668.56 m/s",
+      "modules": {
+        "exponentialAtmosphere": true,
+        "dragDynamicEffector": true,
+        "err": [
+          "",
+          ""
+        ]
+      },
+      "drag_attrs": [
+        "CallCounts",
+        "IntegratedInit",
+        "ModelTag",
+        "RNGSeed",
+        "ReadInputs",
+        "Reset",
+        "SelfInit",
+        "UpdateState",
+        "WriteOutputMessages",
+        "atmoDensInMsg",
+        "bskLogger",
+        "cannonballDrag",
+        "computeForceTorque",
+        "computeStateContribution",
+        "coreParams",
+        "densityCorrection",
+        "densityCorrectionStateName",
+        "forceExternal_B",
+        "forceExternal_N",
+        "getDensity",
+        "getPropName_centerOfMassDotSC",
+        "getPropName_centerOfMassPrimeSC",
+        "getPropName_centerOfMassSC",
+        "getPropName_inertiaPrimeSC",
+        "getPropName_inertiaSC",
+        "getPropName_inertialAngVelocity",
+        "getPropName_inertialAttitude",
+        "getPropName_inertialPosition",
+        "getPropName_inertialVelocity",
+        "getPropName_mDot_SC",
+        "getPropName_m_SC",
+        "getPropName_vehicleGravity",
+        "getStateNameOfOmega",
+        "getStateNameOfPosition",
+        "getStateNameOfSigma",
+        "getStateNameOfVelocity",
+        "getStructSize",
+        "hubSigma",
+        "hubVelocity",
+        "linkInProperties",
+        "linkInStates",
+        "logger",
+        "modelType",
+        "moduleID",
+        "setPropName_centerOfMassDotSC",
+        "setPropName_centerOfMassPrimeSC",
+        "setPropName_centerOfMassSC",
+        "setPropName_inertiaPrimeSC",
+        "setPropName_inertiaSC",
+        "setPropName_inertialAngVelocity",
+        "setPropName_inertialAttitude",
+        "setPropName_inertialPosition",
+        "setPropName_inertialVelocity",
+        "setPropName_mDot_SC",
+        "setPropName_m_SC",
+        "setPropName_vehicleGravity",
+        "setStateNameOfOmega",
+        "setStateNameOfPosition",
+        "setStateNameOfSigma",
+        "setStateNameOfVelocity"
+      ],
+      "wiring_off": {
+        "baseDensity": "set",
+        "scaleHeight": "set",
+        "planetRadius": "set",
+        "atmo_sc": "addSpacecraftToModel",
+        "dens_link": "envOutMsgs[0]",
+        "sc_addDynamicEffector": "ok"
+      },
+      "wiring_no": {
+        "baseDensity": "set",
+        "scaleHeight": "set",
+        "planetRadius": "set",
+        "atmo_sc": "addSpacecraftToModel",
+        "dens_link": "envOutMsgs[0]",
+        "sc_addDynamicEffector": "ok"
+      },
+      "obs_off": {
+        "coreParams.projectedArea": "set",
+        "coreParams.dragCoeff": "set",
+        "coreParams.comOffset": "set"
+      },
+      "obs_no": {
+        "coreParams.projectedArea": "set",
+        "coreParams.dragCoeff": "set",
+        "coreParams.comOffset": "set"
+      },
+      "force_keys": {
+        "off": "",
+        "no": ""
+      },
+      "torque_keys": {
+        "off": "",
+        "no": ""
+      },
+      "channel": "FD-proxy I*domega/dt (effector msgs unreadable)",
+      "F_note": "analytic scale fallback (msgs missing); delta is stock-direct",
+      "dT_per_tick": [
+        [
+          0.0,
+          0.0,
+          1.3733604390455848e-07
+        ],
+        [
+          0.0,
+          0.0,
+          1.373360421368526e-07
+        ],
+        [
+          0.0,
+          0.0,
+          1.373360386002914e-07
+        ],
+        [
+          0.0,
+          0.0,
+          1.3733603331742331e-07
+        ],
+        [
+          0.0,
+          0.0,
+          1.3733602629981247e-07
+        ],
+        [
+          0.0,
+          0.0,
+          1.3733601751045365e-07
+        ],
+        [
+          0.0,
+          0.0,
+          1.373360069077126e-07
+        ],
+        [
+          0.0,
+          0.0,
+          1.3733599462111492e-07
+        ],
+        [
+          0.0,
+          0.0,
+          1.3733598050263164e-07
+        ],
+        [
+          0.0,
+          0.0,
+          1.3733596465403295e-07
+        ]
+      ],
+      "drag_abs_max": 6.86680609671389e-08,
+      "drag_firing": true,
+      "verdict": "unshifted",
+      "median_shift_rel": 0.989384649229823,
+      "median_zero_rel": 0.010615350770176973,
+      "per_tick_shift_rel": [
+        0.9893846475293834,
+        0.9893846476660176,
+        0.9893846479393753,
+        0.9893846483477131,
+        0.9893846488901376,
+        0.9893846495695086,
+        0.9893846503890446,
+        0.9893846513387339,
+        0.9893846524300183,
+        0.9893846536550314
+      ],
+      "expect_minus_cxF": [
+        [
+          -0.0,
+          -0.0,
+          1.2937492587712527e-05
+        ],
+        [
+          -0.0,
+          -0.0,
+          1.2937492587712527e-05
+        ],
+        [
+          -0.0,
+          -0.0,
+          1.2937492587712527e-05
+        ],
+        [
+          -0.0,
+          -0.0,
+          1.2937492587712527e-05
+        ],
+        [
+          -0.0,
+          -0.0,
+          1.2937492587712527e-05
+        ],
+        [
+          -0.0,
+          -0.0,
+          1.2937492587712527e-05
+        ],
+        [
+          -0.0,
+          -0.0,
+          1.2937492587712527e-05
+        ],
+        [
+          -0.0,
+          -0.0,
+          1.2937492587712527e-05
+        ],
+        [
+          -0.0,
+          -0.0,
+          1.2937492587712527e-05
+        ],
+        [
+          -0.0,
+          -0.0,
+          1.2937492587712527e-05
+        ]
+      ],
+      "decides_shift_5pct": false,
+      "status": "ok"
+    },
+    "srp_offset": {
+      "id": "srp-offset",
+      "dt": 0.1,
+      "ticks": 10,
+      "hub_offset": [
+        0.1,
+        0.0,
+        0.0
+      ],
+      "facet": {
+        "nHat_B": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "r_CopB_B": [
+          0.0,
+          0.5,
+          0.0
+        ],
+        "area": 1.0,
+        "c_diffuse": 0.2,
+        "c_specular": 0.3
+      },
+      "sun_N": [
+        149597870700.0,
+        0.0,
+        0.0
+      ],
+      "note": "single sun-facing off-center facet: the symmetric 6-facet box totals ~0 (ledger) and cannot decide",
+      "module": {
+        "facetedSRPEffector": true,
+        "err": ""
+      },
+      "srp_attrs": [
+        "CallCounts",
+        "IntegratedInit",
+        "ModelTag",
+        "RNGSeed",
+        "Reset",
+        "SelfInit",
+        "UpdateState",
+        "bskLogger",
+        "computeForceTorque",
+        "computeStateContribution",
+        "facetElementBodyInMsgs",
+        "facetProjectedAreaInMsgs",
+        "forceExternal_B",
+        "forceExternal_N",
+        "getNumFacets",
+        "getPropName_centerOfMassDotSC",
+        "getPropName_centerOfMassPrimeSC",
+        "getPropName_centerOfMassSC",
+        "getPropName_inertiaPrimeSC",
+        "getPropName_inertiaSC",
+        "getPropName_inertialAngVelocity",
+        "getPropName_inertialAttitude",
+        "getPropName_inertialPosition",
+        "getPropName_inertialVelocity",
+        "getPropName_mDot_SC",
+        "getPropName_m_SC",
+        "getPropName_vehicleGravity",
+        "getStateNameOfOmega",
+        "getStateNameOfPosition",
+        "getStateNameOfSigma",
+        "getStateNameOfVelocity",
+        "getStructSize",
+        "linkInProperties",
+        "linkInStates",
+        "logger",
+        "moduleID",
+        "setNumFacets",
+        "setPropName_centerOfMassDotSC",
+        "setPropName_centerOfMassPrimeSC",
+        "setPropName_centerOfMassSC",
+        "setPropName_inertiaPrimeSC",
+        "setPropName_inertiaSC",
+        "setPropName_inertialAngVelocity",
+        "setPropName_inertialAttitude",
+        "setPropName_inertialPosition",
+        "setPropName_inertialVelocity",
+        "setPropName_mDot_SC",
+        "setPropName_m_SC",
+        "setPropName_vehicleGravity",
+        "setStateNameOfOmega",
+        "setStateNameOfPosition",
+        "setStateNameOfSigma",
+        "setStateNameOfVelocity",
+        "stateDerivContribution",
+        "sunEclipseInMsg",
+        "sunStateInMsg",
+        "thisown",
+        "torqueExternalPntB_B"
+      ],
+      "status": "error",
+      "error": "BasiliskError: FacetedSpacecraftProjectedArea: Input message error. No valid heading source configured.",
+      "exc_log": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/audit_bundle/results/wp45_combo.exception.log",
+      "tag": "srp-offset"
+    },
+    "drag_zero_com": {
+      "id": "drag-zero-com",
+      "dt": 0.1,
+      "ticks": 10,
+      "hub_offset": [
+        0.1,
+        0.0,
+        0.0
+      ],
+      "comOffset": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "question": "stock drag torque with comOffset=0 and c!=0: ~0 (unshifted) or ~-c x F (shifted)?",
+      "coreParams": "set:comOffset",
+      "dens_link": "envOutMsgs[0]",
+      "channel": "FD-proxy I*domega/dt",
+      "torque_norm_per_tick": [
+        2.3129646346357423e-18,
+        9.251858538542969e-18,
+        2.3129646346357426e-17,
+        4.6259292692714846e-18,
+        2.7755575615628907e-17,
+        5.5511151231257815e-17,
+        6.47630097698008e-17,
+        1.8503717077085938e-17,
+        1.1102230246251563e-16,
+        1.1102230246251563e-16
+      ],
+      "minus_cxF_scale": 1.2937492587712527e-05,
+      "ratio_med_over_scale": 1.9665797532635855e-12,
+      "firing": false,
+      "verdict": "untestable (effector idle)",
+      "status": "ok"
+    },
+    "magnetic_note": "tau = m x B_B has NO moment arm: hub offset cannot shift it (WP5); gravity likewise (no arm). Only drag comOffset and SRP r_Cop arms are in question."
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "name": "bundle_summary",
+  "timestamp_utc": "2026-10-12T14:40:58.424723+00:00",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-12T14:40:58.424742+00:00",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "status": "ok",
+    "n_probes": 11,
+    "n_ok": 11,
+    "n_fail_files": 0,
+    "n_checks_pass": 0,
+    "n_checks_fail": 0,
+    "probes": [
+      {
+        "file": "wp0_guards.json",
+        "probe": "wp0_guards",
+        "status": "ok",
+        "passed": null,
+        "n_pass": 0,
+        "n_fail": 0,
+        "ok": true
+      },
+      {
+        "file": "wp1_sat.json",
+        "probe": "wp1_sat",
+        "status": "unknown",
+        "passed": null,
+        "n_pass": 0,
+        "n_fail": 0,
+        "ok": true
+      },
+      {
+        "file": "wp1_threshold.json",
+        "probe": "wp1_threshold",
+        "status": "guarded-fail",
+        "passed": null,
+        "n_pass": 0,
+        "n_fail": 0,
+        "ok": true
+      },
+      {
+        "file": "wp2_friction_jitter_voltage.json",
+        "probe": "wp2_friction_jitter_voltage",
+        "status": "unknown",
+        "passed": null,
+        "n_pass": 0,
+        "n_fail": 0,
+        "ok": true
+      },
+      {
+        "file": "wp3_timing.json",
+        "probe": "wp3_timing",
+        "status": "unknown",
+        "passed": null,
+        "n_pass": 0,
+        "n_fail": 0,
+        "ok": true
+      },
+      {
+        "file": "wp45_combo.json",
+        "probe": "wp45_combo",
+        "status": "unknown",
+        "passed": null,
+        "n_pass": 0,
+        "n_fail": 0,
+        "ok": true
+      },
+      {
+        "file": "wp4_offset.json",
+        "probe": "wp4_offset",
+        "status": "unknown",
+        "passed": null,
+        "n_pass": 0,
+        "n_fail": 0,
+        "ok": true
+      },
+      {
+        "file": "wp5_env.json",
+        "probe": "wp5_env",
+        "status": "unknown",
+        "passed": null,
+        "n_pass": 0,
+        "n_fail": 0,
+        "ok": true
+      },
+      {
+        "file": "wp6_fuel_bisect.json",
+        "probe": "wp6_fuel_bisect",
+        "status": "ok",
+        "passed": null,
+        "n_pass": 0,
+        "n_fail": 0,
+        "ok": true
+      },
+      {
+        "file": "wp6_telem_viz_fuel.json",
+        "probe": "wp6_telem_viz_fuel",
+        "status": "unknown",
+        "passed": null,
+        "n_pass": 0,
+        "n_fail": 0,
+        "ok": true
+      },
+      {
+        "file": "wp7_tilt_debug.json",
+        "probe": "wp7_tilt_debug",
+        "status": "ok",
+        "passed": null,
+        "n_pass": 0,
+        "n_fail": 0,
+        "ok": true
+      }
+    ],
+    "env": {
+      "timestamp_utc": "2026-10-12T14:40:57.562525+00:00",
+      "platform": "macOS-27.0-arm64-arm-64bit",
+      "os_tag": "macOS",
+      "machine": "arm64",
+      "python": "3.11.16",
+      "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+      "heyoka": "7.12.1",
+      "basilisk": "2.12.0",
+      "basilisk_importable": true,
+      "numpy_importable": true,
+      "bsk_sdk": {
+        "present": true,
+        "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+        "includes": []
+      }
+    }
+  }
+}

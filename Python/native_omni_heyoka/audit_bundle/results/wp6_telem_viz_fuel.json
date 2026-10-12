@@ -1,0 +1,313 @@
+{
+  "name": "wp6_telem_viz_fuel",
+  "timestamp_utc": "2026-10-12T14:40:55.301831+00:00",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-12T14:40:55.301840+00:00",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "probe": "wp6_telem_viz_fuel",
+    "env": {
+      "timestamp_utc": "2026-10-12T14:40:53.588308+00:00",
+      "platform": "macOS-27.0-arm64-arm-64bit",
+      "os_tag": "macOS",
+      "machine": "arm64",
+      "python": "3.11.16",
+      "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+      "heyoka": "7.12.1",
+      "basilisk": "2.12.0",
+      "basilisk_importable": true,
+      "numpy_importable": true,
+      "bsk_sdk": {
+        "present": true,
+        "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+        "includes": []
+      }
+    },
+    "t1_payload_census": {
+      "id": "T1",
+      "dt": 0.1,
+      "thr_output_static_fields": [
+        "ispBlowDownFactor",
+        "maxThrust",
+        "this",
+        "thisown",
+        "thrustBlowDownFactor",
+        "thrustFactor",
+        "thrustForce",
+        "thrustForce_B",
+        "thrustTorquePntB_B",
+        "thrusterDirection",
+        "thrusterLocation"
+      ],
+      "thr_output_static_count": 11,
+      "thr_output_missing": [],
+      "thr_output_extra": [
+        "this",
+        "thisown"
+      ],
+      "rw_log_static_fields": [
+        "J13",
+        "Jg",
+        "Js",
+        "Jt",
+        "Omega",
+        "Omega_max",
+        "P_max",
+        "RWModel",
+        "U_d",
+        "U_s",
+        "d",
+        "frictionTorque",
+        "gsHat_B",
+        "linearFrictionRatio",
+        "mass",
+        "rWB_B",
+        "theta",
+        "this",
+        "thisown",
+        "u_current",
+        "u_f",
+        "u_max",
+        "u_min",
+        "w2Hat0_B",
+        "w3Hat0_B"
+      ],
+      "rw_log_static_count": 25,
+      "rw_log_missing": [],
+      "rw_log_extra": [
+        "this",
+        "thisown"
+      ],
+      "scstates_static_fields": [
+        "MRPSwitchCount",
+        "TotalAccumDVBdy",
+        "TotalAccumDV_BN_B",
+        "TotalAccumDV_CN_N",
+        "nonConservativeAccelpntB_B",
+        "omegaDot_BN_B",
+        "omega_BN_B",
+        "r_BN_N",
+        "r_CN_N",
+        "sigma_BN",
+        "this",
+        "thisown",
+        "v_BN_N",
+        "v_CN_N"
+      ],
+      "scstates_static_count": 14,
+      "scstates_gap_audit": {
+        "omegaDot_BN_B": "present-in-header",
+        "TotalAccumDV_BN_N": "absent-from-header",
+        "TotalAccumDVBdy_B": "absent-from-header",
+        "nonConservativeAccelpntB_B": "present-in-header",
+        "vel_BN_N": "absent-from-header"
+      },
+      "thr_1step_dump": {
+        "thrustFactor": 1.0,
+        "thrustFactor_tick0": 0.0,
+        "thrustForce": 1.0,
+        "thrustForce_tick0": 0.0,
+        "thrustForce_B": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "thrustForce_B_tick0": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "thrustTorquePntB_B": [
+          0.0,
+          -0.5,
+          0.0
+        ],
+        "thrustTorquePntB_B_tick0": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "thrustBlowDownFactor": 1.0,
+        "thrustBlowDownFactor_tick0": 1.0,
+        "ispBlowDownFactor": 1.0,
+        "ispBlowDownFactor_tick0": 1.0,
+        "maxThrust": 1.0,
+        "maxThrust_tick0": 1.0,
+        "thrusterLocation": [
+          0.5,
+          0.0,
+          1.0
+        ],
+        "thrusterLocation_tick0": [
+          0.5,
+          0.0,
+          1.0
+        ],
+        "thrusterDirection": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "thrusterDirection_tick0": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      "thr_dump_note": "write-once fires first propagation then idles; steady value = last tick (tick0 is pre-fire fill step)",
+      "sc_omegaDot_tick0": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "status": "ok"
+    },
+    "t2_viz": {
+      "id": "T2",
+      "vizsupport_path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/Basilisk/utilities/vizSupport.py",
+      "vizsupport_isinstance_spacecraft": true,
+      "vizsupport_gravfield_harvest": true,
+      "vizsupport_mentions_thr": true,
+      "vizsupport_mentions_rw": true,
+      "viz_attr_sample": [
+        "addCamMsgToModule",
+        "cameraConfInMsgs",
+        "cameraConfMsgStatus",
+        "epochInMsg",
+        "epochMsgBuffer",
+        "epochMsgStatus",
+        "opnavImageOutMsgs",
+        "spiceInMsgs",
+        "userInputMsg"
+      ],
+      "direct_scState_subscribe": "unattempted",
+      "direct_has_thrInMsgs": false,
+      "direct_has_rwInMsgs": false,
+      "direct_has_scStateInMsg": false,
+      "direct_has_scStateInMsgs": false,
+      "direct_viz_smoke": "ok (static: subscription + census only; full VizInterface sim gated by WP6_RUN_VIZ_SIM=1 \u2014 headless ExecuteSimulation segfaults, see run log)",
+      "direct_viz_init": "ok",
+      "helper_negative_control": "recorded-expectation: helper path requires isinstance(sc, Spacecraft) + gravField harvest; non-Spacecraft caller must fail \u2014 see vizsupport flags",
+      "helper_fn_name": "enableUnityVisualization",
+      "helper_signature": "(scSim, simTaskName, scList, saveFile=None, rwEffectorList=None, thrEffectorList=None, thrColors=None, cssList=None, genericSensorList=None, ellipsoidList=None, lightList=None, genericStorageList=None, transceiverList=None, spriteList=None, modelDictionaryKeyList=None, logoTextureList=None, oscOrbitColorList=None, trueOrbitColorList=None, groundTrackColorList=None, msmInfoList=None, trueOrbitColorInMsgList=None, groundTrackBodyNameList=None, liveStream=False, broadcastStream=False, noDisplay=False)",
+      "repo_viz_call": {
+        "enableVisualization": {
+          "n_files": 2,
+          "files": [
+            "native_omni_heyoka/omniheyoka/viz_direct.py",
+            "native_omni_heyoka/audit_bundle/probes/wp6_telem_viz_fuel.py"
+          ]
+        },
+        "thrEffectorList": {
+          "n_files": 2,
+          "files": [
+            "cubesat_12u_sim/backends/basilisk/basilisk_sim.py",
+            "native_omni_heyoka/audit_bundle/probes/wp6_telem_viz_fuel.py"
+          ]
+        },
+        "rwEffectorList": {
+          "n_files": 1,
+          "files": [
+            "native_omni_heyoka/audit_bundle/probes/wp6_telem_viz_fuel.py"
+          ]
+        },
+        "VizInterface": {
+          "n_files": 3,
+          "files": [
+            "native_omni_heyoka/omniheyoka/viz_direct.py",
+            "native_omni_heyoka/tests/test_wp6_telemetry.py",
+            "native_omni_heyoka/audit_bundle/probes/wp6_telem_viz_fuel.py"
+          ]
+        },
+        "vizSupport": {
+          "n_files": 5,
+          "files": [
+            "cubesat_12u_sim/core/config.py",
+            "cubesat_12u_sim/backends/basilisk/basilisk_sim.py",
+            "native_omni_heyoka/omniheyoka/viz_direct.py",
+            "native_omni_heyoka/tests/test_wp6_telemetry.py",
+            "native_omni_heyoka/audit_bundle/probes/wp6_telem_viz_fuel.py"
+          ]
+        }
+      },
+      "status": "ok"
+    },
+    "t3_fuel_truth": {
+      "id": "T3",
+      "ticks": 10,
+      "dt": 0.1,
+      "fueltank_class_attrs": [
+        "CallCounts",
+        "IntegratedInit",
+        "ModelTag",
+        "RNGSeed",
+        "Reset",
+        "SelfInit",
+        "UpdateState",
+        "addDynamicEffector",
+        "addPrescribedMotionCouplingContributions",
+        "addThrusterSet",
+        "bskLogger",
+        "calcForceTorqueOnBody",
+        "computeDerivatives",
+        "dcm_BP",
+        "dcm_TB",
+        "deprecated",
+        "effProps",
+        "forceOnBody_B",
+        "fuelLeakRate",
+        "fuelLeakRateInMsg",
+        "fuelSloshParticles",
+        "fuelTankMassPropMsg",
+        "fuelTankOutMsg",
+        "getDcm_TB",
+        "getFuelLeakRate",
+        "getNameOfMassState",
+        "getPropName_centerOfMassDotSC",
+        "getPropName_centerOfMassPrimeSC",
+        "getPropName_centerOfMassSC",
+        "getPropName_inertiaPrimeSC",
+        "getPropName_inertiaSC",
+        "getPropName_inertialPosition",
+        "getPropName_inertialVelocity",
+        "getPropName_mDot_SC",
+        "getPropName_m_SC",
+        "getPropName_prescribedAcceleration",
+        "getPropName_prescribedAngAcceleration",
+        "getPropName_prescribedAngVelocity",
+        "getPropName_prescribedAttitude",
+        "getPropName_prescribedPosition"
+      ],
+      "fueltank_has_addThrusterSet": true,
+      "fueltank_has_addThruster": false,
+      "fuelTankOutMsg_fields": [
+        "fuelMass",
+        "fuelMassDot",
+        "maxFuelMass",
+        "this",
+        "thisown"
+      ],
+      "mode": "static-only (full burn gated by WP6_RUN_FUEL_SIM=1; burn sim segfaults on this host \u2014 bisect isolated)",
+      "divergence_note": "caller-side bookkeeping diverges 3 ways \u2014 commanded!=achieved (staircase, T1-measured gap), no blowdown/ISP scaling, no mass feedback (omni mass fixed; stock depletes m/c_B/I per substep). Label non-parity.",
+      "status": "ok"
+    }
+  }
+}

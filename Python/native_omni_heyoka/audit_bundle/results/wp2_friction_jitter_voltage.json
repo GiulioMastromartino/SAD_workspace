@@ -1,0 +1,452 @@
+{
+  "name": "wp2_friction_jitter_voltage",
+  "timestamp_utc": "2026-10-12T14:40:34.247843+00:00",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-12T14:40:34.247870+00:00",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "plan_rev": 1,
+    "order": "J,F,V",
+    "N_JITTER_TICKS": 400,
+    "N_FRICTION_TICKS": 40,
+    "dt": 0.02,
+    "has_basilisk": true,
+    "has_numpy": true,
+    "env": {
+      "timestamp_utc": "2026-10-12T14:40:33.601398+00:00",
+      "platform": "macOS-27.0-arm64-arm-64bit",
+      "os_tag": "macOS",
+      "machine": "arm64",
+      "python": "3.11.16",
+      "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+      "heyoka": "7.12.1",
+      "basilisk": "2.12.0",
+      "basilisk_importable": true,
+      "numpy_importable": true,
+      "bsk_sdk": {
+        "present": true,
+        "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+        "includes": []
+      }
+    },
+    "jitter": {
+      "order": "first",
+      "N_JITTER_TICKS": 400,
+      "probes": {
+        "J1": {
+          "ok": true,
+          "skipped": null,
+          "error": null,
+          "notes": [
+            "RWModel=JitterSimple fixed RNGSeed=20260511"
+          ],
+          "run1": {
+            "ok": true,
+            "skipped": null,
+            "error": null,
+            "n_ticks": 40
+          },
+          "run2": {
+            "ok": true,
+            "skipped": null,
+            "error": null,
+            "n_ticks": 40
+          },
+          "max_abs_delta_u_cmd": 0.0,
+          "max_abs_delta_wheelSpeeds": 0.0,
+          "deterministic": true
+        },
+        "J2": {
+          "ok": true,
+          "skipped": null,
+          "error": null,
+          "notes": [
+            "jitter-free reference; 1-wheel zero-u + 3-wheel const-u"
+          ],
+          "zero_u_run": {
+            "ok": true,
+            "skipped": null,
+            "error": null,
+            "n_ticks": 40
+          },
+          "three_wheel_run": {
+            "ok": true,
+            "skipped": null,
+            "error": null,
+            "n_ticks": 40
+          }
+        },
+        "J3": {
+          "ok": true,
+          "skipped": null,
+          "error": null,
+          "notes": [
+            "real per-tick theta logs unavailable headless; synthetic corr documents expected shape"
+          ],
+          "census": {
+            "module_dir_hits": [
+              "JitterFullyCoupled",
+              "JitterSimple"
+            ],
+            "class_attrs_hint": [
+              "nameOfReactionWheelThetasState",
+              "numRWJitter"
+            ],
+            "probe_run": {
+              "ok": true,
+              "skipped": null,
+              "error": null
+            },
+            "numRWJitter": "unknown",
+            "synthetic_increment_autocorr_lag1": -0.003699487364711364,
+            "wheelThetas_active": true
+          }
+        }
+      },
+      "verdict": "distrib-or-reject: deterministic-JitterSimple"
+    },
+    "friction": {
+      "ticks_cap": 40,
+      "baseline": {
+        "Js": 0.1,
+        "U_s": 0.16,
+        "U_max": 0.2,
+        "u_min": 0.015,
+        "cViscous": 1e-05,
+        "fCoulomb": 0.005,
+        "fStatic": 0.008,
+        "omegaLimitCycle": 1.0,
+        "useRWfriction": true,
+        "RWModel": "BalancedWheels"
+      },
+      "probes": {
+        "F1": {
+          "ok": true,
+          "skipped": null,
+          "error": null,
+          "notes": [
+            "compare stick/slip vs fCoulomb/fStatic/u_min readback"
+          ],
+          "run": {
+            "ok": true,
+            "skipped": null,
+            "error": null,
+            "u_cmd": [
+              -0.01,
+              -0.005,
+              -0.001,
+              0.0,
+              0.001,
+              0.005,
+              0.01
+            ],
+            "readback_w0": {
+              "Js": null,
+              "U_s": null,
+              "U_max": null,
+              "u_min": null,
+              "uMin": null,
+              "cViscous": null,
+              "fCoulomb": null,
+              "fStatic": null,
+              "uStatic": null,
+              "omegaLimitCycle": null,
+              "useRWfriction": null,
+              "RWModel": null,
+              "Omega": null,
+              "Omega_min": null,
+              "Omega_max": null
+            }
+          }
+        },
+        "F2": {
+          "ok": true,
+          "skipped": null,
+          "error": null,
+          "notes": [
+            "W_eq where viscous+coulomb balance u=0.05; one-knob baseline"
+          ],
+          "run": {
+            "ok": true,
+            "skipped": null,
+            "error": null,
+            "n_ticks": 40,
+            "readback_w0": {
+              "Js": null,
+              "U_s": null,
+              "U_max": null,
+              "u_min": null,
+              "uMin": null,
+              "cViscous": null,
+              "fCoulomb": null,
+              "fStatic": null,
+              "uStatic": null,
+              "omegaLimitCycle": null,
+              "useRWfriction": null,
+              "RWModel": null,
+              "Omega": null,
+              "Omega_min": null,
+              "Omega_max": null
+            }
+          }
+        },
+        "F3": {
+          "ok": true,
+          "skipped": null,
+          "error": null,
+          "notes": [],
+          "run": {
+            "ok": true,
+            "skipped": null,
+            "error": null,
+            "n_ticks": 40
+          },
+          "spin_down_model": {
+            "W0_assumed": 100.0,
+            "cViscous": 1e-05,
+            "note": "dW/dt ~ -(c*W + fCoulomb*sign(W))/Js; omegaLimitCycle zone flattens near 0"
+          }
+        },
+        "F4": {
+          "ok": true,
+          "skipped": null,
+          "error": null,
+          "notes": [
+            "friction-only state: wheel drag must back-drive hub opposite sign (reaction); sign recorded qualitatively"
+          ],
+          "run": {
+            "ok": true,
+            "skipped": null,
+            "error": null
+          },
+          "reaction_sign": "wheel-decay -> hub-rate opposite sign (to be confirmed on host with sigma_BN log)"
+        },
+        "F5": {
+          "ok": true,
+          "skipped": null,
+          "error": null,
+          "notes": [
+            "does viscous drag persist with factory flag off? compare F2"
+          ],
+          "run": {
+            "ok": true,
+            "skipped": null,
+            "error": null,
+            "applied": {
+              "useRWfriction": "set-failed: AttributeError(\"'str' object has no attribute 'useRWfriction'\")",
+              "cViscous": "set-failed: AttributeError(\"'str' object has no attribute 'cViscous'\")"
+            },
+            "readback_w0": {
+              "Js": null,
+              "U_s": null,
+              "U_max": null,
+              "u_min": null,
+              "uMin": null,
+              "cViscous": null,
+              "fCoulomb": null,
+              "fStatic": null,
+              "uStatic": null,
+              "omegaLimitCycle": null,
+              "useRWfriction": null,
+              "RWModel": null,
+              "Omega": null,
+              "Omega_min": null,
+              "Omega_max": null
+            }
+          }
+        },
+        "F6": {
+          "ok": true,
+          "skipped": null,
+          "error": null,
+          "notes": [
+            "legacy mapping: u_f = sat(u_cmd; u_min/U_max), frictionTorque logged separately"
+          ],
+          "msg_fields_hint": {
+            "RWSpeedMsgPayload": [
+              "getStructSize",
+              "thisown",
+              "wheelSpeeds",
+              "wheelThetas"
+            ],
+            "ReactionWheelStateEffector": [
+              "CallCounts",
+              "ConfigureRWRequests",
+              "IntegratedInit",
+              "ModelTag",
+              "NewRWCmds",
+              "RNGSeed",
+              "ReactionWheelData",
+              "ReadInputs",
+              "Reset",
+              "SelfInit",
+              "UpdateState",
+              "WriteOutputMessages",
+              "addDynamicEffector",
+              "addPrescribedMotionCouplingContributions",
+              "addReactionWheel",
+              "bskLogger",
+              "calcForceTorqueOnBody",
+              "computeDerivatives",
+              "dcm_BP",
+              "effProps",
+              "forceOnBody_B",
+              "getLargeTorqueThreshold",
+              "getMaxWheelAcceleration",
+              "getPropName_centerOfMassDotSC",
+              "getPropName_centerOfMassPrimeSC",
+              "getPropName_centerOfMassSC",
+              "getPropName_inertiaPrimeSC",
+              "getPropName_inertiaSC",
+              "getPropName_inertialPosition",
+              "getPropName_inertialVelocity",
+              "getPropName_mDot_SC",
+              "getPropName_m_SC",
+              "getPropName_prescribedAcceleration",
+              "getPropName_prescribedAngAcceleration",
+              "getPropName_prescribedAngVelocity",
+              "getPropName_prescribedAttitude",
+              "getPropName_prescribedPosition",
+              "getPropName_prescribedVelocity",
+              "getPropName_vehicleGravity",
+              "getStateNameOfOmega"
+            ],
+            "messaging_import": "ok"
+          },
+          "run": {
+            "ok": true,
+            "skipped": null,
+            "error": null
+          }
+        }
+      },
+      "F0_readback_defaults": {
+        "Js": null,
+        "U_s": null,
+        "U_max": null,
+        "u_min": null,
+        "uMin": null,
+        "cViscous": null,
+        "fCoulomb": null,
+        "fStatic": null,
+        "uStatic": null,
+        "omegaLimitCycle": null,
+        "useRWfriction": null,
+        "RWModel": null,
+        "Omega": null,
+        "Omega_min": null,
+        "Omega_max": null
+      },
+      "F0_status": {
+        "ok": true,
+        "skipped": null,
+        "error": null
+      }
+    },
+    "voltage": {
+      "probes": {
+        "V1": {
+          "ok": true,
+          "skipped": null,
+          "error": null,
+          "notes": [],
+          "info": {
+            "has_MotorVoltageInterface": false,
+            "submodule_motorVoltageInterface": "found",
+            "submodule_dir": [
+              "ArrayMotorTorqueMsgPayload",
+              "ArrayMotorVoltageMsgPayload",
+              "BSKLogger",
+              "BSK_DEBUG",
+              "BSK_ERROR",
+              "BSK_INFORMATION",
+              "BSK_SILENT",
+              "BSK_WARNING",
+              "BasiliskError",
+              "ConstCharVector",
+              "DoubleVector",
+              "IntVector",
+              "Iterable",
+              "MAX_CIRCLE_NUM",
+              "MAX_EFF_CNT",
+              "MAX_LIMB_PNTS",
+              "MAX_LOGGING_LENGTH",
+              "MAX_NUM_CSS_SENSORS",
+              "MAX_ST_VEH_COUNT",
+              "MotorVoltageInterface",
+              "MultiArray",
+              "MultiArray3d",
+              "NANO2SEC",
+              "SEC2HOUR",
+              "SEC2NANO",
+              "StringSet",
+              "StringVector",
+              "SwigPyIterator",
+              "SysModel",
+              "Union",
+              "boolArray_getitem",
+              "boolArray_setitem",
+              "cvar",
+              "delete_boolArray",
+              "delete_doubleArray",
+              "delete_intArray",
+              "delete_longArray",
+              "delete_shortArray",
+              "diffNanoToSec",
+              "doubleArray_getitem"
+            ]
+          }
+        },
+        "V2": {
+          "ok": true,
+          "skipped": null,
+          "error": null,
+          "notes": [],
+          "static_note": "Stock reactionWheelStateEffector takes torque/current commands (rwMotorCmdInMsg); no voltage input port. Voltage reuse therefore requires MotorVoltageInterface upstream: voltage -> torque -> rwMotorCmdInMsg."
+        },
+        "V3": {
+          "ok": true,
+          "skipped": null,
+          "error": null,
+          "notes": [],
+          "info": {
+            "smoke": "failed: AttributeError(\"'SimBaseClass' object has no attribute 'ConfigureSimulation'\")",
+            "traceback": "Traceback (most recent call last):\n  File \"/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/audit_bundle/probes/wp2_friction_jitter_voltage.py\", line 630, in _section_voltage\n    sim.ConfigureSimulation()\n    ^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'SimBaseClass' object has no attribute 'ConfigureSimulation'\n"
+          }
+        },
+        "V4": {
+          "ok": true,
+          "skipped": null,
+          "error": null,
+          "notes": [],
+          "fields": {
+            "ArrayMotorVoltageMsgPayload": [
+              "getStructSize",
+              "thisown",
+              "voltage"
+            ]
+          }
+        }
+      }
+    },
+    "elapsed_s": 0.6464331150054932
+  }
+}

@@ -1,0 +1,527 @@
+{
+  "name": "wp0_guards",
+  "timestamp_utc": "2026-10-12T14:40:26.009579+00:00",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-12T14:40:26.037545+00:00",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "status": "ok",
+    "checks": {
+      "a_layout_names": {
+        "layout_import": {
+          "ok": true,
+          "module": "omniheyoka.layout"
+        },
+        "has_par_names": {
+          "ok": true
+        },
+        "has_par_index": {
+          "ok": true
+        },
+        "has_par_slice": {
+          "ok": true
+        },
+        "has_par_layout": {
+          "ok": true
+        },
+        "name_lookup": {
+          "ok": true,
+          "Ixx_index": 4
+        },
+        "RW_N_PARS": {
+          "ok": true,
+          "value": 16,
+          "note": "19 is only valid for hub+3RW preset; code must use par_names()/len(), not 19"
+        },
+        "RW_N_PARS_consistent": {
+          "ok": true,
+          "RW_N_PARS": 16
+        },
+        "no_hardcoded_19": {
+          "ok": true,
+          "hits": [],
+          "note": "any literal-19 index is a reject"
+        }
+      },
+      "b_silent_traps": {
+        "import": {
+          "ok": false,
+          "via": null,
+          "errors": {
+            "omniheyoka.spacecraft.OmniSpacecraft": "ModuleNotFoundError: No module named 'omniheyoka.spacecraft'",
+            "omniheyoka.OmniSpacecraft": "module imported, attr missing",
+            "OmniSpacecraft.OmniSpacecraft": "ModuleNotFoundError: No module named 'OmniSpacecraft'",
+            "Basilisk.simulation.omniSpacecraft.OmniSpacecraft": "ModuleNotFoundError: No module named 'Basilisk.simulation.omniSpacecraft'",
+            "simulation.omniSpacecraft.OmniSpacecraft": "ModuleNotFoundError: No module named 'simulation'"
+          }
+        },
+        "verdict": {
+          "ok": true,
+          "skipped": "OmniSpacecraft unimportable; trap scan deferred to macOS host with Basilisk env"
+        }
+      },
+      "c_graph_purity": {
+        "include_dir": {
+          "ok": true,
+          "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/include/omni",
+          "headers": [
+            "backsub_t.hpp",
+            "contributors.hpp",
+            "environment.hpp",
+            "force_torque.hpp",
+            "linear3.hpp",
+            "mrp_t.hpp",
+            "scalar_traits.hpp",
+            "spacecraft.hpp",
+            "system.hpp"
+          ]
+        },
+        "hits": [
+          {
+            "file": "contributors.hpp",
+            "line": 228,
+            "func": "updateContributions",
+            "token": "if (",
+            "text": "if (use_gg_) {"
+          },
+          {
+            "file": "contributors.hpp",
+            "line": 474,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (q == static_cast<S>(0)) continue;  // skip idle thrusters"
+          },
+          {
+            "file": "contributors.hpp",
+            "line": 519,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (raw == nullptr) return;"
+          },
+          {
+            "file": "contributors.hpp",
+            "line": 529,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (coeffs.empty()) return 1.0;"
+          },
+          {
+            "file": "contributors.hpp",
+            "line": 538,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (minOnTime > 0.0 && onTimeCmd < minOnTime) return 0.0;"
+          },
+          {
+            "file": "contributors.hpp",
+            "line": 544,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (duty <= 0.0) return 0.0;"
+          },
+          {
+            "file": "contributors.hpp",
+            "line": 545,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (duty < 0.5) return 1.0 / 6.0;"
+          },
+          {
+            "file": "contributors.hpp",
+            "line": 546,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (duty < 1.0) return 5.0 / 6.0;"
+          },
+          {
+            "file": "contributors.hpp",
+            "line": 556,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(dt > 0.0)) return 0.0;"
+          },
+          {
+            "file": "environment.hpp",
+            "line": 182,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(dn > 0.0)) continue;  // module-side singularity guard (A3: graph has none)"
+          },
+          {
+            "file": "environment.hpp",
+            "line": 195,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(n > 0.0) || J2 == 0.0) return {0.0, 0.0, 0.0};"
+          },
+          {
+            "file": "environment.hpp",
+            "line": 218,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(eff >= 0.0)) eff = 0.0;"
+          },
+          {
+            "file": "environment.hpp",
+            "line": 220,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(rhoEff > 0.0) || !(CdA > 0.0)) return w;"
+          },
+          {
+            "file": "environment.hpp",
+            "line": 222,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(sp > 1e-12)) return w;"
+          },
+          {
+            "file": "environment.hpp",
+            "line": 235,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(area > 0.0) || !(shadow > 0.0)) return {0.0, 0.0, 0.0};"
+          },
+          {
+            "file": "environment.hpp",
+            "line": 255,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(area > 0.0) || !(shadow > 0.0)) return w;"
+          },
+          {
+            "file": "environment.hpp",
+            "line": 257,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(Aproj > 0.0)) return w;"
+          },
+          {
+            "file": "environment.hpp",
+            "line": 353,
+            "func": "state_derivatives",
+            "token": "if (",
+            "text": "if (j2On_) {"
+          },
+          {
+            "file": "linear3.hpp",
+            "line": 123,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (aik != static_cast<S>(0)) {"
+          },
+          {
+            "file": "linear3.hpp",
+            "line": 140,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (aik != static_cast<S>(0)) {"
+          },
+          {
+            "file": "system.hpp",
+            "line": 42,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (has_hub_) throw std::invalid_argument(\"OmniSystem: only one hub allowed\");"
+          },
+          {
+            "file": "system.hpp",
+            "line": 43,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(mass > 0.0)) throw std::invalid_argument(\"OmniSystem: mass must be positive\");"
+          },
+          {
+            "file": "system.hpp",
+            "line": 44,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (I9.size() != 9) throw std::invalid_argument(\"OmniSystem: I9 needs 9 entries\");"
+          },
+          {
+            "file": "system.hpp",
+            "line": 45,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (r_BcB_B.size() != 3) throw std::invalid_argument(\"OmniSystem: r_BcB_B needs 3 entries\");"
+          },
+          {
+            "file": "system.hpp",
+            "line": 52,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if ((I - I.transpose()).cwiseAbs().maxCoeff() > 1e-9)"
+          },
+          {
+            "file": "system.hpp",
+            "line": 54,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (std::abs(I.determinant()) < 1e-30)"
+          },
+          {
+            "file": "system.hpp",
+            "line": 65,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (gs.size() != 3) throw std::invalid_argument(\"OmniSystem: gs needs 3 entries\");"
+          },
+          {
+            "file": "system.hpp",
+            "line": 67,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(n > 0.0)) throw std::invalid_argument(\"OmniSystem: gs must be nonzero\");"
+          },
+          {
+            "file": "system.hpp",
+            "line": 68,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(Js > 0.0)) throw std::invalid_argument(\"OmniSystem: Js must be positive\");"
+          },
+          {
+            "file": "system.hpp",
+            "line": 79,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (dirs.size() != pos.size() || dirs.size() != tmax.size())"
+          },
+          {
+            "file": "system.hpp",
+            "line": 84,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(n > 0.0))"
+          },
+          {
+            "file": "system.hpp",
+            "line": 86,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(tmax[i] > 0.0))"
+          },
+          {
+            "file": "system.hpp",
+            "line": 101,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(mu > 0.0)) throw std::invalid_argument(\"OmniSystem: mu must be positive\");"
+          },
+          {
+            "file": "system.hpp",
+            "line": 110,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(mu > 0.0)) throw std::invalid_argument(\"OmniSystem: env body mu must be positive\");"
+          },
+          {
+            "file": "system.hpp",
+            "line": 118,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!std::isfinite(J2) || J2 < 0.0)"
+          },
+          {
+            "file": "system.hpp",
+            "line": 127,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(CdA >= 0.0) || !std::isfinite(CdA))"
+          },
+          {
+            "file": "system.hpp",
+            "line": 140,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(area > 0.0)) throw std::invalid_argument(\"OmniSystem: facet area must be positive\");"
+          },
+          {
+            "file": "system.hpp",
+            "line": 141,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(n > 0.0)) throw std::invalid_argument(\"OmniSystem: facet normal must be nonzero\");"
+          },
+          {
+            "file": "system.hpp",
+            "line": 153,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(area > 0.0)) throw std::invalid_argument(\"OmniSystem: cannonball area must be positive\");"
+          },
+          {
+            "file": "system.hpp",
+            "line": 154,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!std::isfinite(cr) || cr < 0.0)"
+          },
+          {
+            "file": "system.hpp",
+            "line": 185,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!(v >= 0.0)) throw std::invalid_argument(\"OmniSystem: u_max must be non-negative\");"
+          },
+          {
+            "file": "system.hpp",
+            "line": 191,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (s.size() != n_states_)"
+          },
+          {
+            "file": "system.hpp",
+            "line": 207,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (!has_default_state_) throw std::runtime_error(\"OmniSystem: no default state set\");"
+          },
+          {
+            "file": "system.hpp",
+            "line": 217,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (c->has_force_torque()) {"
+          },
+          {
+            "file": "system.hpp",
+            "line": 232,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (c->has_force_torque()) {"
+          },
+          {
+            "file": "system.hpp",
+            "line": 254,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (c->kind() == \"rw\") {"
+          },
+          {
+            "file": "system.hpp",
+            "line": 255,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (c->n_inputs() != 2)"
+          },
+          {
+            "file": "system.hpp",
+            "line": 272,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (c->kind() == \"rw\") {"
+          },
+          {
+            "file": "system.hpp",
+            "line": 273,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (c->n_inputs() != 2)"
+          },
+          {
+            "file": "system.hpp",
+            "line": 292,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (c->kind() == \"env\") {"
+          },
+          {
+            "file": "system.hpp",
+            "line": 309,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (par_names_[i] == name) return i;"
+          },
+          {
+            "file": "system.hpp",
+            "line": 322,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (c->kind() == \"env\") {"
+          },
+          {
+            "file": "system.hpp",
+            "line": 335,
+            "func": "updateContributions",
+            "token": "if (",
+            "text": "if (c->has_force_torque() && c->kind() != \"env\")"
+          },
+          {
+            "file": "system.hpp",
+            "line": 339,
+            "func": "computeForceTorque",
+            "token": "if (",
+            "text": "if (c->has_force_torque() && c->kind() == \"env\")"
+          },
+          {
+            "file": "system.hpp",
+            "line": 470,
+            "func": "state_derivatives",
+            "token": "if (",
+            "text": "if (std::find(order_.begin(), order_.end(), 'e') == order_.end())"
+          },
+          {
+            "file": "system.hpp",
+            "line": 475,
+            "func": "state_derivatives",
+            "token": "if (",
+            "text": "if (s.size() != n_states_)"
+          },
+          {
+            "file": "system.hpp",
+            "line": 477,
+            "func": "state_derivatives",
+            "token": "if (",
+            "text": "if (p.size() != n_pars_)"
+          },
+          {
+            "file": "system.hpp",
+            "line": 482,
+            "func": "state_derivatives",
+            "token": "if (",
+            "text": "if (!has_gravity_) {"
+          },
+          {
+            "file": "system.hpp",
+            "line": 486,
+            "func": "state_derivatives",
+            "token": "if (",
+            "text": "if (c->kind() == \"gravity\") {"
+          },
+          {
+            "file": "system.hpp",
+            "line": 512,
+            "func": "state_derivatives",
+            "token": "if (",
+            "text": "if (c->kind() == \"gravity\") {"
+          }
+        ],
+        "verdict": {
+          "ok": true,
+          "note": "min/max/tanh/sign inside EOM graph degrades Taylor; clamps belong caller-side (saturate_u/reset_mrp)"
+        }
+      }
+    },
+    "note": "WP0 static audit: layout names / silent traps / A3 purity"
+  }
+}

@@ -1,0 +1,807 @@
+{
+  "name": "wp5_env",
+  "timestamp_utc": "2026-10-12T14:40:40.607364+00:00",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-12T14:40:40.607383+00:00",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "env": {
+      "timestamp_utc": "2026-10-12T14:40:39.753839+00:00",
+      "platform": "macOS-27.0-arm64-arm-64bit",
+      "os_tag": "macOS",
+      "machine": "arm64",
+      "python": "3.11.16",
+      "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+      "heyoka": "7.12.1",
+      "basilisk": "2.12.0",
+      "basilisk_importable": true,
+      "numpy_importable": true,
+      "bsk_sdk": {
+        "present": true,
+        "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+        "includes": []
+      }
+    },
+    "effect_ids": [
+      "GRAV",
+      "J2",
+      "DRAG",
+      "SRP",
+      "MAG",
+      "ERP",
+      "P1",
+      "P4"
+    ],
+    "full_ladder": false,
+    "dt_ladder": [
+      0.1,
+      1.0
+    ],
+    "ticks_cap": 40,
+    "static": {
+      "payloads": {
+        "AtmoProps": {
+          "expected": [
+            "neutralDensity",
+            "localTemp"
+          ],
+          "found": [],
+          "missing": [
+            "neutralDensity",
+            "localTemp"
+          ],
+          "status": "basilisk-missing",
+          "import_error": "ModuleNotFoundError: No module named 'Basilisk.simulation.atmosphere'"
+        },
+        "Eclipse": {
+          "expected": [
+            "shadowFactor"
+          ],
+          "found": [],
+          "missing": [
+            "shadowFactor"
+          ],
+          "status": "partial"
+        },
+        "MagneticField": {
+          "expected": [
+            "magField_N"
+          ],
+          "found": [],
+          "missing": [
+            "magField_N"
+          ],
+          "status": "basilisk-missing",
+          "import_error": "ModuleNotFoundError: No module named 'Basilisk.simulation.magneticField'"
+        },
+        "EarthRadiation": {
+          "expected": [
+            "albedoFlux",
+            "irFlux",
+            "albedoDir_N",
+            "irDir_N",
+            "timeTag"
+          ],
+          "found": [],
+          "missing": [
+            "albedoFlux",
+            "irFlux",
+            "albedoDir_N",
+            "irDir_N",
+            "timeTag"
+          ],
+          "status": "basilisk-missing",
+          "import_error": "ModuleNotFoundError: No module named 'Basilisk.simulation.earthRadiation'"
+        },
+        "Wind": {
+          "expected": [
+            "v_air_N",
+            "v_wind_N"
+          ],
+          "found": [],
+          "missing": [
+            "v_air_N",
+            "v_wind_N"
+          ],
+          "status": "basilisk-missing",
+          "import_error": "ModuleNotFoundError: No module named 'Basilisk.simulation.wind'"
+        },
+        "SpicePlanetState": {
+          "expected": [
+            "PositionVector",
+            "VelocityVector"
+          ],
+          "found": [],
+          "missing": [
+            "PositionVector",
+            "VelocityVector"
+          ],
+          "status": "partial"
+        },
+        "Facet": {
+          "expected": [
+            "area",
+            "r_CopB_B",
+            "nHat_B",
+            "rotHat_B",
+            "c_diffuse",
+            "c_specular"
+          ],
+          "found": [],
+          "missing": [
+            "area",
+            "r_CopB_B",
+            "nHat_B",
+            "rotHat_B",
+            "c_diffuse",
+            "c_specular"
+          ],
+          "status": "basilisk-missing",
+          "import_error": "ModuleNotFoundError: No module named 'Basilisk.simulation.facetedSRP'"
+        },
+        "ProjectedArea": {
+          "expected": [
+            "area"
+          ],
+          "found": [],
+          "missing": [
+            "area"
+          ],
+          "status": "basilisk-missing",
+          "import_error": "ModuleNotFoundError: No module named 'Basilisk.simulation.projectedArea'"
+        },
+        "THRConfig": {
+          "expected": [
+            "maxThrust",
+            "rThrust_B",
+            "swirlTorque",
+            "tHatThrust_B"
+          ],
+          "found": [],
+          "missing": [
+            "maxThrust",
+            "rThrust_B",
+            "swirlTorque",
+            "tHatThrust_B"
+          ],
+          "status": "basilisk-missing",
+          "import_error": "ModuleNotFoundError: No module named 'Basilisk.simulation.thruster'"
+        },
+        "RWConfig": {
+          "expected": [
+            "GsMatrix_B",
+            "JsList"
+          ],
+          "found": [],
+          "missing": [
+            "GsMatrix_B",
+            "JsList"
+          ],
+          "status": "basilisk-missing",
+          "import_error": "ModuleNotFoundError: No module named 'Basilisk.simulation.reactionWheel'"
+        }
+      },
+      "modules": {
+        "exponentialAtmosphere": {
+          "present": true,
+          "error": ""
+        },
+        "dragDynamicEffector": {
+          "present": true,
+          "error": ""
+        },
+        "facetedSRPEffector": {
+          "present": true,
+          "error": ""
+        },
+        "facetedSpacecraftProjectedArea": {
+          "present": true,
+          "error": ""
+        },
+        "eclipse": {
+          "present": true,
+          "error": ""
+        },
+        "magneticFieldWMM": {
+          "present": true,
+          "error": ""
+        },
+        "magneticFieldCenteredDipole": {
+          "present": true,
+          "error": ""
+        },
+        "earthRadiationModel": {
+          "present": true,
+          "error": ""
+        },
+        "MtbEffector": {
+          "present": true,
+          "error": ""
+        },
+        "magnetometer": {
+          "present": true,
+          "error": ""
+        },
+        "radiationPressure": {
+          "present": true,
+          "error": ""
+        },
+        "cannonballDrag": {
+          "present": true,
+          "error": ""
+        },
+        "zeroWindModel": {
+          "present": true,
+          "error": ""
+        },
+        "planetEphemeris": {
+          "present": true,
+          "error": ""
+        },
+        "spiceInterface": {
+          "present": true,
+          "error": ""
+        }
+      },
+      "sdk_headers": {
+        "exponential": {
+          "hits": [],
+          "concrete": false
+        },
+        "dragDynamic": {
+          "hits": [],
+          "concrete": false
+        },
+        "eclipse": {
+          "hits": [],
+          "concrete": false
+        },
+        "WMM": {
+          "hits": [],
+          "concrete": false
+        },
+        "magneticField": {
+          "hits": [],
+          "concrete": false
+        },
+        "radiationPressure": {
+          "hits": [],
+          "concrete": false
+        },
+        "facetedSRP": {
+          "hits": [],
+          "concrete": false
+        }
+      },
+      "notes": [
+        "EclipseMsg: ONE field (shadowFactor); illuminationFactor is a deprecated C #define alias -- Python must use shadowFactor.",
+        "Wind: consume v_air_N (full air velocity), not v_wind_N.",
+        "SRP needs full SpicePlanetStateMsg (position + 1/r^2 flux scaling), not a bare direction (+/-3.4%/yr flux error otherwise).",
+        "Facet torque arm r_CopB_B is load-bearing: tau = r_Cop x F.",
+        "bsk_sdk ships declaration/base headers only, no linkable libs; concrete modules are compiled Python extensions -- code hijack impossible, messages are the boundary."
+      ],
+      "basilisk": true,
+      "status": "ok"
+    },
+    "grav": {
+      "effect": "GRAV",
+      "checks": {
+        "central_sign": {
+          "a_ref": [
+            -8.675951000931727,
+            -0.0,
+            -0.0
+          ],
+          "inward": true,
+          "mag": 8.675951000931727,
+          "pass": true
+        },
+        "sun_tide": {
+          "mag": 5.374093933301072e-07,
+          "note": "~1.4e-6 m/s^2: frozen-whole-run offsets fatal over 3 yr"
+        },
+        "ephemeris": {
+          "planetEphemeris": true,
+          "SunEphemeris": false,
+          "err": [
+            "",
+            "no submodule SunEphemeris"
+          ]
+        },
+        "staleness": [
+          {
+            "dt": 0.1,
+            "bound": 2.3546254995329435e-10,
+            "pass": true
+          },
+          {
+            "dt": 1.0,
+            "bound": 2.3546254995329436e-09,
+            "pass": true
+          }
+        ]
+      },
+      "status": "ok"
+    },
+    "j2": {
+      "effect": "J2",
+      "checks": {
+        "cbar": {
+          "J2": 0.00108262668,
+          "Cbar20": -0.0004841653701469824,
+          "pass": true,
+          "rule": "J2=-sqrt(5)*Cbar20; useSphericalHarmonicsGravityModel maxDeg=2 pin (higher-degree leakage otherwise)"
+        },
+        "equatorial": {
+          "dA": [
+            -0.012475388443105473,
+            0.0,
+            0.0
+          ],
+          "rel": 0.001437927489651073
+        },
+        "inclined45": {
+          "dA": [
+            0.013232147649083537,
+            0.0,
+            -0.004410715883028438
+          ],
+          "rel": 0.0016076518067876474
+        },
+        "j2file": {
+          "candidates": [],
+          "found": false,
+          "missing_ok": "record-missing if absent"
+        },
+        "frame": {
+          "note": "ECI-equatorial analytic (zonal symmetry, no rotating frame); Pfix-vs-ECI confusion recorded"
+        }
+      },
+      "status": "ok"
+    },
+    "drag": {
+      "effect": "DRAG",
+      "checks": {
+        "formula": {
+          "F_nowind": [
+            -0.0,
+            -0.00012937492587712527,
+            -0.0
+          ],
+          "tau_nowind": [
+            0.0,
+            0.0,
+            -6.468746293856264e-06
+          ],
+          "F_wind": [
+            -0.0,
+            -0.0001132349162528064,
+            -0.0
+          ],
+          "wind_rel": 0.12475376905450718,
+          "law": "F_B=1/2 rho Cd A|v|^2(-vhat); tau=comOffset x F; |v|<=1e-12->0; (1+densityCorrection)>=0"
+        },
+        "modules": {
+          "exponentialAtmosphere": {
+            "present": true,
+            "attrs": [],
+            "error": ""
+          },
+          "dragDynamicEffector": {
+            "present": true,
+            "attrs": [],
+            "error": ""
+          },
+          "zeroWindModel": {
+            "present": true,
+            "attrs": [],
+            "error": ""
+          }
+        },
+        "links": {
+          "atmo_unlinked": "stock bskError (omni off-by-default = labeled deviation); record baseDensity/scaleHeight/planetRadius/envMaxReach + coreParams",
+          "wind_unlinked": "inertial-velocity fallback (~6% LEO error); zeroWindModel corotation is the baseline probe",
+          "v_rel": "v_BN_N - v_air_N (full field)"
+        },
+        "fixture": {
+          "note": "LEO ~400 km circular; mission 12000 km has ~zero density -- fixtures split"
+        }
+      },
+      "status": "ok"
+    },
+    "srp": {
+      "effect": "SRP",
+      "checks": {
+        "cannonball": {
+          "F_B": [
+            -7.263708625120001e-06,
+            -0.0,
+            -0.0
+          ],
+          "mag": 7.263708625120001e-06,
+          "law": "radiationPressure: area+coeffReflection+eclipse+SunEphemeris; sun-unlinked->bskError, eclipse-unlinked->1.0 (full sun ON)"
+        },
+        "faceted": {
+          "fields": [
+            "area",
+            "r_CopB_B",
+            "nHat_B",
+            "rotHat_B",
+            "c_diffuse",
+            "c_specular",
+            "ProjectedArea.area"
+          ],
+          "per_facet": [
+            {
+              "nHat_B": [
+                1,
+                0,
+                0
+              ],
+              "F_B": [
+                -6.507072310003333e-06,
+                -0.0,
+                -0.0
+              ],
+              "tau_B": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "A_proj": 1.0,
+              "cosT": 1.0
+            },
+            {
+              "nHat_B": [
+                -1,
+                0,
+                0
+              ],
+              "F_B": [
+                -0.0,
+                -0.0,
+                -0.0
+              ],
+              "tau_B": [
+                0.0,
+                -0.0,
+                0.0
+              ],
+              "A_proj": 0.0,
+              "cosT": 0.0
+            },
+            {
+              "nHat_B": [
+                0,
+                1,
+                0
+              ],
+              "F_B": [
+                -0.0,
+                -0.0,
+                -0.0
+              ],
+              "tau_B": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "A_proj": 0.0,
+              "cosT": 0.0
+            },
+            {
+              "nHat_B": [
+                0,
+                -1,
+                0
+              ],
+              "F_B": [
+                -0.0,
+                0.0,
+                -0.0
+              ],
+              "tau_B": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "A_proj": 0.0,
+              "cosT": 0.0
+            },
+            {
+              "nHat_B": [
+                0,
+                0,
+                1
+              ],
+              "F_B": [
+                -0.0,
+                -0.0,
+                -0.0
+              ],
+              "tau_B": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "A_proj": 0.0,
+              "cosT": 0.0
+            },
+            {
+              "nHat_B": [
+                0,
+                0,
+                -1
+              ],
+              "F_B": [
+                -0.0,
+                -0.0,
+                0.0
+              ],
+              "tau_B": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "A_proj": 0.0,
+              "cosT": 0.0
+            }
+          ],
+          "F_total": [
+            -6.507072310003333e-06,
+            0.0,
+            0.0
+          ],
+          "tau_total": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "law": "F=-P*Aproj*[(1-cs)*shat+2*(cd/3+cs*cosT)*nhat]; tau=r_Cop x F; prove projectedArea==max(0,nhat.shat)A occlusion-free before re-deriving",
+          "occlusion": "facetedSpacecraftProjectedArea + facetProjectedAreaInMsgs/facetElementBodyInMsgs"
+        },
+        "penumbra": {
+          "dt_ladder": [
+            0.1,
+            1.0
+          ],
+          "note": "crossing arc; 10 s ZOH smears edge (FULL_LADDER gates the 10 s leg); tick eclipse equality vs shadowFactor; P~(AU/r_SB)^2; eclipse needs planet entry + extrapolateScStateToStepMidpoint"
+        },
+        "modules": {
+          "radiationPressure": {
+            "present": true,
+            "error": ""
+          },
+          "facetedSRPEffector": {
+            "present": true,
+            "error": ""
+          },
+          "facetedSpacecraftProjectedArea": {
+            "present": true,
+            "error": ""
+          },
+          "eclipse": {
+            "present": true,
+            "error": ""
+          }
+        }
+      },
+      "status": "ok"
+    },
+    "mag": {
+      "effect": "MAG+P4",
+      "checks": {
+        "frame_chain_P4": {
+          "magField_N": [
+            2e-05,
+            5e-06,
+            -1e-05
+          ],
+          "sigma": [
+            0.1,
+            -0.05,
+            0.2
+          ],
+          "B_B": [
+            1.3947224400674787e-05,
+            -1.3912102730180945e-05,
+            -1.170163788288263e-05
+          ],
+          "|B|_nT": 22912.878474779205,
+          "dipole": [
+            0.5,
+            0.0,
+            0.0
+          ],
+          "tau_B": [
+            0.0,
+            5.850818941441315e-06,
+            -6.956051365090472e-06
+          ],
+          "chain": "magField_N->dcm_BN(sigma)->B_B->tau=m x B_B",
+          "Gt": "1-bar identity-Gt gate; row-major->col-major transpose + maxMtbDipoles clamp"
+        },
+        "modules": {
+          "magneticFieldWMM": {
+            "present": true,
+            "error": ""
+          },
+          "magneticFieldCenteredDipole": {
+            "present": true,
+            "error": ""
+          },
+          "MtbEffector": {
+            "present": true,
+            "error": ""
+          },
+          "magnetometer": {
+            "present": true,
+            "error": ""
+          }
+        },
+        "wmm": {
+          "data_path": "record-missing",
+          "epoch": "record-missing"
+        },
+        "dipole": {
+          "g10": "record-missing",
+          "g11": "record-missing",
+          "h11": "record-missing"
+        },
+        "gates": {
+          "direct": "MtbEffector 1-bar identity-Gt mtbNetTorque_B equality (mtbCmdInMsg/magInMsg/mtbParamsInMsg required)",
+          "independent": "magnetometer identity dcm_SB zero-error tamTrue_S vs omni B_B; both field models; matched-dt ladder"
+        }
+      },
+      "status": "ok"
+    },
+    "erp": {
+      "effect": "ERP",
+      "checks": {
+        "module": {
+          "present": true,
+          "error": ""
+        },
+        "contract": {
+          "fields": [
+            "albedoFlux",
+            "irFlux",
+            "albedoDir_N",
+            "irDir_N",
+            "timeTag"
+          ],
+          "claim": "message equality ONLY over day-night orbit -- no force claim (facetERPDynamicEffector absent; force CUT, analytic-only with tolerance)"
+        },
+        "day_night_shape": {
+          "albedo": [
+            200.0,
+            189.16344834012693,
+            157.8281018792787,
+            109.38963162448539,
+            49.09709742815985,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            49.097097428159756,
+            109.38963162448532,
+            157.8281018792787,
+            189.16344834012693,
+            200.0
+          ],
+          "ir": [
+            240.0,
+            239.45817241700635,
+            237.89140509396393,
+            235.46948158122427,
+            232.454854871408,
+            229.1742065452767,
+            225.98304575347032,
+            223.2271842837426,
+            221.2052624879351,
+            220.13638696597278,
+            220.13638696597278,
+            221.2052624879351,
+            223.2271842837426,
+            225.9830457534703,
+            229.17420654527666,
+            232.45485487140797,
+            235.46948158122427,
+            237.89140509396393,
+            239.45817241700635,
+            240.0
+          ],
+          "note": "illustrative shape; real values from stock messages"
+        }
+      },
+      "status": "ok"
+    },
+    "absent_link": {
+      "effect": "P1",
+      "rows": [
+        {
+          "config": "drag-density unlinked",
+          "expected": "bskError",
+          "module": "dragDynamicEffector",
+          "observed": "class-missing (recorded)",
+          "pass": true
+        },
+        {
+          "config": "wind unlinked",
+          "expected": "silent-ON inertial fallback",
+          "module": "dragDynamicEffector",
+          "observed": "class-missing (recorded)",
+          "pass": true
+        },
+        {
+          "config": "SRP-sun unlinked",
+          "expected": "bskError",
+          "module": "radiationPressure",
+          "observed": "class-missing (recorded)",
+          "pass": true
+        },
+        {
+          "config": "eclipse unlinked",
+          "expected": "silent-ON 1.0",
+          "module": "facetedSRPEffector",
+          "observed": "class-missing (recorded)",
+          "pass": true
+        },
+        {
+          "config": "eclipse no sc/planet",
+          "expected": "bskError",
+          "module": "eclipse",
+          "observed": "class-missing (recorded)",
+          "pass": true
+        },
+        {
+          "config": "MTB cmd unlinked",
+          "expected": "bskError",
+          "module": "MtbEffector",
+          "observed": "init-ok; link error needs task run -- recorded, no hang",
+          "pass": true
+        },
+        {
+          "config": "MTB mag unlinked",
+          "expected": "bskError",
+          "module": "MtbEffector",
+          "observed": "init-ok; link error needs task run -- recorded, no hang",
+          "pass": true
+        },
+        {
+          "config": "MTB params unlinked",
+          "expected": "bskError",
+          "module": "MtbEffector",
+          "observed": "init-ok; link error needs task run -- recorded, no hang",
+          "pass": true
+        }
+      ],
+      "note": "required links error; eclipse/wind fall back silent-ON",
+      "status": "ok"
+    }
+  }
+}
