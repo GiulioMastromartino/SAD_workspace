@@ -109,6 +109,33 @@ mapped + census pinned. First build: `OmniVecIntegrator` skeleton per
 Phase 1, with mirror-parity gates reusing the Gate F harness shape.
 
 ## Phase 1 — `OmniVecIntegrator` skeleton over the covered envelope
+(COMPLETE 2026-10-12; ledger `swap_p1_parity.json`, gates `test_swap_p1.py`)
+
+Shipped: `include/omni/vec_integrator.hpp` + `src/omni_vec_integrator.cpp`
+(`OmniVecIntegrator : StateVecIntegrator`), SWIG-exposed, wheel 0.1.0;
+mirror in `omniheyoka/swap.py`. Recipe:
+`oi = OmniVecIntegrator(sc); mirror_stock_config(sim, sc, oi, ...);
+sc.setIntegrator(oi)` (+ env setters/subscriptions where used).
+
+Design as planned, with these measured deviations:
+- RW torques via stock `rwOutMsgs` `u_current` readback (NOT the motor
+  message: direct reads skew a tick by task order; log readback is
+  timing-identical under all three task orders, proven).
+- Thruster mailbox = advance-rule + pre-staged tick-0 snapshot
+  (Reset-equivalent staging): fresh/write-once/frozen/advance all match
+  stock schedules bit-for-bit.
+- GG flag from task-walk (stock has no hub switch); criminally important:
+  the GG default (on) caused the first 6.9e-05 smoke gap, fixed by mirroring.
+- Env ported whole (slots + per-tick/per-arc refresh); drag + SRP-cannonball
+  gated (SRP needed the `cr = C_R - 1` convention map, measured); GG/faceted/
+  mag/J2/N-body stock gates follow-up (shared wiring proven by drag).
+- Found + fixed en route: absolute-h double count (Update 7; 1-wheel parity
+  1.6e-05 -> 6e-14, all gates re-validated to record numbers).
+
+Parity (matched dt=0.1): hub/RW 1e-9 class (measured ~1e-13); thruster
+switching residual with proven linear-in-dt ladder; write-once/frozen
+single-kink class; drag 4e-6 (stabilized) / 1e-4-tumbling-class bounded;
+SRP 4e-8. Rejects: 7/7 loud. CI 3/3. Suite 159 passed.
 
 **Scope:** sims whose effector set is exactly what `OmniSpacecraft`
 already models (hub + balanced RW + staircase thrusters + central

@@ -59,7 +59,13 @@ int main() {
         const double s2dot = 0.25 * (B21 * omx + B22 * omy + B23 * omz);
         const double s3dot = 0.25 * (B31 * omx + B32 * omy + B33 * omz);
 
-        const double h1 = J1 * (W1 + omx), h2 = J2 * (W2 + omy), h3 = J3 * (W3 + omz);
+        // RELATIVE rotor momentum (stock parity, upstream
+        // reactionWheelStateEffector.cpp: vecRot -= gs*u + Js*W*(omega x gs)
+        // == -omega x h - u*gs with h = Js*W*gs). The absolute form
+        // h = Js*(W + omega) DOUBLE-COUNTS against the subtracted D and is
+        // wrong for unequal Js even when aligned (extra = -sum Js_i*w_i x
+        // ... != 0); it cancels only for equal-Js orthonormal sets.
+        const double h1 = J1 * W1, h2 = J2 * W2, h3 = J3 * W3;
         const double Hx = Ixx * omx + Ixy * omy + Ixz * omz + h1;
         const double Hy = Ixy * omx + Iyy * omy + Iyz * omz + h2;
         const double Hz = Ixz * omx + Iyz * omy + Izz * omz + h3;
@@ -91,8 +97,8 @@ int main() {
     }
 
     std::cout << "n_states = " << sys.n_states() << " (expect 15)\n";
-    std::cout << "n_pars   = " << sys.n_pars() << " (expect 13 = 3 u + mass + I6 + 3 Js)\n";
-    std::cout << "n_inputs = " << sys.n_inputs() << " (expect 3)\n";
+    std::cout << "n_pars   = " << sys.n_pars() << " (expect 16 = 3x(u,tauF) + mass + I6 + 3 Js)\n";
+    std::cout << "n_inputs = " << sys.n_inputs() << "  (expect 6)\n";
 
     const std::vector<double> P0 = sys.default_pars();
     std::cout << "par slots (" << P0.size() << "):\n  ";
@@ -104,32 +110,40 @@ int main() {
     std::uniform_real_distribution<double> U(-1.0, 1.0);
     double worst = 0.0;
     int worst_k = -1;
-    // Omni pars are 13 (u[3], mass, I6[6], Js[3]): the inverse is derived
-    // symbolically from D, so no invI6 slots exist. The hand-written
-    // reference needs its own 19-vector (it multiplies by precomputed invI).
+    // Omni pars are name-addressed (A2): input slots (u,tauF per wheel),
+    // then mass + I6, then Js per wheel. The hand-written reference keeps
+    // its own 19-vector (it multiplies by precomputed invI).
+    const size_t t2u[3] = {sys.par_index("u1"), sys.par_index("u2"),
+                           sys.par_index("u3")};
+    const size_t t2m = sys.par_index("mass");
+    const size_t t2i[6] = {sys.par_index("Ixx"), sys.par_index("Iyy"),
+                           sys.par_index("Izz"), sys.par_index("Ixy"),
+                           sys.par_index("Ixz"), sys.par_index("Iyz")};
+    const size_t t2j[3] = {sys.par_index("Js1"), sys.par_index("Js2"),
+                           sys.par_index("Js3")};
     for (int k = 0; k < 500; ++k) {
         std::vector<double> x(15), Po = P0, Pr(19, 0.0);
         for (int i = 0; i < 15; ++i) x[i] = U(rng) * (i < 3 ? 1e7 : 1.0);
         x[0] = std::abs(x[0]) + 1e6;  // keep |r| sane
         x[1] = std::abs(x[1]) + 1e6;
         x[2] = std::abs(x[2]) + 1e6;
-        for (int i = 0; i < 3; ++i) Po[i] = Pr[i] = U(rng) * 0.2;
+        for (int i = 0; i < 3; ++i) Po[t2u[i]] = Pr[i] = U(rng) * 0.2;
         // random full inertia (TOTAL, stock IHubPntBc_B semantics: includes
         // the wheels; the hub block inverts D = I - diag(Js), packed below)
         const double a = 900.0 + U(rng) * 50, b = 800.0 + U(rng) * 50,
                      c = 600.0 + U(rng) * 50;
         const double d = U(rng) * 3, e = U(rng) * 3, f = U(rng) * 3;
-        Po[3] = Pr[3] = 750.0;
-        Po[4] = Pr[4] = a; Po[5] = Pr[5] = b; Po[6] = Pr[6] = c;
-        Po[7] = Pr[7] = d; Po[8] = Pr[8] = e; Po[9] = Pr[9] = f;
+        Po[t2m] = Pr[3] = 750.0;
+        Po[t2i[0]] = Pr[4] = a; Po[t2i[1]] = Pr[5] = b; Po[t2i[2]] = Pr[6] = c;
+        Po[t2i[3]] = Pr[7] = d; Po[t2i[4]] = Pr[8] = e; Po[t2i[5]] = Pr[9] = f;
         // invI packs inv(D_hub), D_hub = I - diag(Js) (stock semantics). Js
         // values are drawn first so the inverse matches them.
         double js0 = 0.05 + std::abs(U(rng)) * 0.1;
         double js1 = 0.05 + std::abs(U(rng)) * 0.1;
         double js2 = 0.05 + std::abs(U(rng)) * 0.1;
-        Po[10] = js0; Pr[16] = js0;
-        Po[11] = js1; Pr[17] = js1;
-        Po[12] = js2; Pr[18] = js2;
+        Po[t2j[0]] = js0; Pr[16] = js0;
+        Po[t2j[1]] = js1; Pr[17] = js1;
+        Po[t2j[2]] = js2; Pr[18] = js2;
         {
             const double da = a - js0, db = b - js1, dc = c - js2;
             const double det = da * (db * dc - f * f) - d * (d * dc - e * f)
@@ -189,14 +203,15 @@ int main() {
     std::vector<double> x = {1.0e7, 2.0e6, -1.5e6, -700.0, 5500.0, 3200.0,
                              0.10, -0.20, 0.30, 0.01, -0.02, 0.03,
                              10.0, 20.0, 30.0};
-    std::vector<double> P = P0;  // 13-vector for the system
-    for (int i = 0; i < 3; ++i) P[i] = 0.0;  // no torque
+    std::vector<double> P = P0;  // system pars (name-addressed)
+    for (int i = 0; i < 3; ++i) P[t2u[i]] = 0.0;  // no torque
     // Hmag reads the legacy 19-layout (I6 at 4..9, Js at 16..18): repack.
     std::vector<double> Ph(19, 0.0);
     for (int i = 0; i < 3; ++i) Ph[i] = 0.0;
-    Ph[3] = P0[3];
-    for (int i = 0; i < 6; ++i) Ph[4 + i] = P0[4 + i];
-    for (int i = 0; i < 3; ++i) Ph[16 + i] = P0[10 + i];
+    Ph[3] = P0[t2m];
+    Ph[4] = P0[t2i[0]]; Ph[5] = P0[t2i[1]]; Ph[6] = P0[t2i[2]];
+    Ph[7] = P0[t2i[3]]; Ph[8] = P0[t2i[4]]; Ph[9] = P0[t2i[5]];
+    for (int i = 0; i < 3; ++i) Ph[16 + i] = P0[t2j[i]];
     const double H0 = Hmag(x, Ph);
     std::vector<double> cur = x;
     const double dt = 0.01;

@@ -1,0 +1,186 @@
+{
+  "name": "swap_p1_parity",
+  "timestamp_utc": "2026-10-12T18:10:03.012888+00:00",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-12T18:10:03.031785+00:00",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/../env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "status": "ok",
+    "cells": {
+      "hub_60s": {
+        "r_BN_N": 0.0,
+        "v_BN_N": 0.0,
+        "sigma_BN": 6.900036098045348e-14,
+        "omega_BN_B": 1.951563910473908e-17,
+        "nPars": 7,
+        "nStates": 12,
+        "build_s": 0.1971
+      },
+      "rw3_open_pos": {
+        "r_BN_N": 0.0,
+        "v_BN_N": 9.094947017729282e-13,
+        "sigma_BN": 8.795325578958568e-12,
+        "omega_BN_B": 4.998987335191885e-13,
+        "wheels": 4.547473508864641e-13,
+        "nPars": 16,
+        "nStates": 15,
+        "build_s": 0.011
+      },
+      "rw3_open_neg": {
+        "r_BN_N": 0.0,
+        "v_BN_N": 9.094947017729282e-13,
+        "sigma_BN": 6.847522548980578e-12,
+        "omega_BN_B": 1.920893999418638e-13,
+        "wheels": 2.8421709430404007e-13,
+        "nPars": 16,
+        "nStates": 15,
+        "build_s": 0.0093
+      },
+      "rw3_pd": {
+        "r_BN_N": 0.0,
+        "v_BN_N": 9.094947017729282e-13,
+        "sigma_BN": 2.9609648066752925e-13,
+        "omega_BN_B": 2.000483112496454e-14,
+        "wheels": 2.0038015691170585e-10,
+        "nPars": 16,
+        "nStates": 15,
+        "build_s": 0.0093
+      },
+      "rw1": {
+        "r_BN_N": 0.0,
+        "v_BN_N": 0.0,
+        "sigma_BN": 6.411537967210279e-14,
+        "omega_BN_B": 2.7755575615628914e-17,
+        "wheels": 0.0,
+        "nPars": 10,
+        "nStates": 13,
+        "build_s": 0.0125
+      },
+      "rw2": {
+        "r_BN_N": 0.0,
+        "v_BN_N": 0.0,
+        "sigma_BN": 5.306866057708248e-14,
+        "omega_BN_B": 2.949029909160572e-17,
+        "wheels": 0.0,
+        "nPars": 13,
+        "nStates": 14,
+        "build_s": 0.0116
+      },
+      "rw1tilt": {
+        "r_BN_N": 0.0,
+        "v_BN_N": 0.0,
+        "sigma_BN": 5.154210391822289e-14,
+        "omega_BN_B": 9.540979117872439e-18,
+        "wheels": 0.0,
+        "nPars": 10,
+        "nStates": 13,
+        "build_s": 0.0126
+      },
+      "thr_fresh_05": {
+        "r_BN_N": 0.0003053266555070877,
+        "v_BN_N": 4.05554249027773e-06,
+        "sigma_BN": 2.4568740919037046e-05,
+        "omega_BN_B": 5.995587251360346e-07,
+        "nPars": 9,
+        "nStates": 12,
+        "build_s": 0.0101
+      },
+      "thr_fresh_10": {
+        "r_BN_N": 9.313225746154785e-10,
+        "v_BN_N": 0.0,
+        "sigma_BN": 5.1736392947532295e-14,
+        "omega_BN_B": 5.48172618408671e-16,
+        "nPars": 9,
+        "nStates": 12,
+        "build_s": 0.0087
+      },
+      "thr_writeonce": {
+        "r_BN_N": 1.7043203115463257e-07,
+        "v_BN_N": 3.1868694350123405e-09,
+        "sigma_BN": 2.9578987204015306e-08,
+        "omega_BN_B": 5.582275848167728e-10,
+        "nPars": 9,
+        "nStates": 12,
+        "build_s": 0.0089
+      },
+      "thr_frozen": {
+        "r_BN_N": 2.0489096641540527e-07,
+        "v_BN_N": 3.182321961503476e-09,
+        "sigma_BN": 3.4908305079905944e-08,
+        "omega_BN_B": 5.430280756307804e-10,
+        "nPars": 9,
+        "nStates": 12,
+        "build_s": 0.0086
+      },
+      "env_drag": {
+        "r_BN_N": 0.00010243896394968033,
+        "v_BN_N": 3.502245817799121e-07,
+        "sigma_BN": 4.956000458633536e-08,
+        "omega_BN_B": 2.268405277473188e-09,
+        "density_max": 9.118821407130932e-13,
+        "density_min": 9.118819345166462e-13
+      },
+      "env_drag_still": {
+        "r_BN_N": 4.2049214243888855e-06,
+        "v_BN_N": 1.4259967429097742e-08,
+        "sigma_BN": 1.436905945097211e-08,
+        "omega_BN_B": 2.836183961449167e-10,
+        "density_max": 9.118821425383488e-13,
+        "density_min": 9.118819349249345e-13
+      },
+      "env_srp": {
+        "r_BN_N": 4.377216100692749e-08,
+        "v_BN_N": 1.3915268937125802e-10,
+        "sigma_BN": 0.0,
+        "omega_BN_B": 0.0,
+        "srp_single_tick_meas": 9.031834835582231e-09,
+        "srp_single_tick_analytic": 9.031834770923471e-09,
+        "srp_single_tick_ratio": 1.0000000071589839
+      }
+    },
+    "dt": 0.1,
+    "thr_ladder_30s": {
+      "dt0.1": {
+        "dv": 7.531660912718507e-07,
+        "dsigma": 8.111804844057602e-06
+      },
+      "dt0.05": {
+        "dv": 3.7783183870487846e-07,
+        "dsigma": 4.065811390230323e-06
+      },
+      "dt0.02": {
+        "dv": 1.5143098153203027e-07,
+        "dsigma": 1.6287025481620532e-06
+      }
+    },
+    "rejects": {
+      "fuel_tank": true,
+      "jitter_wheel": true,
+      "friction_wheel": true,
+      "two_rw_effectors": true,
+      "thruster_no_factory": true,
+      "min_pulse": true,
+      "low_cutoff": true,
+      "verdict": "all loud"
+    },
+    "verdict": "parity green"
+  }
+}

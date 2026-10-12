@@ -20,8 +20,15 @@ which are *load-bearing*:
 1. **`Js * gs * gs^T` must NOT go into `matrixD`.** For a balanced rotor the
    term cancels exactly against the spin equation. Folding it in costs 8.1e-5
    relative error in `omegaDot` and breaks momentum conservation. The rotor
-   contributes only `-w x h - u*gs` to `vecRot`; `matrixD` gets `diag(Js)` only
-   via the spin-state coupling.
+   contributes `-w x h - u*gs` to `vecRot` with the **RELATIVE** momentum
+   `h = Js*W*gs` (W = relative spin rate; the absolute form
+   `h = Js*(W + omega.gs)*gs` double-counts against a subtracted `D` and
+   breaks conservation for non-orthonormal wheel sets -- swap fix 2026-10-12;
+   the extra term cancels exactly for 3 orthonormal wheels, hiding the bug
+   in every 3-wheel gate); `matrixD` gets `diag(Js)` only
+   via the spin-state coupling. (With a hub-only `D` and decoupled spin,
+   the absolute form is the consistent partner instead -- see A11 for the
+   consistent pairs.)
 2. **The MRP->DCM must be hand-written for non-`double` scalars.** BSK's
    `Eigen::MRPd` is a concrete type, so `toRotationMatrix()` is instantiated for
    `double` only. The prototype's first formula was wrong (half-angle); validate

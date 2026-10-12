@@ -22,6 +22,7 @@
 
 %{
    #include "omni/spacecraft.hpp"
+   #include "omni/vec_integrator.hpp"
 %}
 
 %pythoncode %{
@@ -30,6 +31,12 @@ from Basilisk.architecture.swig_common_model import *
 %include "swig_conly_data.i"
 %include "std_string.i"
 %include "std_vector.i"
+
+// Stock integrator base: SWIG must parse the REAL declaration (not just the
+// C %{ %} include) so OmniVecIntegrator's descriptor carries the
+// derived->base cast that setIntegrator()'s ConvertPtr needs cross-module.
+// (Raw-header parsing only; no wrappers for stock internals are emitted.)
+%include "simulation/dynamics/_GeneralModuleFiles/stateVecIntegrator.h"
 
 namespace std {
     %template(DoubleVector) vector<double>;
@@ -74,6 +81,7 @@ struct SpicePlanetStateMsg_C;
 struct WindMsg_C;
 
 %include "omni/spacecraft.hpp"
+%include "omni/vec_integrator.hpp"
 
 %pythoncode %{
 import sys

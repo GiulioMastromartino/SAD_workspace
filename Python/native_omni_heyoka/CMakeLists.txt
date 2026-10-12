@@ -72,7 +72,9 @@ endif()
 bsk_add_swig_module(
   TARGET omni_heyoka
   INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/src/omni_heyoka.i"
-  SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/omni_spacecraft.cpp"
+  SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/omni_spacecraft.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/omni_vec_integrator.cpp"
   INCLUDE_DIRS
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
     ${_inc}

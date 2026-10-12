@@ -309,9 +309,17 @@ public:
         const Vector3<S> omega = ctx.omega();
         const Vector3<S> gs = typed_axis();
 
-        // h = Js * (W + omega.gs) * gs
-        const S wdot_axis = dot3(omega, gs);
-        const Vector3<S> h = scale_vec3(gs, Js * (W + wdot_axis));
+        // h = Js * W * gs -- RELATIVE rotor momentum (W is the relative spin
+        // rate). Stock parity (upstream reactionWheelStateEffector.cpp):
+        //   vecRot -= gs*(u+f) + Js*W*(omega x gs)  ==  -omega x h - u*gs.
+        // The ABSOLUTE form h = Js*(W + omega.gs)*gs DOUBLE-COUNTS: the
+        // Js*(omega.gs)*gs momentum already lives in the total inertia the
+        // hub block inverts as D = I - sum Js*gs*gs^T. The double count
+        // cancels exactly for 3 orthonormal wheels (extra = -Js*omega x
+        // omega = 0), which is why every 3-wheel gate passed while 1-2
+        // wheels drifted ~1e-5 -- found by the swap 1-vs-3-wheel parity
+        // matrix, fixed here. (DESIGN constraint 1 refined accordingly.)
+        const Vector3<S> h = scale_vec3(gs, Js * W);
         // vecRot += -(omega x h) - u*gs - s*tauF*gs  (A3: + - * only; tauF
         // read verbatim like u; s = frictionHubSign_, default +1 = exact
         // stock react-on-hub per F4; NO tanh/min/max in the graph path).

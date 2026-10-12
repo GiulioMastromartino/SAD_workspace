@@ -394,19 +394,25 @@ lag states modeled. Locked in tests.
   envelope (stock measures zero effect in the validated configs).
 - No thruster MC campaign yet.
 
-## What is NOT done
+## What is NOT done (updated 2026-10-12; the pre-Update-6 text below is kept
+for archaeology, struck where landed)
 
-- SWIG / CMake / `pyproject.toml` scaffolding (build + install) — not started.
-- `omniheyoka/shim.py` (`OmniTaylorAdaptive`) and `presets.py` — the WS2 agent
-  wrote files into `omniheyoka/` (they exist) but they import
-  `cubesat_12u_sim.backends.heyoka.heyoka_rw`, which requires running from the
-  `Python/` directory; they have not been re-verified against the real module.
-- Validation suite in `tests/` (WS3) — not started. Note the tilted-spin-axis
-  case cannot be checked against `build_rw_system()`, which is body-axis-aligned
-  only; it needs a hand-derived tilted-wheel Newton–Euler reference.
-- No contributor yet for thrusters / wrench inputs. The interface is
-  deliberately additive so one can be added without changing existing
-  signatures (DESIGN.md A8).
+- SWIG / CMake / `pyproject.toml` scaffolding — DONE (wheel 0.1.0 builds and
+  installs; `OmniSpacecraft` + `OmniVecIntegrator` ship).
+- `omniheyoka/shim.py` (`OmniTaylorAdaptive`) and `presets.py` — STILL STALE:
+  written against `OmniSystem` + 19-par layout, needs name-based par
+  translation if revived. NOTE (Update 7): `heyoka_rw.py` encodes absolute-h
+  (exact for equal-Js orthonormal sets only); any revival must convert or
+  restrict. Top-level `reset_mrp`/`sigma_indices` (A7) still unexported.
+- Validation suite in `tests/` — DONE for the envelope + swap (149 + 4 + 6
+  tests green, CI 3/3). Tilted case now checks against the corrected
+  relative-h reference AND live stock sims.
+- Thruster/wrench contributor — DONE (ThrusterContributorT + env cluster).
+- ctypes ABI (`omni_taylor_api.cpp`) still RW-only, untouched.
+- No thruster MC campaign yet.
+- Swap follow-up: SRP-faceted / mag / J2 / N-body stock gates; prescribed
+  motion / flex / slosh / stochastic stay loud-reject; multi-spacecraft sync
+  (Phase 3); closed-loop FSW acceptance.
 
 ## How to reproduce the gates
 
@@ -481,6 +487,69 @@ Small-maneuver control chatters with MATCHED statistics both arms
 (sat 0.47042 = 0.47042). Gate: tilt-W3 closed-loop att/rate stay tight
 (1e-3 / 2e-5, validated record 3.42e-04 / 6.88e-06), wheels get a jitter
 envelope (1.0 RPM = 3x measured worst). Unsaturated rigs keep 1e-9 class.
+
+## Update 7 — relative-h fix + Phase-1 integrator swap (2026-10-12)
+
+### The absolute-momentum bug (load-bearing, hid in every 3-wheel gate)
+
+`ReactionWheelContributorT` carried `h = Js*(W + omega.gs)*gs` (absolute)
+while the hub inverts `D = I - sum Js*gs*gs^T` (subtracted). That combination
+double-counts the `Js*(omega.gs)*gs` momentum: it is already inside the total
+inertia `D` is derived from. The extra torque `-Js*(omega.gs)*(omega x gs)`
+cancels EXACTLY for 3 orthonormal wheels (`-Js*omega x omega = 0`), which is
+why Gates A/F/G, T1 (vs the same-team absolute reference!) and every
+3-wheel parity number passed while 1-2 wheel configs drifted ~1e-5.
+Found by the swap 1-vs-3-wheel parity matrix (1x/1tilt/2xy: 1.6-3.3e-05,
+3xyz: 4e-14), confirmed against upstream
+`reactionWheelStateEffector.cpp`
+(`vecRot -= gs*u + Js*W*(omega x gs)` = relative-h), fixed one-line to
+`h = Js*W*gs`. Proof it is physics, not tuning: 1x/1tilt/2xy/3xyz/hub now
+ALL agree at 4-7e-14; t2 Gate A re-validates to the identical record number
+(5.90e-16); t5 T1 re-validates to 5.58e-16 against the corrected reference.
+DESIGN constraint (1) amended; t5/t2 harnesses corrected (relative-h +
+name-based par slots); the same-team-reference hazard from PLAN_ENVELOPE
+Ground-6 materialized as predicted. `heyoka_rw.py` keeps absolute-h (exact
+for equal-Js orthonormal sets only) -- flagged for the WS2 revival.
+
+### OmniVecIntegrator: stock Spacecraft + setIntegrator swap (stage 1-3)
+
+`include/omni/vec_integrator.hpp` + `src/omni_vec_integrator.cpp`:
+`OmniVecIntegrator : public StateVecIntegrator`, exposed through the same
+wheel (SWIG `%import` analog: `%include` the real `stateVecIntegrator.h`
+so the descriptor carries the derived->base cast; `class Spacecraft`
+forward-decl unifies with the stock proxy by NAME -- the `%{ %}`-only
+attempt failed exactly like this). `DynamicObject` members only (dynManager
+by name; `states`/`dynEffectors` are Spacecraft members -- the first build
+died on that); per-tick RW torques read back from stock `rwOutMsgs`
+`u_current` (timing-identical under every task order -- a direct
+motor-message read would skew a tick by task order); stock keeps MRP
+switching/DV/energy/telemetry (postIntegration). Mirror lives in
+`omniheyoka/swap.py` (task-model walk: hub/RW/gravity + guards; loud on
+anything else). Ledger `audit_bundle/results/swap_p1_parity.json`, gates
+`tests/test_swap_p1.py`: hub/RW 1e-9 class, thruster staircase with
+dt-aware switching bounds (linear-in-dt ladder proven), write-once/frozen
+schedule equality, drag + SRP-cannonball gated (SRP needs the C_R -> r
+convention map `cr = C_R - 1`, measured end-to-end), 7/7 rejects loud.
+Tumbling + env documents the O(|w|*dt) frozen-projection class with honest
+bounds (rotation-capped subdivision tried: 4x gain at 4x cost, reverted --
+bias is systematic, subdivision cannot remove it; arc-midpoint refresh
+deferred). GG/SRP-faceted/mag/J2/N-body stock gates explicitly follow-up;
+their wiring is the drag-proven shared path with unchanged validated laws.
+
+### Swap debugging ledger (traps hit, all closed)
+
+- THRArrayConfigMsg functor never links (addSubscriber snapshot stays dead;
+  stock Reader fine) -> geometry joins Python-side (factory THRSimConfig +
+  effector thrusterData, exact loc/dir cross-check, no `.label` reads: they
+  abort). On-time mailbox fine.
+- `thrustFactor` telemetry lags dynamics 3 ticks (all-zeros while firing);
+  dynamics (omega deltas) are the truth -- two "bit-exact" benches were
+  nearly vacuous before this was caught.
+- Task priorities are load-bearing for stock firing (all-default never
+  fires); recipe mandates the proven pattern.
+- Min-pulse effective state is per-thruster MinOnTime (factory flag
+  meaningless); `useMinPulseTime=False` at create() zeroes it.
+- Stock default integrator is RK4 (upstream ctor) -- the swap target.
 
 ## Bench vs tests decision (2026-10-12)
 

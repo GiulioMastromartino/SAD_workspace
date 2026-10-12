@@ -5,10 +5,16 @@
 // axes g_i (unit), extending the body-axis case (g_i = e_i) in heyoka_rw.py,
 // in STOCK input semantics (input I = total incl. wheels; hub block inverts
 // D = I - sum_i Js_i*g_i*g_i^T) with stock-ordered coupled spin
-// (Js*dW = u - Js*(g.wdot), evaluated after the hub solve):
+// (Js*dW = u - Js*(g.wdot), evaluated after the hub solve) and RELATIVE
+// rotor momentum h_i = Js_i*W_i (upstream reactionWheelStateEffector.cpp:
+// vecRot -= gs*u + Js*W*(omega x gs)). The ABSOLUTE form
+// h_i = Js_i*(W_i + omega.g_i) DOUBLE-COUNTS against the subtracted D and
+// is wrong for non-orthonormal wheel sets (found by the swap 1-vs-3-wheel
+// parity matrix; the extra term cancels exactly for 3 orthonormal wheels,
+// which is why every 3-wheel gate passed with either form):
 //
-//   h_i    = Js_i * (W_i + omega.g_i)                        (spin-axis momentum)
-//   L      = I*omega + sum_i Js_i*(W_i + omega.g_i) * g_i
+//   h_i    = Js_i * W_i                                      (spin momentum)
+//   L      = I*omega + sum_i Js_i*W_i * g_i
 //   D      = I - sum_i Js_i * g_i * g_i^T
 //   wdot   = D^-1 * [ -(omega x L) - sum_i u_i*g_i ]
 //   Wdot_i = (u_i - Js_i * (g_i.wdot)) / Js_i
@@ -45,13 +51,23 @@ int main() {
     const auto P = sys.default_pars();
     // rebuild the wheel Js defaults (they come from the records)
     std::vector<double> Pw = P;
+    // Name-based par slots (A2; layout shifted when the tauF input slots
+    // landed: u_i are NOT 0..2 anymore).
+    const size_t uidx[3] = {sys.par_index("u1"), sys.par_index("u2"),
+                            sys.par_index("u3")};
+    const size_t mO = sys.par_index("mass");
+    const size_t iO[6] = {sys.par_index("Ixx"), sys.par_index("Iyy"),
+                          sys.par_index("Izz"), sys.par_index("Ixy"),
+                          sys.par_index("Ixz"), sys.par_index("Iyz")};
+    size_t jO[3] = {sys.par_index("Js1"), sys.par_index("Js2"),
+                    sys.par_index("Js3")};
 
     // --- reference accelerations -------------------------------------------
     auto ref = [&](const std::vector<double>& x, const std::vector<double>& P,
                    int nw) {
-        const double& u1 = P[0]; const double& u2 = P[1]; const double& u3 = P[2];
-        const double& IxxR = P[4]; const double& IyyR = P[5]; const double& IzzR = P[6];
-        const double& IxyR = P[7]; const double& IxzR = P[8]; const double& IyzR = P[9];
+        const double& IxxR = P[iO[0]]; const double& IyyR = P[iO[1]];
+        const double& IzzR = P[iO[2]]; const double& IxyR = P[iO[3]];
+        const double& IxzR = P[iO[4]]; const double& IyzR = P[iO[5]];
         const double omx = x[9], omy = x[10], omz = x[11];
         const double rx = x[0], ry = x[1], rz = x[2];
         Eigen::Matrix3d I;
@@ -60,13 +76,13 @@ int main() {
         Eigen::Vector3d ugu = Eigen::Vector3d::Zero();
         Eigen::Matrix3d D = I;
         std::vector<double> js;
-        for (int i = 0; i < nw; ++i) js.push_back(P[10 + i]);
-        const double us[3] = {u1, u2, u3};
+        for (int i = 0; i < nw; ++i) js.push_back(P[jO[i]]);
+        double us[3] = {P[uidx[0]], P[uidx[1]], P[uidx[2]]};
         Eigen::Vector3d omega(omx, omy, omz);
         for (int i = 0; i < nw; ++i) {
             Eigen::Vector3d g(axes[size_t(i)][0], axes[size_t(i)][1], axes[size_t(i)][2]);
             const double W = x[12 + i];
-            L += js[size_t(i)] * (W + omega.dot(g)) * g;
+            L += js[size_t(i)] * W * g;
             ugu += us[i] * g;
             D -= js[size_t(i)] * g * g.transpose();
         }
@@ -90,15 +106,16 @@ int main() {
         std::vector<double> x(12 + NW), P = Pw;
         for (int i = 0; i < 12 + NW; ++i) x[i] = U(rng) * (i < 3 ? 1e7 : 1.0);
         x[0] = std::abs(x[0]) + 1e6; x[1] = std::abs(x[1]) + 1e6; x[2] = std::abs(x[2]) + 1e6;
-        for (int i = 0; i < NW; ++i) P[i] = U(rng) * 0.2;
+        for (int i = 0; i < NW; ++i) P[uidx[i]] = U(rng) * 0.2;
         // random TOTAL inertia (stock IHubPntBc_B semantics; hub block
         // inverts D = I - sum Js*g*g^T, computed inside the reference)
         const double a = 900.0 + U(rng) * 50, b = 800.0 + U(rng) * 50,
                      c = 600.0 + U(rng) * 50;
         const double d = U(rng) * 30, e = U(rng) * 30, f = U(rng) * 30;
-        P[3] = 750.0;
-        P[4] = a; P[5] = b; P[6] = c; P[7] = d; P[8] = e; P[9] = f;
-        for (int i = 0; i < NW; ++i) P[10 + i] = 0.05 + std::abs(U(rng)) * 0.1;
+        P[mO] = 750.0;
+        P[iO[0]] = a; P[iO[1]] = b; P[iO[2]] = c;
+        P[iO[3]] = d; P[iO[4]] = e; P[iO[5]] = f;
+        for (int i = 0; i < NW; ++i) P[jO[i]] = 0.05 + std::abs(U(rng)) * 0.1;
 
         const std::vector<double> A = sys.state_derivative(x, P);
         const std::vector<double> B = ref(x, P, NW);  // [vdot(3), wdot(3), Wdot(NW)]
@@ -139,10 +156,11 @@ int main() {
     auto Hmag = [&](const std::vector<double>& x, const std::vector<double>& P) {
         Eigen::Vector3d omega(x[9], x[10], x[11]);
         Eigen::Matrix3d I;
-        I << P[4], P[7], P[8], P[7], P[5], P[9], P[8], P[9], P[6];
+        I << P[iO[0]], P[iO[3]], P[iO[4]], P[iO[3]], P[iO[1]], P[iO[5]],
+             P[iO[4]], P[iO[5]], P[iO[2]];
         Eigen::Vector3d L = I * omega;
         for (int i = 0; i < NW; ++i)
-            L += P[10 + i] * x[12 + i] *
+            L += P[jO[i]] * x[12 + i] *
                  Eigen::Vector3d(axes[size_t(i)][0], axes[size_t(i)][1], axes[size_t(i)][2]);
         return L.norm();
     };
@@ -150,7 +168,7 @@ int main() {
                              0.10, -0.20, 0.30, 0.01, -0.02, 0.03,
                              100.0, 200.0, 300.0};
     std::vector<double> P0 = sys.default_pars();
-    for (int i = 0; i < NW; ++i) P0[i] = 0.0;
+    for (int i = 0; i < NW; ++i) P0[uidx[i]] = 0.0;
     const double H0 = Hmag(x, P0);
     std::vector<double> y = x;
     const double dt = 0.01;
