@@ -1,0 +1,190 @@
+{
+  "name": "swap_p0_census",
+  "timestamp_utc": "2026-10-12T16:43:22.293595+00:00",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-12T16:43:22.522864+00:00",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/../env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "status": "ok",
+    "configs": {
+      "hub_only": {
+        "states": [
+          {
+            "name": "hubPosition",
+            "rows": 3,
+            "cols": 1,
+            "values": [
+              10000000.0,
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "name": "hubVelocity",
+            "rows": 3,
+            "cols": 1,
+            "values": [
+              0.0,
+              7500.0,
+              0.0
+            ]
+          },
+          {
+            "name": "hubSigma",
+            "rows": 3,
+            "cols": 1,
+            "values": [
+              0.1,
+              -0.2,
+              0.3
+            ]
+          },
+          {
+            "name": "hubOmega",
+            "rows": 3,
+            "cols": 1,
+            "values": [
+              0.01,
+              -0.02,
+              0.03
+            ]
+          }
+        ],
+        "n_states_total": 12,
+        "roundtrip_max_abs_delta": 0.0,
+        "roundtrip_bitexact": true
+      },
+      "hub_3rw": {
+        "states": [
+          {
+            "name": "hubPosition",
+            "rows": 3,
+            "cols": 1,
+            "values": [
+              10000000.0,
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "name": "hubVelocity",
+            "rows": 3,
+            "cols": 1,
+            "values": [
+              0.0,
+              7500.0,
+              0.0
+            ]
+          },
+          {
+            "name": "hubSigma",
+            "rows": 3,
+            "cols": 1,
+            "values": [
+              0.1,
+              -0.2,
+              0.3
+            ]
+          },
+          {
+            "name": "hubOmega",
+            "rows": 3,
+            "cols": 1,
+            "values": [
+              0.01,
+              -0.02,
+              0.03
+            ]
+          },
+          {
+            "name": "reactionWheelOmegas",
+            "rows": 3,
+            "cols": 1,
+            "values": [
+              10.471975511965976,
+              10.471975511965976,
+              10.471975511965976
+            ]
+          }
+        ],
+        "n_states_total": 15,
+        "roundtrip_max_abs_delta": 0.0,
+        "roundtrip_bitexact": true
+      },
+      "hub_fuel": {
+        "states": [
+          {
+            "name": "hubPosition",
+            "rows": 3,
+            "cols": 1,
+            "values": [
+              10000000.0,
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "name": "hubVelocity",
+            "rows": 3,
+            "cols": 1,
+            "values": [
+              0.0,
+              7500.0,
+              0.0
+            ]
+          },
+          {
+            "name": "hubSigma",
+            "rows": 3,
+            "cols": 1,
+            "values": [
+              0.1,
+              -0.2,
+              0.3
+            ]
+          },
+          {
+            "name": "hubOmega",
+            "rows": 3,
+            "cols": 1,
+            "values": [
+              0.01,
+              -0.02,
+              0.03
+            ]
+          },
+          {
+            "name": "fuelMass",
+            "rows": 1,
+            "cols": 1,
+            "values": [
+              10.0
+            ]
+          }
+        ],
+        "n_states_total": 13,
+        "roundtrip_max_abs_delta": 0.0,
+        "roundtrip_bitexact": true
+      }
+    },
+    "verdict": "census+roundtrip green"
+  }
+}

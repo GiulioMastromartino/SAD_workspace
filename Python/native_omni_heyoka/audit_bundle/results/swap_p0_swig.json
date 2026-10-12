@@ -1,0 +1,39 @@
+{
+  "name": "swap_p0_swig",
+  "timestamp_utc": "2026-10-12T16:42:30.658642+00:00",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-12T16:42:30.893313+00:00",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/../env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "status": "ok",
+    "default_integrator_proxy": "StateVecIntegrator",
+    "setIntegrator_stock_ok": true,
+    "wrong_type_rejected": true,
+    "wrong_type_error": "in method 'DynamicObject_setIntegrator', argument 2 of type 'StateVecIntegrator *'",
+    "python_subclass_blocked": true,
+    "python_subclass_error": "No constructor defined - class is abstract",
+    "syncDynamicsIntegration_present": true,
+    "isDynamicsSynced_present": true,
+    "bsk_sdk_stateVecIntegrator_h": true,
+    "bsk_sdk_header": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk/include/Basilisk/simulation/dynamics/_GeneralModuleFiles/stateVecIntegrator.h",
+    "verdict": "C++-only subclass, SWIG pointer check, header present"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "swap_p0_callback",
+  "timestamp_utc": "2026-10-12T16:42:22.043016+00:00",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-12T16:42:22.640845+00:00",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/../env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "include_dir": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/include/heyoka",
+    "taylor_adaptive_ctors": [
+      "taylor_adaptive(private_ctor_t, llvm_state)",
+      "taylor_adaptive(std::vector<std::pair<expression, expression>> sys, std::vector<T> state, // NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward) KwArgs &&...kw_args) : taylor_adaptive(private_ctor_t{}, detail::taylor_adaptive_build_llvm_state(kw_args...)) { finalise_ctor(std::move(sys), std::move(state), kw_args...)",
+      "taylor_adaptive(std::vector<std::pair<expression, expression>> sys, KwArgs &&...kw_args) : taylor_adaptive(std::move(sys), std::vector<T>{}, kw_args...) { } template <typename... KwArgs> #if !defined(_MSC_VER) || defined(__clang__) requires igor::validate<ctor_kw_cfg, KwArgs...> #endif // NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward) explicit taylor_adaptive(var_ode_sys sys, std::vector<T> state, KwArgs &&...kw_args) : taylor_adaptive(private_ctor_t{}, detail::taylor_adaptive_build_llvm_state(kw_args...)) { finalise_ctor(std::move(sys), std::move(state), kw_args...)",
+      "taylor_adaptive(var_ode_sys sys, KwArgs &&...kw_args) : taylor_adaptive(std::move(sys), std::vector<T>{}, kw_args...) { } taylor_adaptive(const taylor_adaptive &)"
+    ],
+    "ctors_symbolic_only": true,
+    "func_requires_taylor_decompose": true,
+    "func_requires_gradient_or_decompose": true,
+    "callable_used_for": "event callbacks",
+    "step_callback_is_observation": true,
+    "numeric_rhs_overload_found": false,
+    "verdict": "absent (mirror+compose mandatory)",
+    "status": "ok"
+  }
+}

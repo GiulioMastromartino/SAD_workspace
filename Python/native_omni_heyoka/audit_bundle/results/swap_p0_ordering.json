@@ -1,0 +1,75 @@
+{
+  "name": "swap_p0_ordering",
+  "timestamp_utc": "2026-10-12T16:42:31.577215+00:00",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-12T16:42:31.812973+00:00",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/../env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "status": "ok",
+    "upstream_tag": "v2.12.0",
+    "sources": {
+      "spacecraft.cpp": "https://raw.githubusercontent.com/AVSLab/basilisk/v2.12.0/src/simulation/dynamics/spacecraft/spacecraft.cpp",
+      "dynamicObject.cpp": "https://raw.githubusercontent.com/AVSLab/basilisk/v2.12.0/src/simulation/dynamics/_GeneralModuleFiles/dynamicObject.cpp",
+      "reactionWheelStateEffector.cpp": "https://raw.githubusercontent.com/AVSLab/basilisk/v2.12.0/src/simulation/dynamics/reactionWheels/reactionWheelStateEffector.cpp"
+    },
+    "ctor": "Spacecraft() sets integrator = new svIntegratorRK4(this) -> the stock DEFAULT integrator is RK4 (the swap target).",
+    "UpdateState_order": [
+      "gravField.UpdateState",
+      "integrateState (= preIntegration[all dynPtrs] -> integrator->integrate(timeBefore, timeStep) -> postIntegration[all dynPtrs]; skipped if isDynamicsSynced)",
+      "readOptionalRefMsg (att/trans ref override AFTER integration)",
+      "gravField.updateInertialPosAndVel",
+      "writeOutputStateMessages (+ each stateEffector)"
+    ],
+    "Reset_order": [
+      "hub.validateConfiguration",
+      "gravField.Reset",
+      "initializeDynamics (= createProperty mass/time props -> gravField.registerProperties -> hub.registerStates -> effector registerStates -> linkInStates -> updateSCMassProps -> B/C r/v correction -> effector linkInStates -> readOptionalRefMsg -> equationsOfMotion(0, 1))",
+      "gravField.updateInertialPosAndVel",
+      "writeOutputStateMessages"
+    ],
+    "postIntegration_order": [
+      "updateSCMassProps",
+      "DV accumulators (CN_B/BN_B/CN_N) + nonConservativeAccel + omegaDot finite-difference",
+      "computeEnergyMomentum",
+      "hub.modifyStates (MRP shadow switch) + effector modifyStates",
+      "calcForceTorqueFromStateEffectors"
+    ],
+    "setIntegrator_rules": [
+      "takes ownership (destructor deletes); warns (not errors) if isDynamicsSynced",
+      "bskError on null; bskError unless new integrator was created with THIS DynamicObject (dynPtrs[0] check, no dynamic_cast)",
+      "old integrator's dynPtrs take priority (multi-sc sync preserved)"
+    ],
+    "integrate_args": "integrate(timeBefore, timeStep) \u2014 NOT the tick time; the swap must use exactly these.",
+    "rw_registered_states": {
+      "reactionWheelOmegas": "numRW x 1 (always)",
+      "reactionWheelThetas": "numRWJitter x 1 (only if any jitter wheel; JitterSimple or JitterFullyCoupled)"
+    },
+    "stock_saturation_rule": "|Omega| >= Omega_max && Omega_max > 0 && Omega*u_cmd >= 0 -> cut (ConfigureRWRequests; matches the omni direction-aware cut semantics).",
+    "stock_spin_coupling": "OmegasDot = (u_current+frictionTorque)/Js - gs^T*omegaDot (coupled, matches omni Update-5).",
+    "stock_rw_matrixD": "matrixD -= Js*gs*gs^T (total-inertia semantics, matches omni Update-5).",
+    "balanced_mass_props": "BalancedWheels/JitterSimple contribute ZERO mass props (mEff=0); only JitterFullyCoupled adds mass/inertia.",
+    "maxWheelAcceleration": "CLAMP (not log-only): |OmegasDot| capped with BSK_WARNING; u_current back-solved for consistency. Answers the WP1 log-vs-clamp open question from source.",
+    "hub_fast_path": "useHubOnlyFastPath (no effectors + zero offset) takes computeHubOnlyDerivatives; pointMassTranslationalOnly is a separate translational path.",
+    "diffusion": "equationsOfMotionDiffusion delegates to equationsOfMotion (no real diffusion model) \u2014 stochastic integrators stay out of scope as planned.",
+    "runtime_default_integrator_proxy": "StateVecIntegrator",
+    "verdict": "ordering + ownership + RW-source facts recorded"
+  }
+}
