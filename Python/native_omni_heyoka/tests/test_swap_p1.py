@@ -122,3 +122,39 @@ def test_p1_fuel_parity():
         assert c["fuel_burned"] > 0.1  # effect live, not vacuous
         assert c["fuel_rel_err"] < 1e-9  # depletion law near-bit-exact
     assert d["fuel_centered"]["nStates"] == 13  # hub12 + fuel (no wheels)
+def test_p1_sysmodel_fuel_publisher_absent():
+    """WP25-A3 option B (Decision 4, closes H6): the SysModel path must not
+    publish fuel telemetry -- the static-full-tank publish (fuelMass_=m0
+    verbatim, fuelMassDot=0) was wrong telemetry under any burn. Regression
+    gate: fails if a `fuelTankOutMsg.write` reappears in
+    src/omni_spacecraft.cpp. The setFuelParams record surface + B1
+    single-tank guard stay (see test_wp0_guards.py)."""
+    src = (REPO / "src" / "omni_spacecraft.cpp").read_text()
+    assert "fuelTankOutMsg.write" not in src
+    assert "WP25-A3 option B" in src
+
+
+def test_p1_fuel_env_scope():
+    """WP25-A3/H7: fuel+drag and fuel+SRP combined cells are OUT by explicit
+    label (drag-under-burn error order |dc x F_drag| cited in the
+    _env_fuel_cell docstring; stock comOffset-shift-with-depletion UNPROBED,
+    recorded not guessed) -- or, once a sim host measures them at matched
+    dt, they must meet switching-class bounds (pre-registered, same class
+    as the fuel cells above)."""
+    probe = (REPO / "audit_bundle" / "probes" / "swap_p1_parity.py").read_text()
+    assert "H7-OUT" in probe
+    assert "|dc x F_drag|" in probe
+    assert "UNPROBED" in probe
+    d = _load()["payload"]["cells"]
+    for cell in ("fuel_drag", "fuel_srp"):
+        if cell not in d:
+            continue  # OUT by probe label above; no measured cell to gate
+        c = d[cell]
+        if c.get("status") == "H7-OUT":
+            continue  # explicit OUT marker, not a measurement
+        assert c["r_BN_N"] < 2e-2, f"{cell}.r={c['r_BN_N']:.3e}"
+        assert c["v_BN_N"] < 1e-4, f"{cell}.v={c['v_BN_N']:.3e}"
+        assert c["omega_BN_B"] < 1e-4, f"{cell}.om={c['omega_BN_B']:.3e}"
+        assert c["dcm_max"] < 2e-3, f"{cell}.dcm={c['dcm_max']:.3e}"
+        assert c["fuel_burned"] > 0.1  # effect live, not vacuous
+        assert c["fuel_rel_err"] < 1e-9

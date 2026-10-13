@@ -538,9 +538,17 @@ from the applied par slot, never re-derived). `SCStates` gains
 `omegaDot_BN_B` (from end-state numeric accelerations) and the three DV
 slots + `nonConservativeAccelpntB_B`, accumulated per tick in inertial
 and body frames — **labeled non-parity** (stock integrates per substep).
-Fuel: `FuelTankMsgPayload`-shaped bookkeeping from staircase-ACHIEVED
-thrust (shrinks the commanded-vs-achieved gap); NO mass feedback, NO
-blowdown scaling, NO depletion dynamics — labeled out, not parity.
+Fuel (WP25-A3 option B, Decision 4): UNMODELED on the SysModel path — no
+depletion, no mass/I/c feedback, and NO `fuelTankOutMsg` publish (the
+static-full-tank publish was wrong telemetry under burn, H6; loud absence
+beats wrong-telemetry presence). `setFuelParams` records the single-tank
+intent and warns; `addFuelTank` still rejects any second tank. Live
+depletion (`fuel_rel_err 0.0`) lives on the vec path only
+(`swap_p1_parity.json:fuel_centered/fuel_offset`: 10 kg, 5 N, duty 0.5,
+600 s, 1.1 kg burned). Fuel+drag / fuel+SRP combined cells are OUT by label
+(H7): drag-under-burn error order is `|dc x F_drag|` (vec drag arm stays
+static while `cLive` drifts); whether stock shifts `comOffset` with
+depletion is UNPROBED on this host — recorded, not guessed.
 
 ## A14. Loud-rejection + layout hygiene (WP0/WP7)
 

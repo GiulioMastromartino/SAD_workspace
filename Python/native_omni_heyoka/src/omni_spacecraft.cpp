@@ -396,7 +396,12 @@ void OmniSpacecraft::setVoltageEnabled(bool on) {
 }
 
 void OmniSpacecraft::setFuelParams(double m0, double mMax, double isp) {
-    // WP6 caller-side bookkeeping (NON-PARITY): no mass feedback into dynamics.
+    // WP25-A3 option B (Decision 4: fuel UNMODELED on the SysModel path --
+    // no depletion, no mass/I/c feedback, no fuel publisher; see writeMsgs).
+    // Values are recorded for the single-tank-guard refusal surface only
+    // (addFuelTank rejects any second tank); live depletion lives on the vec
+    // path (vec:876-890 reference, untouched). Warn LOUDLY so the gap is
+    // never silent; do NOT raise (B1 single-tank rigs must keep running).
     if (!(m0 >= 0.0) || !std::isfinite(m0))
         this->bskLogger.bskError("OmniSpacecraft: fuel m0 must be finite non-negative.");
     if (!(mMax > 0.0) || !std::isfinite(mMax))
@@ -404,6 +409,10 @@ void OmniSpacecraft::setFuelParams(double m0, double mMax, double isp) {
     if (!(isp > 0.0) || !std::isfinite(isp))
         this->bskLogger.bskError("OmniSpacecraft: fuel isp must be finite positive.");
     this->fuelMass_ = m0; this->fuelMax_ = mMax; this->fuelIsp_ = isp;
+    this->bskLogger.bskLog(BSK_WARNING,
+                           "OmniSpacecraft: fuel is unmodeled on the SysModel path "
+                           "(no depletion/mass-feedback/telemetry, WP25-A3 option B); "
+                           "use the vec/swap path for live fuel.");
 }
 
 void OmniSpacecraft::setUMax(double uMax) {
@@ -725,15 +734,17 @@ void OmniSpacecraft::writeMsgs(uint64_t CurrentSimNanos) {
             this->thrusterOutMsgs[i].write(&out, this->moduleID, CurrentSimNanos);
         }
     }
-    // --- WP6: fuel bookkeeping publish (FuelTankMsg-shaped, NON-PARITY labeled) ---
-    // mdot=-F_ach/(isp*g0) with staircase-ACHIEVED F. 3 divergences: (1)
-    // commanded!=achieved (closed 1st-order only), (2) no blowdown/ISP scaling
-    // (factors echoed 1.0 until WP3), (3) NO mass feedback (omni mass fixed).
-    {
-        FuelTankMsgPayload fl = this->fuelTankOutMsg.zeroMsgPayload;
-        fl.fuelMass = this->fuelMass_; fl.maxFuelMass = this->fuelMax_;
-        fl.fuelMassDot = 0.0;
-        this->fuelTankOutMsg.write(&fl, this->moduleID, CurrentSimNanos);
+    // --- WP25-A3 option B (Decision 4, closes H6): NO fuel publisher. ---
+    // The WP6 static-full-tank publish (fuelMass_=m0 verbatim, fuelMassDot=0)
+    // was wrong telemetry under any burn (stock depletes ~1.1 kg over the
+    // 600 s fuel-cell scale: 10 kg, 5 N, duty 0.5); loud absence beats
+    // wrong-telemetry presence, so fuelTankOutMsg is NEVER written on this
+    // path. setFuelParams (record + warn) and the addFuelTank second-tank
+    // reject stay. Live depletion + mass/I_C/c feedback live on the vec path
+    // only (vec:876-890 reference, untouched; ledger fuel_centered /
+    // fuel_offset fuel_rel_err 0.0).
+}
+
     }
 }
 

@@ -580,6 +580,17 @@ def _env_fuel_cell(r_tb):
     timing jitter makes sigma-vector comparison meaningless once |sigma|
     crosses 1 -- measured max|dsig| 1e-3 with max|dom| 0.0). Fuel mass must
     match near-bit-exact (depletion law is algebraic in achieved duties).
+
+    WP25-A3/H7-OUT: fuel+drag and fuel+SRP combined cells (burn + env on,
+    matched dt) are explicitly OUT on this host -- no sim runs were possible
+    here, so no combined cell is measured. Drag-under-burn error order is
+    |dc x F_drag| (vec drag arm stays static while cLive drifts under burn;
+    SysModel path is option-B unmodeled). Whether stock shifts comOffset
+    with depletion is UNPROBED -- recorded, not guessed. If a sim host later
+    measures fuel_drag/fuel_srp at matched dt, gate them in the switching
+    class (r < 2e-2, v < 1e-4, omega < 1e-4, dcm_max < 2e-3,
+    fuel_rel_err < 1e-9, burned > 0.1); until then the OUT markers below
+    (status OUT, no float fields) are skipped by the verdict/bounds loops.
     """
     import numpy as np
     from Basilisk.architecture import messaging, sysModel
@@ -724,6 +735,22 @@ def main() -> int:
     payload["cells"]["env_srp"] = _env_srp_cell()
     payload["cells"]["fuel_centered"] = _env_fuel_cell([0.0, 0.0, 0.0])
     payload["cells"]["fuel_offset"] = _env_fuel_cell([0.3, 0.0, 0.2])
+    # WP25-A3/H7-OUT markers (see _env_fuel_cell docstring): combined
+    # fuel+env cells explicitly out of scope until a sim host measures them
+    # at matched dt. Status-only dicts: the verdict/bounds loops below skip
+    # keys they do not carry, and the vacuity loop only reads fuel_centered /
+    # fuel_offset -- so these markers never trip a gate.
+    payload["cells"]["fuel_drag"] = {
+        "status": "H7-OUT",
+        "reason": ("fuel+drag combined cell unmeasured; drag-under-burn "
+                   "error order |dc x F_drag|; stock comOffset-shift UNPROBED"),
+    }
+    payload["cells"]["fuel_srp"] = {
+        "status": "H7-OUT",
+        "reason": ("fuel+SRP combined cell unmeasured; SRP-arm live-c vs "
+                   "static-c split unlabeled under burn; stock "
+                   "comOffset-shift UNPROBED"),
+    }
 
     # Switching-residual ladder (documents linear-in-dt class, Update-4 #2).
     payload["thr_ladder_30s"] = {"dt0.1": None}  # filled below

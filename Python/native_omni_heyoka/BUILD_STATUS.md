@@ -566,7 +566,7 @@ stock-pinned). WP25-A1 unifies the SysModel path to the measured `-`
 (signed-component gates per axis <=1e-9, cross-path <=1e-9).
 Zero-offset path is IEEE-exact no-op (bit-identical).
 
-### Fuel depletion (flagship): mass/I feedback + bit-exact depletion law
+### Fuel depletion (flagship, VEC path — SysModel is WP25-A3 option B, see A13)
 
 `FuelMassContributorT` (1 state + mdot input) + per-tick hub mass/I par
 overwrite + live aggregate c_B everywhere (no rebuilds in the final design;
@@ -598,7 +598,10 @@ a drift-triggered-rebuild design was tried and reverted: 2 s re-JIT each,
 - Gates: centered + offset tank (10 kg, 5 N, duty 0.5, 600 s, 1.1 kg
   burned): fuel bit-exact, trajectories in switching class; c_B static
   initial would cost 0.2 m (measured) -- live-c everywhere instead.
-- Scope: single tank + all mirrored thrusters drain it (multi-tank raises;
+- Scope: VEC PATH ONLY. SysModel publishes no fuel telemetry by design
+  (WP25-A3 option B, Decision 4 — see DESIGN A13; the static-full-tank publish
+  was wrong telemetry under burn, H6). Single tank + all mirrored thrusters
+  drain it (multi-tank raises;
   subset linkage unverifiable -- documented assumption); empty-tank
   behavior (clamp mdot, thrust unaffected) labeled; fuel+offset+full-FSW
   closed loop is follow-up.
