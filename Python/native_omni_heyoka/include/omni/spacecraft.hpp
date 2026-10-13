@@ -227,7 +227,8 @@ private:
     std::vector<double> onRamp_;  // on-ramp knots [s] since valve opened
     std::vector<double> offRamp_;  // off-ramp knots [s] since valve closed
     bool rampLinear_ = true;
-    double cutoffFreq_ = 10.0;  // [rad/s] stock default; benches pin 1000
+    double cutoffFreq_ = 10.0;  // [rad/s] stock default; accepted but INERT
+    // without ramps (WP25-A2: recorded, never modeled -- 10 vs 1000 identical)
     std::vector<double> blowdownThrustCoeffs_;  // descending poly; no tank => 1.0 + warn
     std::vector<double> blowdownIspCoeffs_;
     double maxSwirlTorque_ = 0.0;  // [N-m] about the thrust axis
@@ -273,7 +274,8 @@ private:
     bool voltageOn_ = false;    // WP2 (informational; reuse needs no code)
     bool minPulseOn_ = false;   // WP3b (modeled behind default-off setter)
     bool rampsOn_ = false;      // WP3b (modeled behind default-off setter)
-    bool cutoffLagOn_ = false;  // WP3b (modeled behind default-off setter)
+    bool cutoffLagOn_ = false;  // WP25-A2: NEVER armed -- cutoff accepted,
+    // never modeled (inert without ramps); re-entry only composed WITH ramps (M2)
     bool blowdownOn_ = false;   // WP3b/WP6 (1.0 + warn without tank)
     bool swirlOn_ = false;      // WP3b (modeled behind default-off setter)
     bool forceMsgOn_ = true;    // WP3 guard-only: force path has no model

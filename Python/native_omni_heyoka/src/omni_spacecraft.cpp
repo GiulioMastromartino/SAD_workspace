@@ -226,10 +226,14 @@ void OmniSpacecraft::setThrusterRamps(const std::vector<double>& onRamp,
 }
 
 void OmniSpacecraft::setCutoffFrequency(double cutoffFrequency) {
+    // WP25-A2 (Decision 2: NO lag model on either path): cutoff is accepted
+    // but NEVER modeled -- inert without ramps (stock 10 vs 1000 identical
+    // over fire AND shutoff transients; vec :951-957 never had a filter).
+    // Accept any finite >0, reject <=0, record the value, never arm shaping
+    // (cutoffLagOn_ stays false; re-entry only composed WITH ramps, M2).
     if (!(cutoffFrequency > 0.0) || !std::isfinite(cutoffFrequency))
         this->bskLogger.bskError("OmniSpacecraft: cutoffFrequency must be finite positive.");
     this->cutoffFreq_ = cutoffFrequency;
-    this->cutoffLagOn_ = true;
 }
 
 void OmniSpacecraft::setBlowdownCoeffs(const std::vector<double>& thrustCoeffs) {
@@ -1017,12 +1021,13 @@ void OmniSpacecraft::UpdateState(uint64_t CurrentSimNanos) {
                     target = 0.0;
                 }
                 double filt = target;
-                if (this->cutoffLagOn_) {
-                    const double alpha = 1.0 - std::exp(-seg * this->cutoffFreq_);
-                    double& lag = this->impl->lagState_[j];
-                    lag += (target - lag) * alpha;
-                    filt = lag;
-                }
+                // WP25-A2 (Decision 2: NO lag model on either path): cutoff
+                // is inert without ramps -- the unconditional first-order
+                // filter is DELETED (it DIVERGED from stock, 0.632x at
+                // cutoff 10; ledger thr_lag10==thr_fresh_05 bit-identical).
+                // filt == target, identical to vec eff = open?1:0 (module-
+                // side doubles only, A3 purity untouched). Cutoff re-enters
+                // only composed WITH ramps if those ever land (M2).
                 eff[j] = filt;  // * blowdown(=1.0, no tank; depletion OUT, M6)
                 if (open) this->impl->lastFilt_[j] = this->impl->lastQ_[j] * filt;
             }

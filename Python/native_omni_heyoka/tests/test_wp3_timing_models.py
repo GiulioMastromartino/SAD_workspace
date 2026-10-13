@@ -683,15 +683,16 @@ def np_l2(v):
 
 
 def test_m2_ladder_default_path_matches_ledger():
-    """M2 rows: default path reproduces the ledger; enabled lag shapes sanely.
+    """M2 rows: default path reproduces the ledger; cutoff is inert.
 
     The ledger ladder {10,100,1000} is identical @ dt=0.1 on the DEFAULT
     path (models off / benches pin 1000): full-step fires achieve duty 1.
-    The enabled-lag transient itself is model-vs-mirror (stock sub-step
-    transient unprobed -- no fabricated stock tolerance): with cutoff=10
-    (tau=0.1 s) over a single [0,dt) open arc, per-arc ZOH holds the
-    end-of-arc filtered value 1-exp(-dt/tau) ~= 0.632 for the whole step,
-    so the fire impulse ratio vs default must sit well below 1 but above 0.
+    WP25-A2 (Decision 2: NO lag model on either path): stock cutoff is
+    INERT without ramps, so setCutoffFrequency(10) must equal 1000 to ~1%
+    over fire AND shutoff transients at matched dt (ledger
+    swap_p1_parity.json thr_lag10==thr_fresh_05 bit-identical). The old
+    0.3-0.9 bound around 1-exp(-1) ~= 0.632 described the deleted
+    divergent filter, not stock, and is removed.
     """
     np = pytest.importorskip("numpy")
     om, thr, _ = _run_omni_thr(duty_cmd=1.0, dt=0.1, n_ticks=3)
@@ -711,11 +712,20 @@ def test_m2_ladder_default_path_matches_ledger():
     assert got[1] == pytest.approx(exp_step, rel=0.05), (got, exp_step)
     assert got[2] == pytest.approx(exp_step, rel=0.05), (got, exp_step)
     assert np.asarray(thr.thrustFactor, float).ravel()[-1] == pytest.approx(1.0, abs=1e-6)
-    # Enabled lag: same command, cutoff=10 -> visible single-step deficit.
-    om_lag, _, _ = _run_omni_thr(duty_cmd=1.0, dt=0.1, n_ticks=3,
-                                 opts={"cutoff": 10.0})
-    ratio = float(np_l2(_deltas(om_lag)[1])) / float(np_l2(dl[1]))
-    assert 0.3 < ratio < 0.9, ratio  # ZOH bound around 1-exp(-1) ~= 0.632
+    # WP25-A2 inert: cutoff=10 vs 1000, matched dt, fire AND shutoff
+    # transients. Duty 1.0 covers full-fire arcs; duty 0.5 (5/6 staircase)
+    # adds a mid-step shutoff arc. Idle fill steps must idle on both.
+    for duty in (1.0, 0.5):
+        om_hi, _, _ = _run_omni_thr(duty_cmd=duty, dt=0.1, n_ticks=3,
+                                    opts={"cutoff": 1000.0})
+        om_lo, _, _ = _run_omni_thr(duty_cmd=duty, dt=0.1, n_ticks=3,
+                                    opts={"cutoff": 10.0})
+        for k, (a, b) in enumerate(zip(_deltas(om_hi), _deltas(om_lo))):
+            na, nb = float(np_l2(a)), float(np_l2(b))
+            if na < 1e-12:
+                assert nb < 1e-12, (duty, k, na, nb)
+            else:
+                assert 0.99 < nb / na < 1.01, (duty, k, na, nb)
 
 
 def test_t2_chatter_row_dt001():

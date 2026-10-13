@@ -201,7 +201,26 @@ def probe_M2():
             traces[str(fc)] = cell
         except Exception as e:
             traces[str(fc)] = {"error": str(e)[:200]}
-    return {"cutoff_ladder": traces}
+    # WP25-A2 inert verdict (Decision 2: NO lag model on either path):
+    # stock cutoff is INERT without ramps, so the {10,100,1000} ladder
+    # norms must agree to 1% over fire AND shutoff transients at matched
+    # dt. Ledger ref: swap_p1_parity.json thr_lag10==thr_fresh_05
+    # bit-identical. Measurement-only verdict (recorded, not asserted).
+    try:
+        lad = [traces[str(fc)].get("norms") for fc in CUTOFF_LADDER]
+        n_steps = max(len(v) for v in lad if v)
+        verdict: dict = {"tol": 0.01, "steps": [], "inert": True}
+        for k in range(n_steps):
+            vals = [float(v[k]) for v in lad if v and k < len(v)]
+            ref = max(vals) if vals else 0.0
+            if ref < 1e-12:
+                ok = all(x < 1e-12 for x in vals)
+            else:
+                ok = all(abs(x - ref) <= 0.01 * ref for x in vals)
+            verdict["steps"].append({"step": k, "norms": vals, "ok": bool(ok)})
+            verdict["inert"] = bool(verdict["inert"] and ok)
+    except Exception as e:
+        verdict = {"error": str(e)[:200]}
 def probe_M3():
     dt = 0.01; mn = 0.02; fk = {"useMinPulseTime": True, "cutoffFrequency": 1000.0, "MinOnTime": float(mn)}; out = {}
     for m in (0.2, 0.5, 1.0, 1.5):

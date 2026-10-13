@@ -611,17 +611,21 @@ a drift-triggered-rebuild design was tried and reverted: 2 s re-JIT each,
   Gate: spin-up 40 s + free spin-down, 120 s: 1e-14 class all channels.
   Jitter stays loud-reject (distributional-or-reject per DESIGN; bit-exact
   impossible across libc++).
-- Cutoff lag: SUPERSEDED -- an unconditional first-order filter DIVERGES
-  from stock (attenuates fresh steps 0.63x at cutoff 10; measured r 0.229).
-  Measured instead: stock cutoff is INERT without ramps (10 vs 1000 vs 100
-  bit-identical over fire AND shutoff transients). Resolution: NO lag model;
-  any cutoff accepted (<=0 still rejected, degenerate unmeasured); ramps
-  stay rejected, and cutoff must be modeled WITH ramps if those ever land
-  (M2 composition). Same caveat recorded for the SysModel WP3b lag path
-  (exact at pinned 1000, unvalidated at 10). Gate: thr_lag10 cell (default
-  cutoff, no pin).
 - u_min/P_max/Omega_max need NO work (stock ConfigureRWRequests applies
   them; we read post-saturation u_current -- timing-identical).
+- Cutoff accepted, never modeled (inert without ramps) -- WP25-A2 closed
+  H1/M16: the unconditional SysModel first-order filter is DELETED (it
+  DIVERGED from stock, attenuating fresh steps 0.63x at cutoff 10;
+  measured r 0.229; `setCutoffFrequency(10)` vs vec was an arm split).
+  Measured stock truth: cutoff is INERT without ramps (10 vs 1000 vs 100
+  bit-identical over fire AND shutoff transients); both paths now compute
+  `eff = open?1:0`. `setCutoffFrequency` accepts any finite `>0` (`<=0`
+  still rejected, degenerate unmeasured) and never arms shaping. Ramps
+  stay rejected. Archaeology: before this fix SysModel was exact at
+  pinned 1000 (filter ~= identity there) and unvalidated at 10. Re-entry
+   condition: cutoff composes WITH ramps if those ever land (M2). Gate:
+   10-vs-1000 impulse ratio 1.00 +/- 0.01 over fire AND shutoff transients
+   (matched dt); `thr_lag10` cell (default cutoff, no pin) retained.
 
 ### Swap debugging ledger additions
 
