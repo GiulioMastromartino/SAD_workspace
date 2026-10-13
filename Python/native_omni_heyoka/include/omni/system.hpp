@@ -425,6 +425,11 @@ public:
     // Any OTHER geometry-degenerate trailing slot is suffix-dropped here;
     // anything else (interior gap, the Update-4 invI6 class) throws LOUDLY
     // instead of silently misbuilding.
+    // WP25-C2 M5-rest ordering constraint: the c-subset is always trailing
+    // own-pars (env/fuel contribute n_pars==0), so the mask is suffix-safe by
+    // construction; heyoka prints par[i] as p<i> (pinned by the printer test
+    // in tests/test_wp0_guards.py) — if the printer ever changes, the parse
+    // below breaks loudly (seen stays empty), never silently.
     // Returns the kept count k; callers pass pars[0..k) and must bound all
     // per-tick get_pars_data() pushes by k (heap safety!).
     static size_t checked_par_count(

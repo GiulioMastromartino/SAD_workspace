@@ -355,3 +355,21 @@ def test_guard_default_config_runs():
     _run_two_ticks(sim, macros)
 
 
+# --- WP25-C2 M5-rest layout hygiene (APPEND-ONLY home for printer pin) -------
+# checked_par_count (include/omni/system.hpp) parses heyoka's par printer
+# output expecting the `p<i>` form (s[0]=='p' + digits). If heyoka ever
+# changes that format, the parse silently yields an empty set — this test
+# fails loudly instead (source-contract half always runs; live-printer half
+# runs wherever heyoka is importable, skips otherwise).
+
+def test_printer_par_index_format_pinned():
+    """M5-rest: heyoka prints par[i] as 'p<i>' (checked_par_count parses it)."""
+    src = (REPO / "include" / "omni" / "system.hpp").read_text(encoding="utf-8")
+    assert "s[0] != 'p'" in src, (
+        "checked_par_count no longer parses the 'p<i>' printer form -- "
+        "update this pin and the parser together")
+    assert "heyoka::par[i]" in src, (
+        "par vector no longer built from heyoka::par -- re-verify the print assumption")
+    heyoka = pytest.importorskip("heyoka")
+    assert str(heyoka.par[0]) == "p0", str(heyoka.par[0])
+    assert str(heyoka.par[12]) == "p12", str(heyoka.par[12])

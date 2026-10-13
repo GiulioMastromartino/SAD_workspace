@@ -1,8 +1,11 @@
 """WP3a/WP3b thruster timing diagnostics (PLAN Rev 1).
-M0 mailbox matrix, MQ quantizer, M4 arc phase, M5 PWM, M1 ramps,
-M2 cutoff ladder, M3 min-pulse, M6 blowdown/swirl/force-msg + static
-THRConfig 4-field / THROutput 9-field checks. Results-only writes,
-relative paths, stdlib+numpy+Basilisk. LONG_SWEEPS gates M4 ladder.
+M0 mailbox matrix (+true same-stamp arbitration cell), MQ quantizer, M4 arc
+phase (+half-step-shift discrimination control), M5 PWM (true 10 Hz + true
+20 Hz @ dt=0.05 trains), M1 ramps (len==0 scope note), M2 cutoff ladder
+(+shutoff-transient thrustFactor trace), M3 min-pulse, M6
+blowdown/swirl/force-msg + static THRConfig 4-field / THROutput 9-field
+checks. Results-only writes, relative paths, stdlib+numpy+Basilisk.
+LONG_SWEEPS gates M4 ladder.
 """
 from __future__ import annotations
 import os
@@ -129,6 +132,21 @@ def probe_M0():
         dl = _deltas(om)
         cells[n] = {"norms": _norms(dl), "fire_idle": _fire_class(dl),
                     "d1": [float(x) for x in np.asarray(dl[1]).ravel()]}
+    # WP25-C2 true same-stamp-different-payload cell: the double driver
+    # writes half-duty then full-duty in ONE UpdateState (same stamp t, by
+    # construction), so the payloads differ while the stamp does not. The
+    # consumed write is proven by achieved duty: second(full)->5/6,
+    # first(half)->1/6 (duty 5/6 cell: half send 5/12 quantizes to 1/6).
+    dbl = np.asarray(od[2] - od[1], float)
+    achieved = float(-dbl[2] * I6[2, 2] / (0.1 * DT_DEFAULT))
+    cells["two_writes_one_step"].update({
+        "write_payloads": [d * 0.5, d],
+        "same_stamp": True,
+        "achieved_duty": achieved,
+        "consumed": ("second(full)" if abs(achieved - 5.0 / 6.0) < 0.05
+                     else ("first(half)" if abs(achieved - 1.0 / 6.0) < 0.05
+                           else "AMBIGUOUS")),
+    })
     return {"duty": d, "cells": cells}
 def probe_MQ():
     rows = []
@@ -148,15 +166,35 @@ def probe_M4():
         _, om, _ = _one_thruster_sim(d, dt=dt, writer="fresh", driver_mode="normal")
         _, omd, _ = _one_thruster_sim(d, dt=dt, writer="fresh", driver_mode="delayed")
         dl, dd = _deltas(om), _deltas(omd)
-        out[str(dt)] = {"normal_norms": _norms(dl), "delayed_norms": _norms(dd),
-                        "delta_matched_dt": [float(np.linalg.norm(a - b)) for a, b in zip(dl, dd)]}
+        cell = {"normal_norms": _norms(dl), "delayed_norms": _norms(dd),
+                "delta_matched_dt": [float(np.linalg.norm(a - b)) for a, b in zip(dl, dd)]}
+        # WP25-C2 half-step-shift DISCRIMINATION control (measurement-only):
+        # delayed==normal alone is omni-vs-omni mailbox evidence, NOT stock
+        # phase evidence. Interpolating the delayed trace at half-tick
+        # offsets must disagree strongly at the fill/fire edge (energy moves
+        # across the tick boundary) — proving the stock-vs-omni gate in
+        # tests/test_wp3_timing_models.py is phase-sensitive.
+        n = len(dl)
+        half = [0.5 * (np.asarray(dd[k]) + np.asarray(dd[k + 1])) for k in range(n - 1)]
+        cell["half_step_shift"] = {
+            "aligned_resid": [float(np.linalg.norm(np.asarray(a) - np.asarray(b)))
+                              for a, b in zip(dl, dd)],
+            "half_step_resid": [float(np.linalg.norm(np.asarray(dl[k + 1]) - half[k]))
+                                for k in range(n - 1)],
+            "scope": "omni-vs-omni delayed==normal is mailbox-only; "
+                     "stock-vs-omni phase lives in the host test gate.",
+        }
+        out[str(dt)] = cell
     out["long_sweeps"] = bool(LONG_SWEEPS)
     return out
 def probe_M5():
     dt = DT_DEFAULT; duty = 0.5
     _, oa, _ = _one_thruster_sim(duty, dt=dt, writer="fresh")
-    _, ob, _ = _one_thruster_sim(duty, dt=dt, writer="fresh", driver_mode="double")
-    return {"train_10Hz_norms": _norms(_deltas(oa)), "train_20Hz_proxy_norms": _norms(_deltas(ob)),
+    # WP25-C2 TRUE 20 Hz train at dt=0.05 (the old same-tick double-write
+    # "20Hz proxy" is retired to the M0 two-writes arbitration cell above).
+    _, ob, _ = _one_thruster_sim(duty, dt=0.05, writer="fresh", n_steps=6)
+    return {"train_10Hz_norms": _norms(_deltas(oa)), "train_20Hz_true_dt005_norms": _norms(_deltas(ob)),
+            "train_20Hz_note": "TRUE 20 Hz train at dt=0.05, per-tick writes (not a same-tick proxy).",
             "over_1.5_achieved": float(_achieved(1.5, dt=dt)), "neg_-0.1_achieved": float(_achieved(-0.1, dt=dt))}
 def probe_M1():
     static = {}
@@ -183,6 +221,10 @@ def probe_M1():
         step["step_norms"] = _norms(_deltas(om))
     except Exception as e:
         step["error"] = str(e)[:200]
+    # WP25-C2 scope label: this ledger covers empty ramps (len==0) ONLY.
+    # Ramp-armed shapes are NOT stock-compared here; the omni-internal shape
+    # trace gate lives in tests/test_wp3_timing_models.py (no parity claim).
+    step["scope"] = "len==0 (empty ramps) ONLY — ramp-armed shapes gated in tests, never claimed vs stock."
     return {"static": static, "step": step}
 def probe_M2():
     traces = {}
@@ -221,6 +263,25 @@ def probe_M2():
             verdict["inert"] = bool(verdict["inert"] and ok)
     except Exception as e:
         verdict = {"error": str(e)[:200]}
+    # WP25-C2 shutoff-transient thrustFactor trace (telemetry-timing only):
+    # duty 0.5 -> 5/6 staircase adds a mid-step shutoff arc. The factor trace
+    # is recorded for the lag-alignment gate; dynamics truth stays the omega
+    # deltas (see the host telemetry-timing test — no same-tick factor
+    # assertion is ever made from this trace).
+    try:
+        _, om05, tl05 = _one_thruster_sim(0.5, writer="fresh",
+                                          factory_kwargs={"cutoffFrequency": 1000.0})
+        shutoff: dict = {"norms": _norms(_deltas(om05))}
+        if tl05 is not None:
+            try:
+                shutoff["thrustFactor"] = [float(x) for x in np.asarray(tl05.thrustFactor).ravel()[:8]]
+            except Exception:
+                pass
+        else:
+            shutoff["thrusterOutMsgs"] = "unavailable"
+    except Exception as e:
+        shutoff = {"error": str(e)[:200]}
+    return {"cutoff_ladder": traces, "inert_1pct": verdict, "shutoff_duty05": shutoff}
 def probe_M3():
     dt = 0.01; mn = 0.02; fk = {"useMinPulseTime": True, "cutoffFrequency": 1000.0, "MinOnTime": float(mn)}; out = {}
     for m in (0.2, 0.5, 1.0, 1.5):

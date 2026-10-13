@@ -57,6 +57,9 @@ struct OmniSpacecraft::Impl {
     bool swirlOffCached_ = false;
     size_t swirlOff_ = 0;
     bool blowdownWarned_ = false;
+    // WP25-C2 M9: one-shot off-ramp-tail truncation warning (reset when ramps
+    // are re-armed; default-off path never reaches the warn site).
+    bool rampTailWarned_ = false;
     // WP4: published omegaDot_BN_B source (steady-tick numeric value).
     double lastWDot[3]{0.0, 0.0, 0.0};
     // WP5 env slot bases + body count (valid after buildIntegrator).
@@ -230,6 +233,9 @@ void OmniSpacecraft::setThrusterRamps(const std::vector<double>& onRamp,
     this->offRamp_ = offRamp;
     this->rampLinear_ = linearShape;
     this->rampsOn_ = !onRamp.empty() || !offRamp.empty();
+    // WP25-C2 M9: re-arm the one-shot tail-truncation warning (a new knot set
+    // may truncate differently; default-off configs never warn).
+    if (this->impl) this->impl->rampTailWarned_ = false;
 }
 
 void OmniSpacecraft::setCutoffFrequency(double cutoffFrequency) {
@@ -779,7 +785,7 @@ void OmniSpacecraft::writeMsgs(uint64_t CurrentSimNanos) {
             const double tmax = this->thrTmax[i];
             const auto& d = this->thrDirs[i];
             const auto& r = this->thrPos[i];
-            const double bT = 1.0, bI = 1.0;  // no tank => 1.0 (M6; warn tick-side)
+            const double bT = 1.0, bI = 1.0;  // no tank => 1.0 (M6; warn tick-side; WP25-C2: warn-and-hold-1.0 shipped, see UpdateState)
             const double q = haveCache ? this->impl->lastFilt_[i] : 0.0;
             const double F = q * tmax * bT;
             out.thrustFactor = q;
@@ -1165,6 +1171,11 @@ void OmniSpacecraft::UpdateState(uint64_t CurrentSimNanos) {
         if (im.lastQ_.size() != nt) im.lastQ_.assign(nt, 0.0);
         if (this->blowdownOn_ && !im.blowdownWarned_) {
             im.blowdownWarned_ = true;
+            // WP25-C2 DECISION (locked, for S10's PLAN amendment — PLAN text
+            // untouched here): warn-and-hold-1.0 SHIPPED. Coeffs are recorded
+            // but factors hold 1.0 without a tank; escalation to bskError was
+            // REJECTED (stock only warns on the no-tank config the M6 ledger
+            // cell pins green — raising would diverge from stock, not match).
             this->bskLogger.bskLog(BSK_WARNING,
                                    "OmniSpacecraft: blowdown coeffs set with no fuel tank "
                                    "attached; factors held at 1.0 (M6; depletion OUT, labeled).");
@@ -1185,6 +1196,10 @@ void OmniSpacecraft::UpdateState(uint64_t CurrentSimNanos) {
         const size_t nt = this->nThrusters();
         if (!this->thrStaged.empty()) {
             // WP3 min-pulse gate (M3): sub-MinOnTime requests suppress to 0.
+            // WP25-C2 M8 label (suppress-only + dead memory, verified): the
+            // MinPulseState writes below are diagnostics only — suppressed
+            // on-times are DROPPED (never merged into a later step), so no
+            // extend/merge memory exists on this path, by design.
             for (size_t i = 0; i < this->thrStaged.size() && i < nt; ++i) {
                 Impl::MinPulseState& st8 = this->impl->minPulseState_[i];
                 if (!this->minPulseOn_) {
@@ -1226,6 +1241,9 @@ void OmniSpacecraft::UpdateState(uint64_t CurrentSimNanos) {
     heyoka::taylor_adaptive<double>& ta = *(this->impl->ta);
     double* pd = ta.get_pars_data();
     // WP3: constant-per-step swirl scale (contributor "swirlScale" slot, A2).
+    // WP25-C2 swirl scope (comment-only): GLOBAL slot — one MaxSwirlTorque
+    // for ALL thrusters (per-thruster vector iff stock ever needs it; the
+    // contributor scales each thruster's q by this single value).
     if (this->nThrusters() > 0 && this->impl->swirlOffCached_
         && this->impl->swirlOff_ < P.size()) {
         P[this->impl->swirlOff_] = this->swirlOn_ ? this->maxSwirlTorque_ : 0.0;
@@ -1247,6 +1265,24 @@ void OmniSpacecraft::UpdateState(uint64_t CurrentSimNanos) {
         };
         for (double t : openT) addCut(t);
         if (this->rampsOn_) {
+            // WP25-C2 M9 (tails BOUNDED, warn option): an off-ramp tail past
+            // dt is truncated at the step edge (addCut drops it) — never
+            // propagated, so matched-dt holds by construction. Truncation
+            // warns ONCE per arming via bskLog (informative, non-fatal); the
+            // default-off path (rampsOn_ false) never reaches this block.
+            if (!this->offRamp_.empty() && !this->impl->rampTailWarned_) {
+                const double offSpan = this->offRamp_.back();
+                for (size_t j = 0; j < openT.size(); ++j) {
+                    if (openT[j] > eps && openT[j] + offSpan > dt + eps) {
+                        this->impl->rampTailWarned_ = true;
+                        this->bskLogger.bskLog(BSK_WARNING,
+                            "OmniSpacecraft: off-ramp tail past dt truncated "
+                            "(openT+offRamp>dt); shape restarts from the next "
+                            "tick's command, no cross-tick tail.");
+                        break;
+                    }
+                }
+            }
             for (size_t j = 0; j < openT.size(); ++j) {
                 if (openT[j] <= eps) continue;
                 for (double ko : this->onRamp_) addCut(ko);

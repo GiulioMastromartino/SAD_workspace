@@ -968,10 +968,19 @@ void OmniVecIntegrator::buildObjectFull(
             ++fp;
         }
         if (!found || fp != im->fuelPos)
-            this->bskLogger.bskError("OmniVecIntegrator: fuel state layout broken.");
+            this->bskLogger.bskError(
+                "OmniVecIntegrator: object %zu: fuel state layout broken.", obj);
     }
     // Name-based par slots for the per-tick fuel feedback (A2).
     if (nF > 0) {
+        // WP25-C2 M14: a missing/short Isp list must RAISE at build, never
+        // read as silent 0.0 (which would undercount mdot while thrust
+        // fires). Leak-only rigs carry no thrusters, so they are exempt.
+        if (!C.thrTmax.empty() && C.fuelIsps.size() != C.thrTmax.size())
+            this->bskLogger.bskError(
+                "OmniVecIntegrator: object %zu: %zu thrusters but %zu Isp "
+                "entries; set per-thruster Isps (no silent 0.0).",
+                obj, C.thrTmax.size(), C.fuelIsps.size());
         im->mdotOff = im->sys.par_index("mdot");
         im->massOff = im->sys.par_index("mass");
         im->IO[0] = im->sys.par_index("Ixx");
@@ -1456,11 +1465,12 @@ void OmniVecIntegrator::stepObject(size_t obj, double timeStep) {
             P[fo] = tauF;
         }
     }
-    // Friction slots stay 0 (stage 1: friction off on both arms by the
-    // Python-side guard in mirror_stock_config).
+    // WP25-C2 M15 (was stale "friction slots stay 0"): friction slots carry
+    // the live stock-exact Stribeck tauF computed above (module-side
+    // doubles); friction-off (default) writes identical zeros.
 
     // WP5 per-tick env refresh (bodies never frozen; P1 truth table inside).
-    if (im->hasEnv) this->updateEnvInputs(y.data(), P, cLive);
+    if (im->hasEnv) this->updateEnvInputs(obj, y.data(), P, cLive);
 
     // Thruster channel (stage 2, staircase only): edge-triggered mailbox.
     // Fire rule (measured stock cells: fresh/write-once/frozen/advance):
@@ -1506,22 +1516,29 @@ void OmniVecIntegrator::stepObject(size_t obj, double timeStep) {
         // mdot = sum over thrusters duty*Tmax/(Isp*g0) + leak, clamped so the
         // tank never crosses zero (module-side doubles, A3); hub mass/I pars
         // overwritten from live fuel (m = mDry + mFuel, I = I_dry + mFuel*K).
-        // c_B stays build-time static (depletion drift labeled, gated).
+        // WP25-C2 M15 (was stale "c_B stays build-time static"): the live
+        // aggregate c tracks depletion per tick (cOff slots below + B/C).
         if (im->fuelSrc != nullptr && timeStep > 0.0) {
             constexpr double G0 = 9.80665;
             const double mFuel = y[im->fuelPos];
-            double mdot = this->fuelLeak_;
-            for (size_t j = 0; j < openT.size() && j < this->thrTmax_.size(); ++j) {
+            double mdot = C.fuelLeak;
+            for (size_t j = 0; j < openT.size() && j < C.thrTmax.size(); ++j) {
                 const double duty = (timeStep > 0.0) ? openT[j] / timeStep : 0.0;
-                const double isp = (j < this->fuelIsps_.size()) ? this->fuelIsps_[j] : 0.0;
+                // WP25-C2 M14: the 0.0 fallback is unreachable-by-construction
+                // when fuel+thrusters are mirrored (build raises on a short
+                // Isp list); it survives only as defensive indexing.
+                const double isp = (j < C.fuelIsps.size()) ? C.fuelIsps[j] : 0.0;
                 if (isp > 0.0 && duty > 0.0)
-                    mdot += duty * this->thrTmax_[j] / (isp * G0);
+                    mdot += duty * C.thrTmax[j] / (isp * G0);
             }
             if (mdot < 0.0) mdot = 0.0;
             const double mdotMax = mFuel / timeStep;
             if (mdot > mdotMax) mdot = (mdotMax > 0.0) ? mdotMax : 0.0;
-            P[im->mdotOff] = mdot;
-            P[im->massOff] = this->mass_ + mFuel;
+            // WP25-C2 M14: <P.size() guards mirror the cOff guard discipline
+            // (offsets come from par_index; ta may own a suffix-truncated
+            // par vector, so every per-tick push is heap-bounded).
+            if (im->mdotOff < P.size()) P[im->mdotOff] = mdot;
+            if (im->massOff < P.size()) P[im->massOff] = C.mass + mFuel;
             // Inertia about TRUE C (not B!): I_C = I_hub_Bc
             //   + mHub*PA(rBcB - c) + mFuel*PA(rTB - c), c = live aggregate.
             // Using I_B (about B) instead is wrong by M*(|c|^2I - cc^T);
@@ -1530,29 +1547,30 @@ void OmniVecIntegrator::stepObject(size_t obj, double timeStep) {
             // cases reduce exactly (PA(0) = 0). Packed Ixx..Iyz order.
             {
                 const double cx = cLive[0], cy = cLive[1], cz = cLive[2];
-                const double hx = this->rBcB_[0] - cx,
-                             hy = this->rBcB_[1] - cy,
-                             hz = this->rBcB_[2] - cz;
-                const double fx = this->fuelRTB_[0] - cx,
-                             fy = this->fuelRTB_[1] - cy,
-                             fz = this->fuelRTB_[2] - cz;
+                const double hx = C.rBcB[0] - cx,
+                             hy = C.rBcB[1] - cy,
+                             hz = C.rBcB[2] - cz;
+                const double fx = C.fuelRTB[0] - cx,
+                             fy = C.fuelRTB[1] - cy,
+                             fz = C.fuelRTB[2] - cz;
                 const double hPA[6] = {
                     hy * hy + hz * hz, hx * hx + hz * hz, hx * hx + hy * hy,
                     -hx * hy, -hx * hz, -hy * hz};
                 const double fPA[6] = {
                     fy * fy + fz * fz, fx * fx + fz * fz, fx * fx + fy * fy,
                     -fx * fy, -fx * fz, -fy * fz};
-                const double Id[6] = {this->Ixx_, this->Iyy_, this->Izz_,
-                                      this->Ixy_, this->Ixz_, this->Iyz_};
+                const double Id[6] = {C.Ixx, C.Iyy, C.Izz,
+                                      C.Ixy, C.Ixz, C.Iyz};
+                // WP25-C2 M14: IO writes bounded like mdotOff/massOff above.
                 for (int k = 0; k < 6; ++k)
-                    P[im->IO[k]] = Id[k] + this->mass_ * hPA[k] + mFuel * fPA[k];
+                    if (im->IO[k] < P.size()) P[im->IO[k]] = Id[k] + C.mass * hPA[k] + mFuel * fPA[k];
             }
             // Thruster arm offsets track live c (same tick values as above;
             // masked-out axes have no slot -- contributor uses the record).
             for (int j = 0; j < 3; ++j)
                 if (im->cOff[j] < P.size()) P[im->cOff[j]] = cLive[j];
         }
-        heyoka::taylor_adaptive<double>& ta = *(im->ta);
+        heyoka::taylor_adaptive<double>& ta = *(gr->ta);
         double* pd = ta.get_pars_data();
         double* sd = ta.get_state_data();
         // Switch list: 0, interior quantized open-times (epsilon-merged), dt.

@@ -354,6 +354,7 @@ public:
             const Vector3<S> d = vecsub3(off, rN);
             const S d2 = dot3(d, d);
             const S dn = sqrt_scalar(d2);
+            // WP25-C2 M4 posture: no dn==0 guard in the graph — deferred div-by-zero matches stock's singularity; module-side omni::env::nbodyAccel skips dn<=0 (A3).
             const S inv = make_scalar<S>(1.0) / (d2 * dn);
             a = vecadd3(a, scale_vec3(d, make_scalar<S>(bodyMu_[b]) * inv));
         }

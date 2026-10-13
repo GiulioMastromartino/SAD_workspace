@@ -181,6 +181,9 @@ inline Matrix3<S> adjugate3(const Matrix3<S>& M) {
 }
 
 // Explicit 3x3 inverse. Works for both double and heyoka::expression.
+// WP25-C2 M4 NaN posture (deliberate): no det==0 guard — 1/det on a singular
+// input yields Inf/NaN loudly in the graph, never a silent wrong inverse;
+// callers guarantee det>0 (positive-definite inertia blocks, nonzero radii).
 template <typename S>
 inline Matrix3<S> inv3(const Matrix3<S>& M) {
     const S s = make_scalar<S>(1.0) / det3(M);

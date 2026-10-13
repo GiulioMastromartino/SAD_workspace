@@ -55,11 +55,13 @@ inline void solve_backsub(BackSubMatricesT<S>& m,
         }
     }
 
+    // WP25-C2 M4 posture: no det(D)==0 guard — D is the positive-definite hub block, so det(D)>0 by construction; a singular build Infs/NaNs loudly via inv3, never silently.
     const Matrix3<S> Dinv = inv3(m.D);
     // B*Dinv reused twice below.
     const Matrix3<S> BDinv = matmul3(m.B, Dinv);
     // S = A - B * D^-1 * C   (Schur complement; 'Sch' avoids shadowing S)
     const Matrix3<S> Sch = matsub3(m.A, matmul3(BDinv, m.C));
+    // WP25-C2 M4 posture: no det(Sch)==0 guard — same loud-Inf/NaN posture as D; a degenerate coupling has no silent path.
     const Matrix3<S> Schinv = inv3(Sch);
     // rDDot = Sch^-1 * (vecTrans - B * D^-1 * vecRot)
     const Vector3<S> rhs_t = vecsub3(m.vecTrans, matvec3(BDinv, m.vecRot));

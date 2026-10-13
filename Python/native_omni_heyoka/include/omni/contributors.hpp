@@ -422,6 +422,7 @@ public:
     Vector3<S> field(const Vector3<S>& rN) const {
         const S r2 = dot3(rN, rN);
         const S rn = sqrt_scalar(r2);
+        // WP25-C2 M4 posture: no r==0 guard in the graph — the deferred div-by-zero matches stock's singularity; module-side callers skip dn<=0 (A3: branches never symbolic).
         const S invR3 = make_scalar<S>(1.0) / (r2 * rn);
         return scale_vec3(rN, make_scalar<S>(-mu_) * invR3);
     }
@@ -481,6 +482,7 @@ public:
         // the structural comOff_ literal (provably dead in the graph).
         bool ux = false, uy = false, uz = false;
         for (size_t i = 0; i < n_; ++i) {
+            // WP25-C2 note-only (dead arm, kept as documentation): every registration setter rejects tmax<=0/nonfinite, so tmax_[i]>0 always holds here and ==0.0 cannot trigger.
             if (tmax_[i] == 0.0) continue;
             if (dirs_[i][0] != 0.0) { uy = true; uz = true; }
             if (dirs_[i][1] != 0.0) { ux = true; uz = true; }
@@ -623,8 +625,10 @@ public:
         return y;
     }
     // Min-pulse suppress gate (M3 histogram): sub-MinOnTime requests drop to
-    // zero; firing requests pass through. Merge/extend memory lives in the
-    // staging layer's MinPulseState (documented, default suppress-only).
+    // zero; firing requests pass through. WP25-C2 M8 label: NO merge/extend
+    // memory anywhere — the staging layer's MinPulseState fields
+    // (carryover/lastFireStep/fireCounter) are write-only diagnostics
+    // (dead memory, verified by grep: zero reads); default suppress-only.
     static double minPulseGate(double onTimeCmd, double q, double minOnTime) {
         if (minOnTime > 0.0 && onTimeCmd < minOnTime) return 0.0;
         return q;

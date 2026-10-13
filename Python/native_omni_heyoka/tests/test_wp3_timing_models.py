@@ -36,6 +36,20 @@ Layout (A2): the only new par slot is the contributor ``swirlScale`` input
 (default 0.0); everything else folds module-side through the existing q
 slots (the thruster q-slot pattern). Graph purity (A3): no clamp/branch in
 the symbolic path -- staging, ramps, lag, blowdown live module-side.
+
+WP25-C2 scope notes (labels, not ledger rewrites — committed JSON untouched):
+* M4: the delayed-vs-normal gate below is omni-vs-omni (mailbox-only), NOT
+  stock phase evidence; stock-vs-omni phase discrimination lives in
+  ``test_m4_phase_stock_vs_omni_with_half_step_control`` (edges + a
+  half-step-shift control proving the gate is phase-sensitive).
+* M5: the probe's old same-tick double-write "20 Hz proxy" is retired to the
+  M0 two-writes cell; the TRUE 20 Hz claim is the dt=0.05 train gate below.
+* M0 two-writes: true same-stamp-different-payload arbitration cell
+  (last-write-wins proven by achieved duty).
+* Telemetry timing: ``thrustFactor`` is telemetry-timing only; dynamics truth
+  stays the omega deltas (lag-alignment gate below).
+* M1: the ledger covers empty ramps (len==0) ONLY; ramp-armed shapes pass
+  through the trace gate below (omni-internal shape match, no parity claim).
 """
 
 from __future__ import annotations
@@ -176,6 +190,41 @@ def ref_arc_cuts(dt: float, open_times: list, on_knots: list,
     return sw
 
 
+def ref_offramp_truncated(open_times: list, off_knots: list, dt: float) -> bool:
+    """WP25-C2 M9 warn predicate mirror (module arc setup; one-shot bskLog).
+
+    True iff any firing thruster's off-ramp tail runs past the step edge
+    (openT + offSpan > dt + eps) and is therefore truncated at dt. Matches
+    the C++ warn condition exactly (off_knots ascending, span = last).
+    """
+    eps = 1e-9 * dt
+    if not off_knots:
+        return False
+    span = off_knots[-1]
+    return any(ot > eps and ot + span > dt + eps for ot in open_times)
+
+
+def ref_shaped_impulse(dt: float, open_time: float, on_knots: list,
+                       linear: bool) -> float:
+    """WP25-C2 M1 gate mirror: integrate the on-ramp shape over one step.
+
+    Replays the module arc loop (rampClock from 0, ZOH per sub-arc) and
+    returns sum(target * seg). Unshaped reference for the same step is
+    ``open_time`` (target identically 1 while open).
+    """
+    sw = ref_arc_cuts(dt, [open_time], on_knots, [], True)
+    clock, imp = 0.0, 0.0
+    for k in range(len(sw) - 1):
+        seg = sw[k + 1] - sw[k]
+        t_arc = sw[k]
+        is_open = open_time > t_arc
+        tgt = ref_ramp_factor(clock, on_knots, linear, True) if is_open else 0.0
+        imp += tgt * seg
+        if is_open:
+            clock += seg
+    return imp
+
+
 def test_staircase_mirror_edges():
     assert ref_quantize(0.0) == 0.0
     assert ref_quantize(-0.1) == 0.0
@@ -255,6 +304,29 @@ def test_arc_cut_mirror_structure():
     # on-knots land as cuts; off-knot 0.1+0.03 falls outside the step; the
     # openT==dt edge itself is the appended dt (never a duplicate cut).
     assert sw2 == pytest.approx([0.0, 0.02, 0.05, dt], abs=1e-12)
+
+
+def test_offramp_tail_truncation_predicate():
+    # WP25-C2 M9: the C++ one-shot warn fires exactly on these configs.
+    assert ref_offramp_truncated([0.1], [0.03], 0.1) is True  # 0.1+0.03 > dt
+    assert ref_offramp_truncated([5.0 / 6.0 * 0.1], [0.03], 0.1) is True
+    assert ref_offramp_truncated([0.05], [0.03], 0.1) is False  # 0.08 < dt
+    assert ref_offramp_truncated([0.1], [], 0.1) is False  # no off-ramp
+    assert ref_offramp_truncated([0.0], [0.03], 0.1) is False  # idle thruster
+    # Contract: the warn site exists in the module (fails, never skips, if
+    # the M9 warn is removed — default-off path needs no such site).
+    src = SPACECRAFT_CPP.read_text()
+    assert "rampTailWarned_" in src
+    assert "off-ramp tail past dt truncated" in src
+
+
+def test_m1_ramp_shape_pure_prediction():
+    # WP25-C2 M1 trace-gate prediction (runs anywhere): on=[0.02, 0.05]
+    # linear @ dt=0.1, full step. Arcs [0,0.02,0.05,0.1] with targets
+    # 0.0/0.4/1.0 -> shaped 0.062 vs unshaped 0.1 (ratio 0.62).
+    imp = ref_shaped_impulse(0.1, 0.1, [0.02, 0.05], True)
+    assert imp == pytest.approx(0.062, abs=1e-12)
+    assert imp / 0.1 == pytest.approx(0.62, abs=1e-12)
 
 
 # ---------------------------------------------------------------------------
@@ -409,6 +481,17 @@ def test_cpp_contract_swig_payloads():
     src = _need(SWIG_I, "THROutputMsgPayload.h")
     assert "THRArrayCmdForceMsgPayload.h" in src
     assert "THROutputMsgVector" in src
+
+
+def test_cpp_contract_m14_fuel_guards():
+    # WP25-C2 M14 (runs anywhere: source contract, never skips): the vec
+    # per-tick fuel pushes are heap-bounded like the cOff writes, and a
+    # missing/short Isp list raises at build instead of reading silent 0.0.
+    vec = (REPO / "src" / "omni_vec_integrator.cpp").read_text()
+    assert "if (im->mdotOff < P.size())" in vec
+    assert "if (im->massOff < P.size())" in vec
+    assert "if (im->IO[k] < P.size())" in vec
+    assert "C.fuelIsps.size() != C.thrTmax.size()" in vec
 
 
 # ---------------------------------------------------------------------------
@@ -738,7 +821,13 @@ def test_t2_chatter_row_dt001():
 
 
 def test_m4_phase_row_delayed_matches_normal():
-    """M4 gate: 1-tick-delayed driver matches normal, matched dt."""
+    """M4 mailbox check, omni-vs-omni ONLY (NOT stock phase evidence).
+
+    WP25-C2 label: 1-tick-delayed driver matches normal at matched dt on the
+    omni arm — this proves mailbox/staging timing, not arc phase vs stock.
+    Stock-vs-omni phase discrimination (edges + half-step-shift control) is
+    test_m4_phase_stock_vs_omni_with_half_step_control below.
+    """
     om_n, _, _ = _run_omni_thr(duty_cmd=5.0 / 6.0, dt=0.1, n_ticks=3)
     om_d, _, _ = _run_omni_thr(duty_cmd=5.0 / 6.0, dt=0.1, n_ticks=3,
                                writer="delayed")
@@ -798,3 +887,223 @@ def test_blowdown_no_tank_factors_one():
     # Smoke norms match the no-blowdown fire class (factors were inert).
     dl = _deltas(om)
     assert float(np_l2(dl[1])) > 0.0
+
+
+# ---------------------------------------------------------------------------
+# WP25-C2 Part D additions: true phase/PWM/arbitration/timing/ramp cells.
+# All host-only (importorskip Basilisk); matched dt on every arm.
+# ---------------------------------------------------------------------------
+
+def _run_stock_thr(*, duty_cmd, dt=0.1, n_ticks=4):
+    """Minimal stock single-thruster sim mirroring the omni rig geometry.
+
+    Same bus (cubesat MASS/INERTIA), same ICs, same thruster
+    (pos=(0.5,0,1), dir=(0,0,1), tmax=1.0), no gravity (torque coast),
+    factory cutoff pinned at 1000 (bench pin). Fresh per-tick driver ordered
+    AFTER the effector, so tick0 idles (fill) and firing starts tick1 —
+    the same edge convention as the omni rig. Returns omega_BN_B log array.
+    """
+    np = pytest.importorskip("numpy")
+    pytest.importorskip("Basilisk.architecture.messaging")
+    pytest.importorskip("omniheyoka.omni_heyoka")
+    from Basilisk.architecture import messaging, sysModel
+    from Basilisk.simulation import spacecraft, thrusterDynamicEffector
+    from Basilisk.utilities import SimulationBaseClass, macros, orbitalMotion, simIncludeThruster
+
+    from cubesat_12u_sim.core import config as C
+
+    mass = float(C.MASS)
+    i6 = np.asarray(C.INERTIA, float)
+
+    sim = SimulationBaseClass.SimBaseClass()
+    sim.SetProgressBar(False)
+    proc = sim.CreateNewProcess("p")
+    proc.addTask(sim.CreateNewTask("t", macros.sec2nano(dt)))
+    oe = orbitalMotion.ClassicElements()
+    oe.a, oe.e = 1.0e7, 0.01
+    oe.i = 33.3 * macros.D2R
+    oe.Omega, oe.omega, oe.f = 48.2 * macros.D2R, 347.8 * macros.D2R, 85.3 * macros.D2R
+    r0, v0 = orbitalMotion.elem2rv(MU, oe)
+
+    sc = spacecraft.Spacecraft()
+    sc.ModelTag = "wp3_stock_thr"
+    sc.hub.mHub = mass
+    sc.hub.IHubPntBc_B = [[float(i6[i][j]) for j in range(3)] for i in range(3)]
+    sc.hub.r_CN_NInit = list(r0)
+    sc.hub.v_CN_NInit = list(v0)
+    sc.hub.sigma_BNInit = [0.0, 0.0, 0.0]
+    sc.hub.omega_BN_BInit = [0.0, 0.0, 0.0]
+    sim.AddModelToTask("t", sc, 1)
+    tf = simIncludeThruster.thrusterFactory()
+    tf.create("TEST_Thruster", [0.5, 0.0, 1.0], [0.0, 0.0, 1.0],
+              MaxThrust=1.0, cutoffFrequency=1000.0, useMinPulseTime=False)
+    thr = thrusterDynamicEffector.ThrusterDynamicEffector()
+    tf.addToSpacecraft("thr", thr, sc)
+    sim.AddModelToTask("t", thr, 2)
+
+    class Driver(sysModel.SysModel):
+        def __init__(self):
+            super().__init__()
+            self.out = messaging.THRArrayOnTimeCmdMsg()
+
+        def Reset(self, t):
+            p = messaging.THRArrayOnTimeCmdMsgPayload()
+            p.OnTimeRequest = [0.0] * 36
+            self.out.write(p)
+
+        def UpdateState(self, t):
+            p = messaging.THRArrayOnTimeCmdMsgPayload()
+            ot = [0.0] * 36
+            ot[0] = float(duty_cmd) * dt
+            p.OnTimeRequest = ot
+            self.out.write(p, t, self.moduleID)
+
+    drv = Driver()
+    sim.AddModelToTask("t", drv)
+    thr.cmdsInMsg.subscribeTo(drv.out)
+    log = sc.scStateOutMsg.recorder()
+    sim.AddModelToTask("t", log)
+    sim.InitializeSimulation()
+    sim.ConfigureStopTime(macros.sec2nano(dt * n_ticks))
+    sim.ExecuteSimulation()
+    return np.asarray(log.omega_BN_B, float)
+
+
+def test_m4_phase_stock_vs_omni_with_half_step_control():
+    """M4 phase discrimination: stock-vs-omni (NOT omni-vs-omni).
+
+    Duty 5/6 @ matched dt=0.1, 4 ticks. The fire edge (tick0 idle, tick1
+    fires) must agree in INDEX on both arms, and per-tick fire deltas agree
+    to switching class (10%). Phase sensitivity is proven by the
+    half-step-shift control: the omni trace interpolated at half-tick
+    offsets must disagree MUCH more (edge energy moves across the tick
+    boundary) — i.e. this gate would catch a half-step phase error, while
+    the omni-vs-omni delayed==normal gate alone cannot.
+    """
+    np = pytest.importorskip("numpy")
+    om_omni, _, _ = _run_omni_thr(duty_cmd=5.0 / 6.0, dt=0.1, n_ticks=4)
+    om_stock = _run_stock_thr(duty_cmd=5.0 / 6.0, dt=0.1, n_ticks=4)
+    ds = _deltas(om_stock)
+    do = _deltas(om_omni)
+    assert len(ds) == len(do) == 4
+    ns = [float(np_l2(d)) for d in ds]
+    no = [float(np_l2(d)) for d in do]
+    assert ns[0] < 0.05 * ns[1] and no[0] < 0.05 * no[1]  # firing gates
+    assert ns[1] > 0.0 and no[1] > 0.0
+    # Fire-edge index agreement (phase discriminator core).
+    first_s = next(k for k, v in enumerate(ns) if v > 0.5 * ns[1])
+    first_o = next(k for k, v in enumerate(no) if v > 0.5 * no[1])
+    assert first_s == first_o == 1
+    # Aligned switching-class agreement on fire ticks.
+    aligned = [abs(a - b) / max(a, 1e-12) for a, b in zip(ns[1:], no[1:])]
+    assert max(aligned) < 0.10, (ns, no)
+    # Half-step-shift control: interpolate omni at half-tick offsets; the
+    # edge tick must now disagree strongly (energy moved across boundary).
+    half = [0.5 * (no[k - 1] + no[k]) for k in range(1, 4)]
+    mis = [abs(a - h) / max(a, 1e-12) for a, h in zip(ns[1:], half)]
+    assert mis[0] > 0.20, (ns, no, half)  # edge tick catches the shift
+    assert mis[0] > 3.0 * max(aligned), (aligned, mis)
+
+
+def test_m5_true_20hz_train_dt005():
+    """M5 TRUE 20 Hz train: dt=0.05 (not the retired same-tick proxy).
+
+    Duty 0.5 -> 5/6 staircase -> openT = 5/6 * 0.05. Tick0 idles; every
+    later tick fires in the 5/6 duty class (ratio to the full-step
+    expectation pins the staircase AT 20 Hz).
+    """
+    np = pytest.importorskip("numpy")
+    dt = 0.05
+    om, _, _ = _run_omni_thr(duty_cmd=0.5, dt=dt, n_ticks=5)
+    dl = _deltas(om)
+    assert len(dl) == 5
+    got = [float(np_l2(d)) for d in dl]
+    assert got[0] < 0.05 * got[1]  # fill step idles
+    assert all(g > 0.5 * got[1] for g in got[1:])  # every tick fires
+    from cubesat_12u_sim.core import config as C
+    i6 = np.asarray(C.INERTIA, float)
+    exp_full = 0.5 * dt / float(i6[1, 1])  # |r x F| = 0.5, full step
+    assert got[1] / exp_full == pytest.approx(5.0 / 6.0, rel=0.15)
+
+
+def test_m0_two_writes_same_stamp_arbitration():
+    """M0 true same-stamp-different-payload cell: last-write-wins.
+
+    The driver writes half-duty then full-duty in ONE UpdateState (same
+    stamp, different payloads). The consumed command must equal the full
+    send: deltas match the fresh full-duty run to 5% (a first-write-wins
+    mailbox would sit in the 1/6 class instead).
+    """
+    om_tw, _, _ = _run_omni_thr(duty_cmd=5.0 / 6.0, dt=0.1, n_ticks=3,
+                                writer="fresh", twice_writes=True)
+    om_fr, _, _ = _run_omni_thr(duty_cmd=5.0 / 6.0, dt=0.1, n_ticks=3,
+                                writer="fresh")
+    dtw = _deltas(om_tw)
+    dfr = _deltas(om_fr)
+    assert float(np_l2(dtw[1])) > 0.0  # firing gate: something was consumed
+    for a, b in zip(dtw, dfr):
+        na = float(np_l2(a))
+        if na < 1e-12:
+            assert float(np_l2(b)) < 1e-12
+        else:
+            assert float(np_l2(b)) / na == pytest.approx(1.0, rel=0.05)
+
+
+def test_telemetry_timing_vs_dynamics_truth():
+    """thrustFactor lag-alignment gate: telemetry-timing ONLY.
+
+    Dynamics truth stays the omega deltas (fire edge at tick1, steady
+    class after). thrustFactor is pinned only to tick0 == 0.0 (pre-fire)
+    and steady == 1.0, and to stay in [0, 1] — NO same-tick alignment
+    between factor and dynamics is asserted (the factor path may lag by
+    ticks; that lag is telemetry, never dynamics evidence).
+    """
+    np = pytest.importorskip("numpy")
+    om, thr, _ = _run_omni_thr(duty_cmd=1.0, dt=0.1, n_ticks=4)
+    if thr is None:
+        pytest.skip("WP3 C++ spec not yet applied: thrusterOutMsgs empty")
+    dl = _deltas(om)
+    got = [float(np_l2(d)) for d in dl]
+    assert got[0] < 0.05 * got[1]  # dynamics: tick0 idle ...
+    assert all(g > 0.5 * got[1] for g in got[1:])  # ... then steady fire
+    factor = np.asarray(thr.thrustFactor, float).ravel()
+    assert factor[0] == pytest.approx(0.0, abs=0.0)  # tick0 pre-fire zeros
+    assert factor[-1] == pytest.approx(1.0, abs=1e-6)  # steady value
+    assert np.all((factor >= 0.0) & (factor <= 1.0 + 1e-9))
+    # Deliberately NO assertion on factor[1]: telemetry timing is not
+    # dynamics timing (lag-alignment gate).
+
+
+def test_m1_ramp_shape_trace_gate():
+    """M1 ramp trace gate: shape checked when ramps are armed (no parity).
+
+    The M1 ledger covers empty ramps (len==0) ONLY. With on=[0.02, 0.05]
+    linear @ dt=0.1, full step, the shaped-vs-default impulse ratio must be
+    the pure-mirror 0.62 +/- 0.10 (omni-internal shape match — NOT a stock
+    ramp-parity claim; stock carries explicit ThrustFactor/IspFactor pairs).
+    Default-off path stays exact (factor end 1.0), and a truncating
+    off-ramp config runs sane (warns, non-fatal).
+    """
+    np = pytest.importorskip("numpy")
+    om_d, thr_d, _ = _run_omni_thr(duty_cmd=1.0, dt=0.1, n_ticks=3)
+    om_s, thr_s, _ = _run_omni_thr(
+        duty_cmd=1.0, dt=0.1, n_ticks=3,
+        opts={"ramps": ([0.02, 0.05], [], True)})
+    if thr_s is None:
+        pytest.skip("WP3 C++ spec not yet applied: thrusterOutMsgs empty")
+    nd = float(np_l2(_deltas(om_d)[1]))
+    ns = float(np_l2(_deltas(om_s)[1]))
+    assert nd > 0.0 and ns > 0.0  # firing gates on both arms
+    assert ns / nd == pytest.approx(0.62, abs=0.10)
+    # Default-off path untouched: steady factor exactly 1.0 either way.
+    assert np.asarray(thr_d.thrustFactor, float).ravel()[-1] == \
+        pytest.approx(1.0, abs=1e-6)
+    assert np.asarray(thr_s.thrustFactor, float).ravel()[-1] == \
+        pytest.approx(1.0, abs=1e-6)
+    # Truncating tail (0.1 + 0.03 > dt) warns once and runs sane.
+    om_t, thr_t, _ = _run_omni_thr(
+        duty_cmd=1.0, dt=0.1, n_ticks=3,
+        opts={"ramps": ([0.02, 0.05], [0.03], True)})
+    assert float(np_l2(_deltas(om_t)[1])) > 0.0
+    ft = np.asarray(thr_t.thrustFactor, float).ravel()
+    assert np.all((ft >= 0.0) & (ft <= 1.0 + 1e-9))
