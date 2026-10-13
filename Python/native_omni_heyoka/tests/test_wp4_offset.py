@@ -408,6 +408,19 @@ def test_stock_finite_difference_anchor_host():
     scLog, thrLog = _stock_offset_arm(duty=1.0)
     om = np.asarray(scLog.omega_BN_B, float)
     wdot_fd = (om[-1] - om[-2]) / 0.1
+    # H4 FIRING GATE (WP25-C1) before any delta: unit thrust on the ACTUAL
+    # fixture arm (loc - c) = R_THR - c = (0.4, 0, 1.0) m (test-file R_THR
+    # with c = C.R_BCB_B, absent in cubesat_12u_sim/core/config.py so the
+    # [0.1, 0, 0] fallback) with echoed thrust F = +T_HAT * 1 N (duty=1,
+    # MaxThrust=1.0; echo read back from thrusterOutMsgs below) gives
+    # |T| = |arm x F| = 0.4 Nm about -y; Iyy = M/12*(LX^2+LZ^2) = 0.2167
+    # kg m^2 (config MASS=20 kg) gives |wdot| = 0.4/0.2167 ~ 1.846 rad/s^2
+    # (host-measured 1.846). Band (1e-2, 2e1]: floor ~185x under
+    # prediction, cap ~11x above (a 100x-hot 184.6 misfire fails the cap);
+    # an idle fill-step (~1e-17) fails the floor by 15 orders.
+    assert 1e-2 < float(np.linalg.norm(wdot_fd)) <= 2e1, (
+        f"stock anchor leg idle or off-scale (|wdot_fd| = "
+        f"{float(np.linalg.norm(wdot_fd)):.3e}): no verdict may be read")
     # Self-consistent geometry: read back the echoed location/direction from
     # the OUT message (immune to factory dir-sign conventions: _stock_offset_arm
     # passes -T_HAT to create, so hard-coded +T_HAT literals are wrong).
@@ -440,6 +453,12 @@ def test_omni_offset_bench_openloop_both_arms_host():
     propagation then idles -- sampling om[-1]-om[-2] on a write-once run
     measures an idle step, not a fire step. Both arms here use fresh-write
     drivers; idle drift is recorded separately below (non-gating).
+    SUPERSEDE POINTER (WP25-C1): the P-WP4.4 probe tick0/idle rows in
+    audit_bundle/results/wp4_offset.json are superseded by THESE steady-tick
+    tests (this file's :306-333 steady-tick anchor/bench region:
+    test_stock_finite_difference_anchor_host +
+    test_omni_offset_bench_openloop_both_arms_host, LAST-tick sampling) and
+    must never be cited as arm evidence.
     """
     oh = pytest.importorskip("omniheyoka.omni_heyoka",
                              reason="host-only: needs built omni_heyoka")
@@ -549,22 +568,43 @@ def test_omni_offset_bench_openloop_both_arms_host():
     step = om[2] - om[1]
     sstep = som[2] - som[1]
     print(f"\n[wp4-bench] omni fire step {step} vs stock fire step {sstep}")
+    # H4 FIRING/SCALE GATES (WP25-C1) before the delta: same derivation as
+    # the anchor above (test-file R_THR/T_HAT/C_REF + config MASS/INERTIA):
+    # |T| = 0.4 Nm about -y, wdot ~ 1.846 rad/s^2, fire step = wdot*dt ~
+    # 0.1846 rad/s (host-measured 0.18461538 on BOTH arms -- physics parity
+    # is perfect). Band (1e-3, 2.0] on BOTH arms: floor ~185x under
+    # prediction, cap ~11x above (a 100x-hot 18.5 misfire fails the cap);
+    # an idle fill-step (~1e-17) or a write-once-misfire row fails the
+    # floor here instead of passing as fake parity.
+    assert 1e-3 < float(np.linalg.norm(sstep)) <= 2.0, (
+        f"stock bench leg idle or off-scale ({float(np.linalg.norm(sstep)):.3e})")
+    assert 1e-3 < float(np.linalg.norm(step)) <= 2.0, (
+        f"omni bench leg idle or off-scale ({float(np.linalg.norm(step)):.3e})")
     # atol covers the unfired axes (1e-17 numerical zeros vs exact 0.0).
     np.testing.assert_allclose(step, sstep, rtol=0.05, atol=1e-9)
-    # B/C split on the published rows
+    # B/C split on the published rows (signed-component: binding gate is the
+    # static-attitude fixture above; here atol=1e-8 covers the float
+    # cancellation floor at |r|~1e7, while still resolving sign: `+` would
+    # read ~0.2 m).
     rCN = np.asarray(log.r_CN_N, float)[-1]
     rBN = np.asarray(log.r_BN_N, float)[-1]
     sig = np.asarray(log.sigma_BN, float)[-1]
     np.testing.assert_allclose(rBN, rBN_from_rCN(rCN, mrp_to_dcm(sig), C_REF),
                                rtol=1e-9, atol=1e-6)
+    np.testing.assert_allclose(rBN - rCN + mrp_to_dcm(sig).T @ C_REF,
+                               np.zeros(3), atol=1e-8, rtol=0.0)
     vCN = np.asarray(log.v_CN_N, float)[-1]
     vBN = np.asarray(log.v_BN_N, float)[-1]
     np.testing.assert_allclose(vBN, vBN_from_vCN(vCN, mrp_to_dcm(sig), om[-1], C_REF),
                                rtol=1e-9, atol=1e-9)
-    # omegaDot published (Rev-0 "stays zero" struck)
+    np.testing.assert_allclose(vBN - vCN + mrp_to_dcm(sig).T @ np.cross(om[-1], C_REF),
+                               np.zeros(3), atol=1e-8, rtol=0.0)
+    # omegaDot published (Rev-0 "stays zero" struck); firing-gated (WP25-C1):
+    # the steady-tick wdot is the ~1.846 fire value (anchor derivation
+    # above), never an idle ~0 row.
     wdot = np.asarray(log.omegaDot_BN_B, float)[-1]
     np.testing.assert_allclose(wdot, (om[-1] - om[-2]) / DT, rtol=0.05)
-    assert float(np.linalg.norm(wdot)) > 0.0
+    assert 1e-2 < float(np.linalg.norm(wdot)) <= 2e1
 
 
 def test_zero_offset_regression_host():

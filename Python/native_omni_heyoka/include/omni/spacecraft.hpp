@@ -134,6 +134,12 @@ public:
     void addEnvironmentBody(double mu, double ox, double oy, double oz);
     void setJ2(double J2);  // enables j2On_ (WP0: default off = USE_J2=False parity)
     void setDragParams(double CdA, double cx, double cy, double cz);
+    void setDensityCorrection(double corr);  // WP25-C1 (densityCorrection:
+    // EXPOSED + modeled): records envDensityCorr (default 0.0), read live by
+    // updateEnvInputs via omni::env::dragWrench whose TRUE law clamps
+    // (1+corr)>=0 module-side. Runtime double only (no rebuild, A3-safe);
+    // finite required, bskError otherwise. Vec side stays pinned 0.0
+    // (vec read-only this batch; S6 owns the vec refactor).
     void addSRPFacet(double area, double nx, double ny, double nz,
                      double copx, double copy, double copz,
                      double c_diffuse, double c_specular);

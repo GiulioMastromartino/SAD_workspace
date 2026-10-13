@@ -56,7 +56,7 @@ LEDGER_CB20 = -0.0004841653701469824
 LEDGER_J2_EQ_REL = 0.001437927489651073
 LEDGER_J2_INC_REL = 0.0016076518067876474
 LEDGER_DRAG_F = [-0.0, -0.00012937492587712527, -0.0]
-LEDGER_DRAG_T = [0.0, 0.0, -6.468746293856264e-06]
+LEDGER_DRAG_T = [0.0, 0.0, 6.468746293856264e-06]  # tau = F x comOffset (stock-measured +z 2026-10-13; was c x F)
 LEDGER_WIND_REL = 0.12475376905450718
 LEDGER_SRP_CB = 7.263708625120001e-06
 LEDGER_SRP_FACET_F = [-6.507072310003333e-06, 0.0, 0.0]
@@ -110,7 +110,7 @@ def _drag_ref(rho, v, Cd, A, com=None, corr=0.0):
     F = (np.zeros(3) if (sp <= 1e-12 or rho * eff <= 0) else
          0.5 * rho * eff * Cd * A * sp ** 2 * (-v / sp))
     c = np.zeros(3) if com is None else np.asarray(com, float).reshape(3)
-    return F, np.cross(c, F)
+    return F, np.cross(F, c)  # tau = F x comOffset (stock-measured +z 2026-10-13)
 
 
 def _srp_cannonball(A, cr, r_sun, shadow=1.0):
@@ -521,3 +521,67 @@ def test_host_absent_link_truth_table():
     assert hasattr(eclipse, "Eclipse")
     # Stock rows (init-only, never a sim -- mirrors the probe P1 leg):
     # drag-density/SRP-sun/MTB-links -> bskError; eclipse/wind -> silent-ON.
+
+
+# ===========================================================================
+# E. WP25-C1 reject-or-model ledger (closes H4/H5/M6/M7/L5-env test side).
+# ===========================================================================
+def test_c1_reject_or_model_static_pins():
+    """WP25-C1 reject-or-model decisions, statically pinned (runs on Linux).
+
+    No silent third state; per-item decision:
+      N-body i>=2 ... loud-reject nBodies>2 (B1 guard, kept; behavioral
+        proof is test_wp0_guards.py:test_guard_nbodies_gt2_raises_and_two_runs;
+        vec-side N-body/Gt coverage stays via the existing mirror rejects
+        in omniheyoka/swap.py, unmodified reference).
+      rotHat/Gt ... loud-reject nonzero rotHat / non-identity Gt (B1 guards,
+        kept; behavioral proof test_guard_srp_rot_hat_raises_and_zero_runs +
+        test_guard_mtb_gt_raises_and_identity_runs).
+      densityCorrection ... MODELED via OmniSpacecraft::setDensityCorrection
+        (runtime double; TRUE law omni::env::dragWrench clamps (1+corr)>=0
+        module-side; vec side stays pinned 0.0, read-only this batch).
+      penumbra ... RECORDED DT<=1 s constraint for eclipse-crossing runs
+        (10 s is ladder-only; no sw eclipse-edge sub-arcs shipped).
+    """
+    src = (REPO / "src" / "omni_spacecraft.cpp").read_text()
+    assert "nBodies>2[bucket-(a): no per-index msg vector]" in src
+    assert "Gt[bucket-(a): non-identity torque-bar map]" in src
+    assert "rotHat[bucket-(a): nonzero facet frame]" in src
+    hpp = (REPO / "include" / "omni" / "spacecraft.hpp").read_text()
+    assert "void setDensityCorrection(double corr);" in hpp
+    assert "double envDensityCorr = 0.0;" in hpp
+
+
+def test_penumbra_eclipse_dt_constraint_recorded():
+    """WP25-C1 penumbra decision: DT<=1 s for eclipse-crossing runs (record).
+
+    The probe default ladder gains the 10 s leg (ladder, not single-dt);
+    the 10 s ZOH smears the eclipse edge, so any run crossing shadow must
+    use DT<=1 s. No sw eclipse-edge sub-arcs are shipped -- the constraint
+    below is the recorded mechanism, pinned here so it cannot drift.
+    """
+    assert PROBE.exists(), f"missing {PROBE}"
+    probe_src = PROBE.read_text()
+    assert "DT<=1" in probe_src, (
+        "probe penumbra note must record the DT<=1 s eclipse constraint")
+    assert "(0.1, 1.0, 10.0)" in probe_src, (
+        "default ladder must gain the 10 s leg (WP25-C1)")
+
+
+def test_host_density_correction_setter_validation():
+    """WP25-C1 densityCorrection: setter live, finite-only (host, no sim).
+
+    Accepts recorded values (law clamps (1+corr)>=0 module-side, so -0.5
+    scales down and <-1 reads as zero density -- documented, not rejected);
+    rejects non-finite input loudly at the setter.
+    """
+    sc = _omni_spacecraft()  # importorskips without the built extension
+    assert callable(getattr(sc, "setDensityCorrection", None)), (
+        "OmniSpacecraft.setDensityCorrection missing (WP25-C1)")
+    sc.setDensityCorrection(0.0)
+    sc.setDensityCorrection(0.5)
+    sc.setDensityCorrection(-0.5)
+    with pytest.raises(Exception):
+        sc.setDensityCorrection(float("nan"))
+    with pytest.raises(Exception):
+        sc.setDensityCorrection(float("inf"))

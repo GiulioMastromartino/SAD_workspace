@@ -21,16 +21,19 @@ ZERO evidence. Any env-vs-env comparison must gate on an absolute
 firing/scale proof or it will happily prove the opposite of the truth.
 Telemetry (if ever published for env) stays about-B, unshifted.
 
-IF A FUTURE HOST RUN FAILS WITH A CLEAN RATIO, the flip is 3 lines in
-  src/omni_spacecraft.cpp :: OmniSpacecraft::updateEnvInputs(const double* y):
-    (1) dragWrench() comOffset arg is the UNSHIFTED form -> pass
-        {envComOff - rBcB_ ...} to shift.
-    (2) srpFacet() rCop arg in the facet loop is the SHIFTED form -> pass
-        {f.rCop ...} to unshift.
-    (3) cannonball stays torque-free either way (no line to flip).
-  A clean failure mode is: omni env step == stock step computed with the
-  OPPOSITE arm convention to <5% while matching the same-convention step
-  to >>5% -- then apply the flip and re-run.
+MEASURED CONVENTION (2026-10-13, test_host_drag_offset_direct_parity,
+firing-proven BOTH arms): stock drag torque is T = F x comOffset (about
++z on this fixture); the pre-2026-10-13 omni order (comOffset x F, about
+-z) was sign-flipped at equal magnitude (omni [0,0,-1.07812560e-09] vs
+stock [0,0,+1.07812559e-09], 8-digit |.| agreement). The shared helper
+include/omni/environment.hpp::dragWrench now encodes T = F x comOffset
+(one flip fixes BOTH the SysModel and vec paths, which share the helper
+via updateEnvInputs); ledger audit_bundle/results/wp45_combo.json.
+Force-vs-torque split (same leg): the FORCE law F = -1/2 rho CdA |v_rel|
+v_rel with v_rel = v - vAir (wind-unlinked -> inertial) matches stock
+with identical inputs (code vs fixture operand order verified), so only
+the torque cross order was flipped -- see the translational-sign
+discriminator gate inside the test.
 
 What this file does:
   (a) Pure-numpy arm math -- runs EVERYWHERE (no Basilisk, no build).
@@ -72,6 +75,24 @@ LEO_V = math.sqrt(MU_EARTH / LEO_R)
 AU = 1.495978707e11
 DT = 0.1
 
+# Drag-atmo ledger-scale pin (WP25-C1 fixture fix): stock
+# ExponentialAtmosphere applies altitude falloff
+#   rho(h) = baseDensity * exp(-(r - planetRadius) / scaleHeight)
+# (combo probe audit_bundle/probes/wp45_combo.py drag-offset leg pinned
+# baseDensity=2e-12/scaleHeight=88000/planetRadius and measured torque
+# 6.87e-8 Nm -- i.e. rho(400 km) fell ~94x below ledger rho, and a
+# baseDensity-only pin leaves the default falloff starving the leg to
+# ~1e-21). Ledger scale (audit_bundle/results/wp5_env.json drag.formula)
+# is rho = 2e-12 -> |F| ~ 1.29e-4 N; the compensated baseDensity below
+# inverts the falloff at this file's LEO fixture (LEO_R - R_EARTH = 400 km)
+# so rho(400 km) == 2e-12 and the om[2]-om[1] env step lands at ~1.1e-9,
+# inside the existing (1e-10, 1e-7] firing band (band untouched).
+# envMaxReach is set wide open (guarded) so the 400 km LEO shell is never
+# cut off by a reach knob.
+DRAG_SCALE_HEIGHT = 88000.0
+DRAG_BASE_DENSITY = 2.0e-12 * math.exp((LEO_R - R_EARTH) / DRAG_SCALE_HEIGHT)
+DRAG_ENV_MAX_REACH = 2.0e7
+
 
 def _mrp_to_dcm(sigma) -> np.ndarray:
     s = np.asarray(sigma, float).reshape(3)
@@ -91,7 +112,7 @@ def test_ledgers_present_for_combo():
     w4 = json.loads(WP4_LEDGER.read_text())["payload"]
     assert "about B must equal unshifted" in w4["p_wp44_moment_arm"]["arm_note"]
     w5 = json.loads(WP5_LEDGER.read_text())["payload"]
-    assert "comOffset x F" in w5["drag"]["checks"]["formula"]["law"]
+    assert "F x comOffset" in w5["drag"]["checks"]["formula"]["law"]
     assert "r_Cop x F" in w5["srp"]["checks"]["faceted"]["law"]
 
 
@@ -152,7 +173,39 @@ def _leo_ic():
     return [LEO_R, 0.0, 0.0], [0.0, LEO_V, 0.0]
 
 
+def _set_stock_atmo(atmo):
+    """Pin the ledger-scale density fixture (combo-probe pattern).
+
+    Sets baseDensity/scaleHeight/planetRadius (+envMaxReach where the
+    build exposes it); every knob guarded by hasattr so an unknown build
+    fails loudly at the firing gate instead of here.
+    """
+    for k, v in (("baseDensity", DRAG_BASE_DENSITY),
+                 ("scaleHeight", DRAG_SCALE_HEIGHT),
+                 ("planetRadius", R_EARTH),
+                 ("envMaxReach", DRAG_ENV_MAX_REACH)):
+        try:
+            if hasattr(atmo, k):
+                setattr(atmo, k, v)
+        except Exception:
+            pass
+
+
 def _set_stock_drag(drag, Cd=2.2, com=(0.05, 0.0, 0.0)):
+    # BSK 2.12 keeps CdA/comOffset in the `coreParams` struct, NOT on the
+    # module (combo probe audit_bundle/probes/wp45_combo.py: direct attrs
+    # silently miss, idling the effector to an env-step ~1e-21). Set
+    # coreParams first, module-direct second (harmless where absent).
+    core = getattr(drag, "coreParams", None)
+    if core is not None:
+        for k, v in (("projectedArea", 1.0), ("dragCoeff", Cd),
+                     ("dragCoefficient", Cd),
+                     ("comOffset", list(com)), ("comOffset_B", list(com))):
+            try:
+                if hasattr(core, k):
+                    setattr(core, k, v)
+            except Exception:
+                pass
     for k, v in (("dragCoeff", Cd), ("dragCoefficient", Cd),
                  ("area", 1.0), ("projArea", 1.0), ("projectedArea", 1.0),
                  ("comOffset", list(com)), ("comOffset_B", list(com))):
@@ -190,8 +243,7 @@ def _run_stock_drag(offset, dt=DT, n_ticks=4):
     earth.isCentralBody = True
     grav.addBodiesTo(sc)
     atmo = expMod.ExponentialAtmosphere()
-    if hasattr(atmo, "baseDensity"):
-        atmo.baseDensity = 2.0e-12
+    _set_stock_atmo(atmo)
     try:
         atmo.addSpacecraftToModel(sc.scStateOutMsg)
     except Exception:
@@ -204,6 +256,14 @@ def _run_stock_drag(offset, dt=DT, n_ticks=4):
     try:
         if hasattr(drag, "addSpacecraftToModel"):
             drag.addSpacecraftToModel(sc.scStateOutMsg)
+    except Exception:
+        pass
+    try:
+        # Combo-probe attach path (audit_bundle/probes/wp45_combo.py:
+        # sc.addDynamicEffector is what stuck on BSK 2.12); without it the
+        # effector never contributes and the leg idles at ~1e-21.
+        if hasattr(sc, "addDynamicEffector"):
+            sc.addDynamicEffector(drag)
     except Exception:
         pass
     sim.AddModelToTask("t", drag)
@@ -273,9 +333,12 @@ def _run_omni_drag(offset, dt=DT, n_ticks=4):
     sim.AddModelToTask("t", sc, 1)
     # In-sim stock density source (same field the stock arm reads).
     # Wind unlinked on BOTH arms -> inertial-velocity fallback (matched).
+    # Same ledger-scale pin as the stock arm: the omni leg reads
+    # neutralDensity from this message (src/omni_spacecraft.cpp
+    # updateEnvInputs -> dragWrench(atmo.neutralDensity, ...)), so the
+    # identical _set_stock_atmo call gives it the identical pinned density.
     atmo = _atmo.ExponentialAtmosphere()
-    if hasattr(atmo, "baseDensity"):
-        atmo.baseDensity = 2.0e-12
+    _set_stock_atmo(atmo)
     try:
         atmo.addSpacecraftToModel(sc.scStateOutMsg)
     except Exception:
@@ -297,10 +360,23 @@ def _run_omni_drag(offset, dt=DT, n_ticks=4):
 def test_host_drag_offset_direct_parity():
     """Drag+offset DIRECT parity: omni vs stock, same LEO setup, om[2]-om[1].
 
+    Measured convention (2026-10-13, firing-proven both arms): stock is
+    T = F x comOffset (about +z here); omni now matches via the shared
+    include/omni/environment.hpp::dragWrench flip (ledger wp45_combo.json).
+
     Pre-registered: rtol 5% on the fired (torque-active) axis, atol 1e-9 on
-    unfired axes (wp4 bench pattern). If this fails with omni matching the
-    OPPOSITE arm convention (see module docstring), apply the 3-line flip in
-    src/omni_spacecraft.cpp::OmniSpacecraft::updateEnvInputs and re-run.
+    unfired axes (wp4 bench pattern).
+
+    H4 FIRING/SCALE GATES (WP25-C1): a vacuous 0-vs-0 leg must FAIL, never
+    pass. Ledger LEO scale (audit_bundle/results/wp5_env.json drag.formula):
+    |F_drag| ~ 1.29e-4 N, |T| = 0.05*|F| ~ 6.47e-6 Nm about +z (stock
+    T = F x comOffset convention, 2026-10-13), wdot =
+    T/Izz ~ 1.1e-8 rad/s^2, so the om[2]-om[1] env step is ~1.1e-9 rad/s.
+    Band (1e-10, 1e-7]: the floor sits 1 order under prediction and 7+
+    orders above the vacuous floor (exact 0.0 / 1e-17 when the effector
+    never fires); the 1e-7 cap catches a 100x-hot misfire while staying
+    ~100x above signal. (Scale note: a literal 1e-7 floor on this step
+    would reject correct physics -- the floor is 1e-10 by derivation.)
     """
     pytest.importorskip("Basilisk", reason="host-only omni-vs-stock bench")
     slog, _atmo_unused = _run_stock_drag(C_REF)
@@ -309,8 +385,57 @@ def test_host_drag_offset_direct_parity():
     som = np.asarray(slog.omega_BN_B, float)
     assert len(om) >= 3 and len(som) >= 3
     step, sstep = om[2] - om[1], som[2] - som[1]
+    s_norm = float(np.linalg.norm(sstep))
+    o_norm = float(np.linalg.norm(step))
+    assert 1e-10 < s_norm <= 1e-7, (
+        f"stock drag leg not firing-proven (env-step norm {s_norm:.3e} "
+        "outside ledger-scale band (1e-10, 1e-7]): no verdict may be read "
+        "from an unfired or off-scale leg")
+    assert 1e-10 < o_norm <= 1e-7, (
+        f"omni drag leg not firing-proven (env-step norm {o_norm:.3e} "
+        "outside ledger-scale band (1e-10, 1e-7])")
     print(f"\n[wp45-drag] omni env step {step} vs stock env step {sstep}")
     np.testing.assert_allclose(step, sstep, rtol=0.05, atol=1e-9)
+    # Translational-sign discriminator (force-vs-torque split): a flipped
+    # FORCE (F_omni = -F_stock) also flips torque yet stays nearly invisible
+    # in the short torque-gated leg above, so the torque gate alone cannot
+    # pin the force sign. Derived band from this file's constants with the
+    # ledger |F| ~ 1.29e-4 N over the 750.0 kg hub (both arms set above):
+    #   a_drag = |F|/m ~ 1.72e-7 m/s^2; dv ~ a*DT ~ 1.7e-8 m/s per 0.1 s
+    #   step; dr ~ a*DT^2/2 ~ 8.6e-10 m. A force flip separates the omni vs
+    #   stock v steps by 2*dv ~ 3.4e-8 m/s (r steps by ~1.7e-9 m) with
+    #   gravity common-mode cancelled, while the torque magnitude still
+    #   matches. The v gate below is the discriminator: per-element tolerance
+    #   on the drag-active y axis is atol(DV_DRAG ~ 1.7e-8) + rtol*|4.9e-5
+    #   orbital | ~ half the 2x flip separation, so a force flip FAILS it
+    #   while correct-sign physics passes; x/z elements are flip-insensitive
+    #   (tolerance gravity-dominated there, by construction). The r gate is
+    #   a gross-divergence guard only (orbital common-mode ~766 m swamps the
+    #   ~1.7e-9 m flip separation under any nonzero rtol), plus the sign
+    #   check pins the direction on the drag-active (-y, F = -1/2 rho CdA
+    #   |v| v with v ~ +y LEO) axis.
+    F_REF = 0.5 * 2.0e-12 * 2.2 * LEO_V ** 2  # ~1.29e-4 N, ledger scale
+    A_DRAG = F_REF / 750.0
+    DV_DRAG, DR_DRAG = A_DRAG * DT, 0.5 * A_DRAG * DT ** 2
+    sv = np.asarray(slog.v_CN_N, float)
+    ov = np.asarray(olog.v_CN_N, float)
+    sr = np.asarray(slog.r_CN_N, float)
+    ov_r = np.asarray(olog.r_CN_N, float)
+    assert len(sv) >= 3 and len(ov) >= 3 and len(sr) >= 3 and len(ov_r) >= 3
+    sv_step, ov_step = sv[2] - sv[1], ov[2] - ov[1]
+    sr_step, or_step = sr[2] - sr[1], ov_r[2] - ov_r[1]
+    assert int(np.sign(ov_step[1])) == int(np.sign(sv_step[1])), (
+        f"drag force sign mismatch on the active (-y) axis: omni v-step "
+        f"{ov_step} vs stock v-step {sv_step}")
+    print(f"[wp45-drag] dv-drag scale {DV_DRAG:.3e} m/s, dr-drag scale "
+          f"{DR_DRAG:.3e} m; omni v-step {ov_step} vs stock v-step {sv_step}")
+    np.testing.assert_allclose(ov_step, sv_step, rtol=1e-6, atol=DV_DRAG)
+    # Gross-divergence guard only (NOT the discriminator — that is the v gate
+    # above). Measured 2026-10-13: Taylor-vs-RK4 integrator floor on the orbital
+    # x common-mode is 1.86e-9, just above DR_DRAG*2 = 1.73e-9, so the factor is
+    # 4 (still << any gross divergence and << the 766 m common mode; the flip
+    # separation ~1.7e-9 is owned by the v gate, not this one).
+    np.testing.assert_allclose(or_step, sr_step, rtol=1e-9, atol=DR_DRAG * 4)
 
 
 def _run_stock_srp_facet(offset, dt=DT, n_ticks=4):
@@ -396,16 +521,44 @@ def _run_omni_srp_facet(offset, dt=DT, n_ticks=4):
 
 
 def test_host_srp_offset_direct_parity():
-    """SRP-facet+offset DIRECT parity: omni vs stock, om[2]-om[1] at 5%."""
+    """SRP-facet+offset DIRECT parity: omni vs stock, om[2]-om[1] at 5%.
+
+    FRAGILE (H5, WP25-C1): NOT measured. The stock facet+sizing link has
+    not landed on any host -- _run_stock_srp_facet guesses the addFacet
+    spelling and the facet sizing (area/ProjectedArea) + sun-state vector
+    wiring are unpinned. Until a host pass lands that link, this leg must
+    NEVER be cited as a shift verdict; both paths ship (rCop-c)xF
+    (spacecraft static-c, vec live-c) by construction, with the 3-line-flip
+    contingency in the module docstring. MISSING PIECE for a host pass
+    (python3/Basilisk absent on this container, so sims skip here): the
+    exact host-BSK FacetedSRPEffector.addFacet signature spelling +
+    facet-sizing semantics + sun SpicePlanetStateMsg wiring, then a
+    firing-proven (band-gated below) stock-vs-omni leg.
+    """
     pytest.importorskip("Basilisk", reason="host-only omni-vs-stock bench")
     out = _run_stock_srp_facet(C_REF)
-    if out is None:
-        return
+    assert out is not None, (
+        "stock SRP-facet link missing on host (addFacet spelling unknown): "
+        "withholding the leg is a FAILURE, never a skip-as-pass (H4/H5)")
     olog = _run_omni_srp_facet(C_REF)
     om = np.asarray(olog.omega_BN_B, float)
     som = np.asarray(out.omega_BN_B, float)
     assert len(om) >= 3 and len(som) >= 3
     step, sstep = om[2] - om[1], som[2] - som[1]
+    # H4 firing/scale band (WP25-C1): ledger facet scale
+    # (audit_bundle/results/wp5_env.json srp.faceted: F ~ -6.51e-6 N along
+    # -x) with shifted arm (rCop-c) = (-0.1, 0.5, 0) gives T_z ~ 3.25e-6
+    # Nm, wdot ~ 5.4e-9 rad/s^2, env step ~ 5.4e-10 rad/s. Band (1e-10,
+    # 1e-7]: ~5x under prediction, 7+ orders above the vacuous exact-0.0
+    # idle floor; 1e-7 cap catches off-scale misfires.
+    s_norm = float(np.linalg.norm(sstep))
+    o_norm = float(np.linalg.norm(step))
+    assert 1e-10 < s_norm <= 1e-7, (
+        f"stock SRP leg not firing-proven (env-step norm {s_norm:.3e} "
+        "outside (1e-10, 1e-7]): no verdict may be read")
+    assert 1e-10 < o_norm <= 1e-7, (
+        f"omni SRP leg not firing-proven (env-step norm {o_norm:.3e} "
+        "outside (1e-10, 1e-7])")
     print(f"\n[wp45-srp] omni env step {step} vs stock env step {sstep}")
     np.testing.assert_allclose(step, sstep, rtol=0.05, atol=1e-9)
 
@@ -454,7 +607,17 @@ def test_host_mag_no_arm_smoke():
         return np.asarray(log.omega_BN_B, float)
 
     a, b = run(C_REF), run(np.zeros(3))
-    if a is None or b is None:
-        return
+    assert a is not None and b is not None, (
+        "magnetic smoke leg unlinked on host (magFieldInMsg wiring unknown): "
+        "withholding the leg is a FAILURE, never a skip-as-pass (H4)")
+    # H4 firing/scale band (WP25-C1) BEFORE the no-arm delta: m = [0.5, 0,
+    # 0] Am^2 vs B_N = [2.0e-5, 0.5e-5, -1.0e-5] T gives tau = m x B_B with
+    # |tau| ~ 5.6e-6 Nm, wdot ~ 9e-9 rad/s^2, env step ~ 7.5e-10 rad/s.
+    # Band (1e-10, 1e-7] proves both legs fired; the delta below then proves
+    # the offset changed nothing (no arm).
+    assert 1e-10 < float(np.linalg.norm(a[2] - a[1])) <= 1e-7, (
+        "offset magnetic leg idle or off-scale: no verdict may be read")
+    assert 1e-10 < float(np.linalg.norm(b[2] - b[1])) <= 1e-7, (
+        "zero-offset magnetic leg idle or off-scale: no verdict may be read")
     np.testing.assert_allclose(a[2] - a[1], b[2] - b[1],
                                rtol=1e-9, atol=1e-12)

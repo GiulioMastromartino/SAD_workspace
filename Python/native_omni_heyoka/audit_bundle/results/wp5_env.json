@@ -1,17 +1,17 @@
 {
   "name": "wp5_env",
-  "timestamp_utc": "2026-10-12T14:40:40.607364+00:00",
+  "timestamp_utc": "2026-10-13T21:07:25.673758+00:00",
   "platform": "macOS-27.0-arm64-arm-64bit",
   "python": "3.11.16",
   "basilisk": "2.12.0",
   "heyoka": "7.12.1",
   "env": {
-    "timestamp_utc": "2026-10-12T14:40:40.607383+00:00",
+    "timestamp_utc": "2026-10-13T21:07:25.673783+00:00",
     "platform": "macOS-27.0-arm64-arm-64bit",
     "os_tag": "macOS",
     "machine": "arm64",
     "python": "3.11.16",
-    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/../env/bin/python",
     "heyoka": "7.12.1",
     "basilisk": "2.12.0",
     "basilisk_importable": true,
@@ -24,12 +24,12 @@
   },
   "payload": {
     "env": {
-      "timestamp_utc": "2026-10-12T14:40:39.753839+00:00",
+      "timestamp_utc": "2026-10-13T21:07:24.716121+00:00",
       "platform": "macOS-27.0-arm64-arm-64bit",
       "os_tag": "macOS",
       "machine": "arm64",
       "python": "3.11.16",
-      "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+      "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/../env/bin/python",
       "heyoka": "7.12.1",
       "basilisk": "2.12.0",
       "basilisk_importable": true,
@@ -50,10 +50,11 @@
       "P1",
       "P4"
     ],
-    "full_ladder": false,
+    "full_ladder": true,
     "dt_ladder": [
       0.1,
-      1.0
+      1.0,
+      10.0
     ],
     "ticks_cap": 40,
     "static": {
@@ -336,8 +337,20 @@
             "dt": 1.0,
             "bound": 2.3546254995329436e-09,
             "pass": true
+          },
+          {
+            "dt": 10.0,
+            "bound": 2.3546254995329437e-08,
+            "pass": false
           }
-        ]
+        ],
+        "moon": {
+          "a": [
+            3.439641624901025e-05,
+            0.0,
+            0.0
+          ]
+        }
       },
       "status": "ok"
     },
@@ -389,7 +402,7 @@
           "tau_nowind": [
             0.0,
             0.0,
-            -6.468746293856264e-06
+            6.468746293856264e-06
           ],
           "F_wind": [
             -0.0,
@@ -397,7 +410,7 @@
             -0.0
           ],
           "wind_rel": 0.12475376905450718,
-          "law": "F_B=1/2 rho Cd A|v|^2(-vhat); tau=comOffset x F; |v|<=1e-12->0; (1+densityCorrection)>=0"
+          "law": "F_B=1/2 rho Cd A|v|^2(-vhat); tau=F x comOffset (stock-measured +z 2026-10-13); |v|<=1e-12->0; (1+densityCorrection)>=0"
         },
         "modules": {
           "exponentialAtmosphere": {
@@ -581,9 +594,10 @@
         "penumbra": {
           "dt_ladder": [
             0.1,
-            1.0
+            1.0,
+            10.0
           ],
-          "note": "crossing arc; 10 s ZOH smears edge (FULL_LADDER gates the 10 s leg); tick eclipse equality vs shadowFactor; P~(AU/r_SB)^2; eclipse needs planet entry + extrapolateScStateToStepMidpoint"
+          "note": "crossing arc; 10 s ZOH smears edge (FULL_LADDER gates the 10 s leg); tick eclipse equality vs shadowFactor; P~(AU/r_SB)^2; eclipse needs planet entry + extrapolateScStateToStepMidpoint; WP25-C1 RECORDED CONSTRAINT: eclipse-crossing runs use DT<=1 s (10 s is ladder-only; no sw eclipse-edge sub-arcs shipped)"
         },
         "modules": {
           "radiationPressure": {

@@ -7,7 +7,8 @@ presence. LIVE (each guarded, single-effect-on, open-loop, matched dt,
 <=40 ticks): N-body sign+refresh, J2 normalization, drag LEO, SRP
 cannonball+faceted+penumbra, magnetic MTB+mag, ERP field-only, absent-link
 truth P1, frame chain P4 (inside MAG). Saves via save_result('wp5_env').
-FULL_LADDER=False default (skips 10 s penumbra leg + Moon). Never raises.
+FULL_LADDER=True default (10 s penumbra leg + Moon on host;
+WP5_FULL_LADDER=0 keeps the fast CI pair (0.1, 1.0)). Never raises.
 Stdlib+numpy+Basilisk(guarded) only; relative paths; results-only.
 """
 from __future__ import annotations
@@ -39,7 +40,10 @@ except ImportError:  # running from inside probes/
             traceback.print_exc(); return ""
 
 PROBE_ID = "wp5_env"
-FULL_LADDER = os.environ.get("WP5_FULL_LADDER", "0") == "1"
+# WP25-C1: default ladder gains the 10 s leg + Moon on host. The fast CI
+# pair stays available via WP5_FULL_LADDER=0 (file supports both; default is
+# full because every leg below is analytic -- the 10 s row + Moon cost nil).
+FULL_LADDER = os.environ.get("WP5_FULL_LADDER", "1") == "1"
 DT_LADDER = (0.1, 1.0, 10.0) if FULL_LADDER else (0.1, 1.0)
 N_SHORT, N_MAX = 20, 40  # short horizons; hard cap per LIVE leg
 MU_EARTH, MU_SUN, MU_MOON = 3.986004418e14, 1.32712440018e20, 4.9048695e12
@@ -118,7 +122,10 @@ def drag_ref(rho, v, Cd, A, com=None):  # F=1/2 rho Cd A|v|^2(-vhat)
     F = np.zeros(3) if (sp <= 1e-12 or rho <= 0) else \
         0.5 * rho * Cd * A * sp ** 2 * (-v / sp)
     c = np.zeros(3) if com is None else np.asarray(com, float).reshape(3)
-    return F, np.cross(c, F), sp
+    # Stock-measured torque sign (2026-10-13 host leg: stock +z,
+    # test_host_drag_offset_direct_parity; helper
+    # include/omni/environment.hpp::dragWrench): T = F x comOffset.
+    return F, np.cross(F, c), sp
 
 
 def srp_cannonball(A, cr, r_sun, shadow=1.0):  # P~(AU/r)^2, eclipse scalar
@@ -297,8 +304,9 @@ def live_drag() -> dict:
         out["checks"]["formula"] = {"F_nowind": Fn.tolist(),
             "tau_nowind": Tn.tolist(), "F_wind": Fw.tolist(),
             "wind_rel": float(np.linalg.norm(Fw - Fn) / np.linalg.norm(Fn)),
-            "law": "F_B=1/2 rho Cd A|v|^2(-vhat); tau=comOffset x F; "
-                   "|v|<=1e-12->0; (1+densityCorrection)>=0"}
+            "law": "F_B=1/2 rho Cd A|v|^2(-vhat); tau=F x comOffset "
+                   "(stock-measured +z 2026-10-13); "
+                    "|v|<=1e-12->0; (1+densityCorrection)>=0"}
         mods = {}
         for m in ("exponentialAtmosphere", "dragDynamicEffector",
                   "zeroWindModel"):
@@ -359,7 +367,9 @@ def live_srp() -> dict:
             "note": "crossing arc; 10 s ZOH smears edge (FULL_LADDER gates "
             "the 10 s leg); tick eclipse equality vs shadowFactor; P~"
             "(AU/r_SB)^2; eclipse needs planet entry + "
-            "extrapolateScStateToStepMidpoint"}
+            "extrapolateScStateToStepMidpoint; WP25-C1 RECORDED CONSTRAINT: "
+            "eclipse-crossing runs use DT<=1 s (10 s is ladder-only; no sw "
+            "eclipse-edge sub-arcs shipped)"}
         mods = {}
         for m in ("radiationPressure", "facetedSRPEffector",
                   "facetedSpacecraftProjectedArea", "eclipse"):

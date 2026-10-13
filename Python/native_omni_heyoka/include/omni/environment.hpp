@@ -207,10 +207,16 @@ struct WrenchB {
 };
 
 // Drag TRUE law (stock dragDynamicEffector assembly):
-//   F_B = 1/2 rho CdA |v_rel_B|^2 (-vhat), T = comOffset_B x F,
+//   F_B = 1/2 rho CdA |v_rel_B|^2 (-vhat), T = F_B x comOffset_B,
 //   |v| <= 1e-12 -> 0, effective density rho*(1+corr) with (1+corr) >= 0.
 // vRel_B is ALREADY body-frame (module rotates v_BN_N - v_air_N by dcm_BN).
 // Ledger LEO: |F| = 1.2937e-4 N (rho=2e-12, Cd=2.2, A=1, v=LEO circular).
+// TORQUE SIGN (host-measured 2026-10-13, test_host_drag_offset_direct_parity:
+// omni [0,0,-1.07812560e-09] vs stock [0,0,+1.07812559e-09], |.| equal to
+// 8 digits, sign flipped on the torque-active axis; ledger wp45_combo.json):
+// stock takes T = F x comOffset (== -(comOffset x F)). The old
+// comOffset x F order is kept here as the documented-rejected form;
+// do NOT revert without a firing-proven host leg.
 inline WrenchB dragWrench(double rho, double CdA, const Vec3& vRel_B,
                           const Vec3& comOffset_B, double densityCorr = 0.0) {
     WrenchB w{};
@@ -223,7 +229,8 @@ inline WrenchB dragWrench(double rho, double CdA, const Vec3& vRel_B,
     // F = 1/2 rho CdA |v|^2 (-vhat) = -1/2 rho CdA |v| v (no division).
     const Vec3 F = vec_scale(vRel_B, -0.5 * rhoEff * CdA * sp);
     w.F = F;
-    w.T = vec_cross(comOffset_B, F);
+    // Stock-measured +z convention (see TRUE-law header): T = F x comOffset.
+    w.T = vec_cross(F, comOffset_B);
     return w;
 }
 

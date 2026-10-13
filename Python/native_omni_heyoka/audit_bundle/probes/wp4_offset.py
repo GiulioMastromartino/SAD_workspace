@@ -487,13 +487,41 @@ def p_wp44_moment_arm() -> dict:
                 res["thrustFactor_steady"] = float(np.asarray(tlog.thrustFactor).ravel()[-1])
             except Exception as exc:
                 res["thr_read_error"] = f"{type(exc).__name__}: {exc}"
+        # WP25-C1 firing discipline + supersede pointer: tick0 rows are IDLE
+        # (fill step) and are SUPERSEDED by the steady-tick host tests in
+        # tests/test_wp4_offset.py:306-333 (steady-tick anchor/bench region:
+        # test_stock_finite_difference_anchor_host +
+        # test_omni_offset_bench_openloop_both_arms_host, LAST-tick sampling).
+        # Probe tick0/idle rows must NEVER be cited as arm evidence; the arm
+        # verdict below reads the STEADY row only, and only when firing is
+        # proven (thrustFactor_steady > 0 and |thrustForce_steady| > 0 --
+        # otherwise the verdict is WITHHELD, never defaulted).
+        res["idle_rows_superseded_by"] = (
+            "tests/test_wp4_offset.py:306-333 steady-tick anchor/bench "
+            "(test_stock_finite_difference_anchor_host + "
+            "test_omni_offset_bench_openloop_both_arms_host); probe "
+            "tick0/idle rows are not arm evidence")
+        try:
+            ffac = float(np.asarray(tlog.thrustFactor).ravel()[-1])
+            fmag = float(np.linalg.norm(np.asarray(tlog.thrustForce_B, float)[-1]))
+            res["firing_proven_steady"] = bool(ffac > 0.0 and fmag > 0.0)
+            if not res["firing_proven_steady"]:
+                res["verdict_withheld"] = (
+                    "leg idle at steady tick (thrustFactor/thrustForce ~0): "
+                    "no arm verdict may be read")
+        except Exception as exc:
+            res["firing_proven_steady"] = False
+            res["firing_read_error"] = f"{type(exc).__name__}: {exc}"
         try:
             F = np.array(t_hat, float) * fmax
             expect_unshifted = np.cross(np.array(r_thr, float), F).tolist()
             res["expect_unshifted_r_thr_x_F"] = [float(v) for v in expect_unshifted]
             try:
-                tel = np.asarray(tlog.thrustTorquePntB_B, float)[0]
-                res["tel_minus_expect"] = [float(v) for v in (tel - np.array(expect_unshifted))]
+                if not res.get("firing_proven_steady", False):
+                    res["tel_minus_expect"] = "withheld (leg idle)"
+                else:
+                    tel = np.asarray(tlog.thrustTorquePntB_B, float)[-1]
+                    res["tel_minus_expect"] = [float(v) for v in (tel - np.array(expect_unshifted))]
             except Exception:
                 res["tel_minus_expect"] = "unreadable"
         except Exception as exc:

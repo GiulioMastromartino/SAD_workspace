@@ -298,6 +298,18 @@ void OmniSpacecraft::setDragParams(double CdA, double cx, double cy, double cz) 
     this->configDirty = true;
 }
 
+// WP25-C1 (densityCorrection: EXPOSED, modeled -- no third state). Runtime
+// double, read live per-arc by updateEnvInputs (cf. setFriction: no
+// envConfigured/configDirty -- not a graph term, A3-safe; effective
+// immediately, including mid-run). The TRUE law (omni::env::dragWrench)
+// clamps (1+corr)>=0 module-side, so negative corr in [-1,0) scales down
+// and corr < -1 reads as zero density (documented, not rejected).
+void OmniSpacecraft::setDensityCorrection(double corr) {
+    if (!std::isfinite(corr))
+        this->bskLogger.bskError("OmniSpacecraft: densityCorrection must be finite.");
+    this->envDensityCorr = corr;
+}
+
 void OmniSpacecraft::addSRPFacet(double area, double nx, double ny, double nz,
                                  double copx, double copy, double copz,
                                  double c_diffuse, double c_specular) {
