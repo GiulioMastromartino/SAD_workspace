@@ -625,8 +625,8 @@ void OmniSpacecraft::writeMsgs(uint64_t CurrentSimNanos) {
         const size_t k = static_cast<size_t>(i);
         sc.r_CN_N[i] = this->st[this->rOff_ + k];
         sc.v_CN_N[i] = this->st[this->vOff_ + k];
-        sc.r_BN_N[i] = this->st[this->rOff_ + k] + Rbn[0][i] * cx + Rbn[1][i] * cy + Rbn[2][i] * cz;
-        sc.v_BN_N[i] = this->st[this->vOff_ + k] + Rbn[0][i] * wxc[0] + Rbn[1][i] * wxc[1] + Rbn[2][i] * wxc[2];
+        sc.r_BN_N[i] = this->st[this->rOff_ + k] - Rbn[0][i] * cx - Rbn[1][i] * cy - Rbn[2][i] * cz;
+        sc.v_BN_N[i] = this->st[this->vOff_ + k] - Rbn[0][i] * wxc[0] - Rbn[1][i] * wxc[1] - Rbn[2][i] * wxc[2];
         sc.sigma_BN[i] = this->st[this->sigmaOff_ + k];
         sc.omega_BN_B[i] = this->st[this->omegaOff_ + k];
         sc.omegaDot_BN_B[i] = this->impl ? this->impl->lastWDot[i] : 0.0;

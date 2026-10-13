@@ -523,6 +523,14 @@ stays r x F about B. Firing/scale gates are mandatory on every env-vs-env
 comparison — a mis-wired effector once produced a vacuous zeros-vs-zeros
 "shifted" verdict, which is why absolute-torque gates exist in the probe.
 
+**B/C output sign (measured, WP25-A1):** `r_BN_N = r_CN_N − Rᵀ·c_B`,
+`v_BN_N = v_CN_N − Rᵀ·(ω×c_B)` (R = C_BN) — stock-pinned by
+`audit_bundle/results/swap_p1_parity.json:thr_offset` (c=0.1, omni-vs-stock
+r 2.24e-08; wrong sign would be ~0.2 m). Any `+`-sign reading of the B/C
+outputs (self-consistent math only, never stock-pinned) is
+superseded-by-measurement; norm-only (`|d|==0.1`) gates are banned for sign
+(per-axis `r_BN−r_CN+Rᵀc == 0` to ≤1e-9 instead).
+
 **Telemetry.** `thrusterOutMsgs` (per thruster, `THROutputMsgPayload` 9/9,
 steady-tick = end-of-step, tick0 = zeros + geometry echo) and `rwOutMsgs`
 (per wheel, `RWConfigLogMsgPayload` 23 fields; `u_current` is read back

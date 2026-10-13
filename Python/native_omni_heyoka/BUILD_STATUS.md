@@ -555,12 +555,16 @@ their wiring is the drag-proven shared path with unchanged validated laws.
 
 ### CoM-offset swap gate + stock B/C sign finding
 
-Offset (rBcB=0.1) + thruster A/B: r 5.6e-09, attitude 1e-14 (probe
-thr_offset cell, incl. r_CN/v_CN outputs). Along the way the swap MEASURED
-stock's B/C convention as r_BN = r_CN - R^T*c (r_BN - r_CN = -c exactly),
-opposite to the DESIGN/test_wp4 formula (self-consistent math only, never
-stock-pinned -- flagged for SysModel-path audit; the swap follows the
-measurement). Zero-offset path is IEEE-exact no-op (bit-identical).
+Offset (rBcB=0.1) + thruster A/B: r 2.24e-08, attitude ~1e-13
+(ledger audit_bundle/results/swap_p1_parity.json:thr_offset -- r_BN_N
+2.24e-08, sigma_BN 1.02e-13, omni-vs-stock, incl. r_CN/v_CN outputs;
+replaces the earlier 5.6e-09 text, same cell re-read). Along the way the
+swap MEASURED stock's B/C convention as r_BN = r_CN - R^T*c
+(r_BN - r_CN = -c exactly; wrong sign would be ~0.2 m), opposite to the
+pre-A1 DESIGN/test_wp4 `+` formula (self-consistent math only, never
+stock-pinned). WP25-A1 unifies the SysModel path to the measured `-`
+(signed-component gates per axis <=1e-9, cross-path <=1e-9).
+Zero-offset path is IEEE-exact no-op (bit-identical).
 
 ### Fuel depletion (flagship): mass/I feedback + bit-exact depletion law
 

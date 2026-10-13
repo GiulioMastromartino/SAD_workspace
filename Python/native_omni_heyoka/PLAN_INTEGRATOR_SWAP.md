@@ -197,7 +197,7 @@ coverage" column; the integrator's setup error message cites it.
 | u_min/P_max/Omega_max | DONE by construction (stock applies, we read post-saturation u_current) |
 | Cutoff lag | Measured INERT without ramps (10 vs 1000 bit-exact over fire+shutoff); accepted unconditionally, never modeled; must compose with ramps if those land (M6/unconditional-filter reverted as divergent) |
 | Min-pulse/ramps/blowdown/swirl | Still rejected (all default-off in stock; verified surface) |
-| CoM offset | DONE: thr_offset gate (r 5.6e-09); B/C sign measured vs stock |
+| CoM offset | DONE: thr_offset gate (r 2.24e-08, ledger `swap_p1_parity.json:thr_offset` r_BN_N omni-vs-stock); B/C sign measured vs stock (`r_BN = r_CN − Rᵀc`, wrong sign ~0.2 m), SysModel unified to `−` by WP25-A1 |
 | drag / SRP-cannonball | DONE (gated); GG flag mirrored (no bench); faceted/mag/J2/N-body stock gates follow-up |
 | Prescribed/flex/slosh | Structural loud-reject (C++ claim check proven by fuel_unmirrored_cxx) |
 | Stochastic | Structurally out (single-integrator slot) |

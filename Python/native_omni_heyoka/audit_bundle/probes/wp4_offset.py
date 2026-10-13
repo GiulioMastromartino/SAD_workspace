@@ -259,6 +259,37 @@ def p_wp42_b_vs_c() -> dict:
             res["rBN_minus_rCN_norm"] = float(np.linalg.norm(rBN[0] - rCN[0]))
         except Exception as exc:
             res["bn_cn_error"] = f"{type(exc).__name__}: {exc}"
+        try:
+            sigBN = np.asarray(log.sigma_BN, float)
+            res["sigma_BN_tick0"] = [float(v) for v in sigBN[0]]
+        except Exception as exc:
+            res["sigma_BN_error"] = f"{type(exc).__name__}: {exc}"
+        # WP25-A1 signed-component gate (same logic as
+        # tests/test_wp4_offset.py:test_signed_component_gate_static_attitude:
+        # per-axis r_BN - r_CN + R^T c == 0; norm-only is sign-blind, kept
+        # above as secondary).
+        try:
+            s = np.asarray(res["sigma_BN_tick0"], float)
+            S = np.array([[0.0, -s[2], s[1]],
+                          [s[2], 0.0, -s[0]],
+                          [-s[1], s[0], 0.0]])
+            s2 = float(s @ s)
+            R = np.eye(3) + (8.0 * S @ S - 4.0 * (1.0 - s2) * S) / (1.0 + s2) ** 2
+            rB = np.asarray(res["r_BN_tick0"], float)
+            rC = np.asarray(res["r_CN_tick0"], float)
+            sres = (rB - rC) + R.T @ np.asarray(OFFSET_B, float)
+            res["signed_residual_tick0"] = [float(v) for v in sres]
+            res["signed_residual_norm"] = float(np.linalg.norm(sres))
+            # 1e-8 here, not 1e-9: double rounding of the |r|~1e7 published
+            # rows floors the residual at a few e-9; the binding <=1e-9 gate
+            # is the small-magnitude static-attitude fixture in
+            # tests/test_wp4_offset.py.
+            res["signed_residual_pass_1e8"] = bool(np.all(np.abs(sres) <= 1e-8))
+            res["signed_gate_note"] = ("vec `-` wins (WP25-A1): residual "
+                                       "r_BN-r_CN+R^T c ~0 per axis; `+` would "
+                                       "read 2*R^T c ~= 0.2 m")
+        except Exception as exc:
+            res["signed_residual_error"] = f"{type(exc).__name__}: {exc}"
         for f in ("omegaDot_BN_B", "TotalAccumDV_BN_B", "TotalAccumDVBdy",
                   "TotalAccumDV_CN_N", "nonConservativeAccelpntB_B",
                   "v_BN_N", "v_CN_N"):

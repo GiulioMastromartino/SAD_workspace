@@ -254,7 +254,12 @@ private:
     double mass = 750.0;
     double Ixx = 900.0, Iyy = 800.0, Izz = 600.0;
     double Ixy = 0.0, Ixz = 0.0, Iyz = 0.0;
-    std::array<double, 3> rBcB_{0.0, 0.0, 0.0};  // WP4 aggregate c_B record
+    std::array<double, 3> rBcB_{0.0, 0.0, 0.0};  // WP4 aggregate c_B record.
+    // MEASURED B/C convention (WP25-A1, stock-pinned): r_BN = r_CN - R^T c_B,
+    // v_BN = v_CN - R^T (w x c_B), R = C_BN(sigma) (r_BN - r_CN = -c exactly).
+    // Evidence: audit_bundle/results/swap_p1_parity.json:thr_offset (offset 0.1,
+    // omni-vs-stock deltas r 2.24e-08; wrong sign would be ~0.2 m). The output
+    // transform is module-side in writeMsgs (A3); c = 0 stays an exact no-op.
     double mu = 3.986004418e14;
     bool useGG = true;
     double uMax = 0.2;

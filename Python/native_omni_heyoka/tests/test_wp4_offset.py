@@ -13,8 +13,12 @@ Ledger: audit_bundle/results/wp4_offset.json
 What this file does
   (a) Pure-numpy reference checks -- run EVERYWHERE (no Basilisk, no build).
       They pin the binding formulas so the host build has zero sign freedom:
-        r_BN = r_CN + R^T c_B
-        v_BN = v_CN + R^T (w x c_B)
+        r_BN = r_CN - R^T c_B
+        v_BN = v_CN - R^T (w x c_B)
+      (WP25-A1: vec `-` wins, stock-pinned by audit_bundle/results/
+      swap_p1_parity.json:thr_offset at c=0.1 -- omni-vs-stock deltas
+      r 2.24e-08; wrong sign would be ~0.2 m. The pre-A1 `+` formulas were
+      self-consistent math only, never stock-pinned -- superseded-by-measurement.)
         B -= m[cx], C += m[cx] (C == B^T), D += m(|c|^2 I - c c^T),
         vecRot += c x (m g_B)  (Rev-0 omission fix),
         dynamics arm (r_thr - c) x F vs telemetry arm r_thr x F (unshifted).
@@ -57,12 +61,14 @@ def parallel_axis(m, c):
 
 
 def rBN_from_rCN(rCN, R, c):
-    return np.asarray(rCN, float) + np.asarray(R, float).T @ np.asarray(c, float)
+    # MEASURED stock convention (WP25-A1, vec `-` wins): r_BN = r_CN - R^T c.
+    return np.asarray(rCN, float) - np.asarray(R, float).T @ np.asarray(c, float)
 
 
 def vBN_from_vCN(vCN, R, w, c):
+    # MEASURED stock convention (WP25-A1): v_BN = v_CN - R^T (w x c).
     return (np.asarray(vCN, float)
-            + np.asarray(R, float).T @ np.cross(np.asarray(w, float),
+            - np.asarray(R, float).T @ np.cross(np.asarray(w, float),
                                                 np.asarray(c, float)))
 
 
@@ -100,13 +106,101 @@ def test_ledger_present_and_ids():
 
 
 def test_offset_norm_preserved_under_rotation():
-    """|rBN-rCN| == |c| for ANY attitude (rotation preserves norm)."""
+    """|rBN-rCN| == |c| for ANY attitude (rotation preserves norm).
+
+    SECONDARY check only: norm is sign-blind (|+Rc| == |-Rc|), so it can
+    never pin the B/C sign. The signed-component gates below are binding.
+    """
     rng = np.random.default_rng(0)
     for _ in range(25):
         sig = rng.uniform(-0.4, 0.4, 3)
         R = mrp_to_dcm(sig)
-        d = R.T @ C_REF
-        assert float(np.linalg.norm(d)) == pytest.approx(0.1, abs=1e-12)
+        rBN = rBN_from_rCN(np.zeros(3), R, C_REF)
+        assert float(np.linalg.norm(rBN)) == pytest.approx(0.1, abs=1e-12)
+
+
+def test_signed_component_gate_static_attitude():
+    """WP25-A1 binding gate: per-axis r_BN-r_CN+R^T c == 0 to <=1e-9.
+
+    Static-attitude fixture (no rotation to hide sign): sigma=0 gives R=I
+    exactly, so the residual is per-axis d+c with d=r_BN-r_CN. A second
+    static attitude (nonzero sigma) covers a rotated R^T. Norm-only gates
+    are banned for sign (see test above).
+    """
+    rCN = np.array([1000.0, -2500.0, 7125.0])
+    vCN = np.array([100.0, -200.0, 50.0])
+    w = np.array([0.01, -0.02, 0.03])
+    for sig in ([0.0, 0.0, 0.0], [0.05, -0.05, 0.02]):
+        R = mrp_to_dcm(sig)
+        rBN = rBN_from_rCN(rCN, R, C_REF)
+        vBN = vBN_from_vCN(vCN, R, w, C_REF)
+        np.testing.assert_allclose(rBN - rCN + R.T @ C_REF,
+                                   np.zeros(3), atol=1e-9, rtol=0.0)
+        np.testing.assert_allclose(vBN - vCN + R.T @ np.cross(w, C_REF),
+                                   np.zeros(3), atol=1e-9, rtol=0.0)
+        # Sign power control: the pre-A1 `+` reading misses by 2*R^T c (~0.2 m).
+        wrong = rCN + R.T @ C_REF
+        assert float(np.linalg.norm(wrong - rBN)) == pytest.approx(0.2, abs=1e-9)
+
+
+def test_sysmodel_vs_swap_cross_path_gate():
+    """WP25-A1 cross-path gate: row-style vs column-style B-point agree <=1e-9.
+
+    SAME B-point quantity computed two ways over an attitude/omega sweep at
+    c=0.1: row-style mirrors src/omni_spacecraft.cpp writeMsgs
+    (r_B[i] = r_C[i] - (R[0,i]*c[0]+R[1,i]*c[1]+R[2,i]*c[2])) and column-style
+    mirrors src/omni_vec_integrator.cpp gather/scatter
+    (B = y - toInertial(R,c), y = r_C). Catches transpose/row-vs-column bugs
+    and any future `+`-on-one-side split, which would read ~2*R^T c (~0.2 m).
+    """
+    c = np.array([0.1, 0.0, 0.0])
+
+    def toInertial(R, v):
+        R = np.asarray(R, float)
+        v = np.asarray(v, float).reshape(3)
+        return np.array([R[0, i] * v[0] + R[1, i] * v[1] + R[2, i] * v[2]
+                         for i in range(3)])
+
+    rng = np.random.default_rng(1)
+    for _ in range(25):
+        R = mrp_to_dcm(rng.uniform(-0.4, 0.4, 3))
+        rCN = rng.uniform(-1e4, 1e4, 3)
+        vCN = rng.uniform(-1e4, 1e4, 3)
+        w = rng.uniform(-0.05, 0.05, 3)
+        wxc = np.cross(w, c)
+        # Row-style (omni_spacecraft.cpp:632-633 writeMsgs spelling).
+        sys_r = np.array([rCN[i] - (R[0, i] * c[0] + R[1, i] * c[1] + R[2, i] * c[2])
+                          for i in range(3)])
+        sys_v = np.array([vCN[i] - (R[0, i] * wxc[0] + R[1, i] * wxc[1] + R[2, i] * wxc[2])
+                          for i in range(3)])
+        # Column-style (omni_vec_integrator.cpp gather/scatter spelling).
+        swap_r = rCN - toInertial(R, c)
+        swap_v = vCN - toInertial(R, wxc)
+        np.testing.assert_allclose(swap_r - sys_r, np.zeros(3),
+                                   atol=1e-9, rtol=0.0)
+        np.testing.assert_allclose(swap_v - sys_v, np.zeros(3),
+                                   atol=1e-9, rtol=0.0)
+        # Sign-power control: the `+` variant misses by 2*R^T c (~0.2 m).
+        wrong_r = rCN + toInertial(R, c)
+        np.testing.assert_allclose(wrong_r - sys_r, 2.0 * (R.T @ c),
+                                   atol=1e-9, rtol=0.0)
+        assert float(np.linalg.norm(wrong_r - sys_r)) == pytest.approx(0.2, abs=1e-9)
+        wrong_v = vCN + toInertial(R, wxc)
+        np.testing.assert_allclose(wrong_v - sys_v, 2.0 * (R.T @ wxc),
+                                   atol=1e-9, rtol=0.0)
+
+
+def test_sysmodel_source_sign_pin():
+    """Static pin: SysModel B/C output transform ships `-` (no build needed).
+
+    Greps src/omni_spacecraft.cpp writeMsgs B/C lines for the flipped sign;
+    guards against a `+` reintroduction that pure-numpy gates cannot see.
+    """
+    src = (REPO / "src" / "omni_spacecraft.cpp").read_text()
+    assert "sc.r_BN_N[i] = this->st[this->rOff_ + k] - Rbn[0][i] * cx" in src
+    assert "sc.v_BN_N[i] = this->st[this->vOff_ + k] - Rbn[0][i] * wxc[0]" in src
+    assert "sc.r_BN_N[i] = this->st[this->rOff_ + k] + Rbn[0][i] * cx" not in src
+    assert "sc.v_BN_N[i] = this->st[this->vOff_ + k] + Rbn[0][i] * wxc[0]" not in src
 
 
 def test_zero_offset_identity_regression():
