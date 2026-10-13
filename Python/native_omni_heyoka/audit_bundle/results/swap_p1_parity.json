@@ -1,12 +1,12 @@
 {
   "name": "swap_p1_parity",
-  "timestamp_utc": "2026-10-12T18:10:03.012888+00:00",
+  "timestamp_utc": "2026-10-13T08:54:25.110827+00:00",
   "platform": "macOS-27.0-arm64-arm-64bit",
   "python": "3.11.16",
   "basilisk": "2.12.0",
   "heyoka": "7.12.1",
   "env": {
-    "timestamp_utc": "2026-10-12T18:10:03.031785+00:00",
+    "timestamp_utc": "2026-10-13T08:54:25.136884+00:00",
     "platform": "macOS-27.0-arm64-arm-64bit",
     "os_tag": "macOS",
     "machine": "arm64",
@@ -32,7 +32,7 @@
         "omega_BN_B": 1.951563910473908e-17,
         "nPars": 7,
         "nStates": 12,
-        "build_s": 0.1971
+        "build_s": 4.9365
       },
       "rw3_open_pos": {
         "r_BN_N": 0.0,
@@ -42,7 +42,7 @@
         "wheels": 4.547473508864641e-13,
         "nPars": 16,
         "nStates": 15,
-        "build_s": 0.011
+        "build_s": 0.0115
       },
       "rw3_open_neg": {
         "r_BN_N": 0.0,
@@ -52,7 +52,7 @@
         "wheels": 2.8421709430404007e-13,
         "nPars": 16,
         "nStates": 15,
-        "build_s": 0.0093
+        "build_s": 0.0097
       },
       "rw3_pd": {
         "r_BN_N": 0.0,
@@ -62,7 +62,17 @@
         "wheels": 2.0038015691170585e-10,
         "nPars": 16,
         "nStates": 15,
-        "build_s": 0.0093
+        "build_s": 0.01
+      },
+      "rw3_fric": {
+        "r_BN_N": 0.0,
+        "v_BN_N": 9.094947017729282e-13,
+        "sigma_BN": 8.342215807033426e-13,
+        "omega_BN_B": 1.9343034118879388e-14,
+        "wheels": 1.4210854715202004e-14,
+        "nPars": 16,
+        "nStates": 15,
+        "build_s": 0.0084
       },
       "rw1": {
         "r_BN_N": 0.0,
@@ -72,7 +82,7 @@
         "wheels": 0.0,
         "nPars": 10,
         "nStates": 13,
-        "build_s": 0.0125
+        "build_s": 0.0096
       },
       "rw2": {
         "r_BN_N": 0.0,
@@ -82,7 +92,7 @@
         "wheels": 0.0,
         "nPars": 13,
         "nStates": 14,
-        "build_s": 0.0116
+        "build_s": 0.0092
       },
       "rw1tilt": {
         "r_BN_N": 0.0,
@@ -92,43 +102,63 @@
         "wheels": 0.0,
         "nPars": 10,
         "nStates": 13,
-        "build_s": 0.0126
+        "build_s": 0.0097
       },
       "thr_fresh_05": {
         "r_BN_N": 0.0003053266555070877,
         "v_BN_N": 4.05554249027773e-06,
         "sigma_BN": 2.4568740919037046e-05,
         "omega_BN_B": 5.995587251360346e-07,
-        "nPars": 9,
+        "nPars": 11,
         "nStates": 12,
-        "build_s": 0.0101
+        "build_s": 0.0095
       },
       "thr_fresh_10": {
         "r_BN_N": 9.313225746154785e-10,
         "v_BN_N": 0.0,
         "sigma_BN": 5.1736392947532295e-14,
         "omega_BN_B": 5.48172618408671e-16,
-        "nPars": 9,
+        "nPars": 11,
         "nStates": 12,
-        "build_s": 0.0087
+        "build_s": 0.0085
       },
       "thr_writeonce": {
         "r_BN_N": 1.7043203115463257e-07,
         "v_BN_N": 3.1868694350123405e-09,
         "sigma_BN": 2.9578987204015306e-08,
         "omega_BN_B": 5.582275848167728e-10,
-        "nPars": 9,
+        "nPars": 11,
         "nStates": 12,
-        "build_s": 0.0089
+        "build_s": 0.0086
       },
       "thr_frozen": {
         "r_BN_N": 2.0489096641540527e-07,
         "v_BN_N": 3.182321961503476e-09,
         "sigma_BN": 3.4908305079905944e-08,
         "omega_BN_B": 5.430280756307804e-10,
-        "nPars": 9,
+        "nPars": 11,
         "nStates": 12,
-        "build_s": 0.0086
+        "build_s": 0.0081
+      },
+      "thr_lag10": {
+        "r_BN_N": 0.0003053266555070877,
+        "v_BN_N": 4.05554249027773e-06,
+        "sigma_BN": 2.4568740919037046e-05,
+        "omega_BN_B": 5.995587251360346e-07,
+        "nPars": 11,
+        "nStates": 12,
+        "build_s": 0.0082
+      },
+      "thr_offset": {
+        "r_BN_N": 2.2351741790771484e-08,
+        "v_BN_N": 7.275957614183426e-12,
+        "sigma_BN": 1.0241807402167069e-13,
+        "omega_BN_B": 1.0798653637955624e-15,
+        "r_CN_N": 2.2351741790771484e-08,
+        "v_CN_N": 7.275957614183426e-12,
+        "nPars": 11,
+        "nStates": 12,
+        "build_s": 0.0084
       },
       "env_drag": {
         "r_BN_N": 0.00010243896394968033,
@@ -154,6 +184,32 @@
         "srp_single_tick_meas": 9.031834835582231e-09,
         "srp_single_tick_analytic": 9.031834770923471e-09,
         "srp_single_tick_ratio": 1.0000000071589839
+      },
+      "fuel_centered": {
+        "r_BN_N": 0.006259138695895672,
+        "v_BN_N": 2.941156162705738e-05,
+        "omega_BN_B": 1.1907044462966532e-05,
+        "dcm_max": 0.0004477855990706603,
+        "fuel_stock": 8.879619494202458,
+        "fuel_omni": 8.879619494202458,
+        "fuel_rel_err": 0.0,
+        "fuel_burned": 1.1203805057975416,
+        "nPars": 12,
+        "nStates": 13,
+        "build_s": 0.0102
+      },
+      "fuel_offset": {
+        "r_BN_N": 0.005843746475875378,
+        "v_BN_N": 2.5454156457271893e-05,
+        "omega_BN_B": 1.4654721818760374e-05,
+        "dcm_max": 0.0004451371562819162,
+        "fuel_stock": 8.879619494202458,
+        "fuel_omni": 8.879619494202458,
+        "fuel_rel_err": 0.0,
+        "fuel_burned": 1.1203805057975416,
+        "nPars": 12,
+        "nStates": 13,
+        "build_s": 0.0087
       }
     },
     "dt": 0.1,
@@ -172,13 +228,12 @@
       }
     },
     "rejects": {
-      "fuel_tank": true,
-      "jitter_wheel": true,
-      "friction_wheel": true,
-      "two_rw_effectors": true,
-      "thruster_no_factory": true,
-      "min_pulse": true,
-      "low_cutoff": true,
+      "fuel_unmirrored_cxx": "OmniVecIntegrator: registered state 'fuelMass' (1 rows) has no contributor; envelope is hub + balanced wheels + staircase thrusters + fuel (when mirrored).",
+      "jitter_wheel": "mirror_stock_config: wheel 0 RWModel=1; only BalancedWheels is mirrored (jitter: loud reject).",
+      "two_rw_effectors": "mirror_stock_config: 2 RW effectors; stock registration order is ambiguous -- use one effector.",
+      "thruster_no_factory": "mirror_stock_config: thruster effector found but no thr_factory given; its THRSimConfig list carries MaxThrust.",
+      "min_pulse": "mirror_stock_config: MinOnTime=0.02 > 0; stage 2 covers the staircase envelope only (create(useMinPulseTime=False)).",
+      "cutoff_zero": "mirror_stock_config: cutoffFrequency 0.0 <= 0; degenerate stock behavior unknown.",
       "verdict": "all loud"
     },
     "verdict": "parity green"

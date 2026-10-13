@@ -98,6 +98,7 @@ def mirror_stock_config(sim: Any, sc: Any, oi: Any,
     """
     rw_models = []
     thr_models = []
+    fuel_models = []
     use_gg = False
     for task_name, model in task_effectors(sim):
         cls = type(model).__name__
@@ -109,6 +110,9 @@ def mirror_stock_config(sim: Any, sc: Any, oi: Any,
             continue
         if cls == "GravityGradientEffector":
             use_gg = True
+            continue
+        if cls == "FuelTank":
+            fuel_models.append(model)
             continue
         # Anything else that IS dynamics (SWIG MRO carries the
         # DynamicEffector/StateEffector bases) is unmirrorable and raises.
@@ -136,6 +140,7 @@ def mirror_stock_config(sim: Any, sc: Any, oi: Any,
     oi.setMu(mu)
 
     n_wheels = 0
+    fric_on = False
     for eff in rw_models:
         wheels = list(eff.ReactionWheelData)
         logs = list(eff.rwOutMsgs)
@@ -148,32 +153,42 @@ def mirror_stock_config(sim: Any, sc: Any, oi: Any,
             if model not in ("0", "RWModels.BalancedWheels", "BalancedWheels"):
                 raise ValueError(
                     f"mirror_stock_config: wheel {n_wheels} RWModel={model}; "
-                    f"stage 1 supports BalancedWheels only (jitter: Phase 2).")
-            if (float(getattr(w, "fCoulomb", 0.0)) != 0.0
-                    or float(getattr(w, "fStatic", 0.0)) != 0.0
-                    or float(getattr(w, "cViscous", 0.0)) != 0.0
-                    or float(getattr(w, "betaStatic", -1.0)) > 0.0):
-                raise ValueError(
-                    f"mirror_stock_config: wheel {n_wheels} has friction "
-                    f"coefficients set; friction mirroring is Phase 2.")
+                    f"only BalancedWheels is mirrored (jitter: loud reject).")
             gs = _as_vec3(w.gsHat_B)
             oi.addWheel(gs[0], gs[1], gs[2], float(w.Js))
             # u_current readback: timing-identical by construction (see header).
             oi.linkWheelLog(n_wheels, logs[k])
+            # Phase-2 friction: mirror the live Stribeck set when any
+            # coefficient is active (factory-off zeroes fCoulomb only, so an
+            # all-zero set means OFF and needs no records).
+            fC = float(getattr(w, "fCoulomb", 0.0))
+            fS = float(getattr(w, "fStatic", 0.0))
+            cV = float(getattr(w, "cViscous", 0.0))
+            bS = float(getattr(w, "betaStatic", -1.0))
+            oL = float(getattr(w, "omegaLimitCycle", 0.0001))
+            if fC != 0.0 or fS != 0.0 or cV != 0.0 or bS > 0.0:
+                oi.setFrictionEnabled(True)
+                oi.setFrictionParams(n_wheels, fC, fS, bS, cV, oL)
+                fric_on = True
             n_wheels += 1
 
-    n_thrusters = _mirror_thrusters(thr_models, thr_factory, thr_cmd_msg, oi)
+    n_thrusters, thr_isps = _mirror_thrusters(thr_models, thr_factory,
+                                             thr_cmd_msg, oi)
+    n_fuel = _mirror_fuel(fuel_models, oi, thr_isps)
 
     return {"mass": hub["mass"], "mu": mu, "use_gg": use_gg,
             "n_wheels": n_wheels, "n_thrusters": n_thrusters,
-            "rBcB": hub["rBcB"]}
+            "n_fuel": n_fuel, "friction_on": fric_on, "rBcB": hub["rBcB"]}
 
 
 def _mirror_thrusters(thr_models: list, thr_factory: Any,
-                      thr_cmd_msg: Any, oi: Any) -> int:
-    """Mirror thruster geometry + gate the staircase envelope. Returns count."""
+                      thr_cmd_msg: Any, oi: Any) -> tuple:
+    """Mirror thruster geometry + gate the staircase envelope.
+
+    Returns (count, steadyIsp-per-thruster) for the fuel mdot law.
+    """
     if not thr_models:
-        return 0
+        return 0, []
     if len(thr_models) > 1:
         raise ValueError(
             f"mirror_stock_config: {len(thr_models)} thruster effectors; "
@@ -196,6 +211,7 @@ def _mirror_thrusters(thr_models: list, thr_factory: Any,
             f"({len(cfgs)}) vs effector thrusters ({len(data)}) mismatch; "
             "geometry join needs the creating factory.")
     n = 0
+    isps = []
     for cfg, d in zip(cfgs, data):
         loc = _as_vec3(d.thrLoc_B)
         th = _as_vec3(d.thrDir_B)
@@ -208,11 +224,17 @@ def _mirror_thrusters(thr_models: list, thr_factory: Any,
                 "mirror_stock_config: MinOnTime="
                 f"{getattr(cfg, 'MinOnTime', '?')} > 0; stage 2 covers the "
                 "staircase envelope only (create(useMinPulseTime=False)).")
-        if float(getattr(d, "cutoffFrequency", 1000.0)) < 500.0:
+        # Cutoff is INERT without ramps (measured bit-exact 10 vs 1000
+        # over fire + shutoff); accepted unconditionally, never modeled.
+        # Ramps stay rejected, and cutoff must be modeled WITH them if
+        # ramps ever land (M2 composition). cutoff <= 0 still rejected
+        # (degenerate stock behavior unknown and unmeasured).
+        _cf = float(getattr(d, "cutoffFrequency", 1000.0))
+        if not _cf > 0.0:
             raise ValueError(
                 "mirror_stock_config: cutoffFrequency "
-                f"{getattr(d, 'cutoffFrequency', '?')} < 500 rad/s; stage 2 "
-                "has no lag model (pin cutoffFrequency=1000).")
+                f"{getattr(d, 'cutoffFrequency', '?')} <= 0; degenerate "
+                "stock behavior unknown.")
         for attr in ("thrBlowDownCoeff", "ispBlowDownCoeff"):
             try:
                 if len(list(getattr(d, attr) or [])) > 0:
@@ -227,6 +249,7 @@ def _mirror_thrusters(thr_models: list, thr_factory: Any,
                 "the staircase envelope.")
         oi.addThruster(th[0], th[1], th[2], loc[0], loc[1], loc[2],
                        float(cfg.MaxThrust))
+        isps.append(float(cfg.steadyIsp))
         n += 1
     if thr_cmd_msg is None:
         raise ValueError(
@@ -246,4 +269,34 @@ def _mirror_thrusters(thr_models: list, thr_factory: Any,
     except Exception:
         _snap = [0.0] * 36
     oi.setInitialThrusterCmd(_snap)
-    return n
+    return n, isps
+
+
+def _mirror_fuel(fuel_models: list, oi: Any, thr_isps: list) -> int:
+    """Mirror a single fuel tank (Phase-2 depletion, v1 scope).
+
+    Reads the stock registered state name, tank center, and leak rate;
+    thruster Isps (mirrored order) feed the mdot law. Guards: more than one
+    tank raises (per-tank thruster subsets unmapped); a tank with NO
+    mirrored thrusters raises (nothing drains it -- likely a missed
+    addThrusterSet, fail loud rather than bookkeep zeros).
+    Mass/I_C feedback + live aggregate c (per-tick; see swap fuel gate).
+    """
+    if not fuel_models:
+        return 0
+    if len(fuel_models) > 1:
+        raise ValueError(
+            f"mirror_stock_config: {len(fuel_models)} fuel tanks; v1 "
+            f"mirrors exactly one (per-tank thruster subsets unmapped).")
+    tank = fuel_models[0]
+    if not thr_isps:
+        raise ValueError(
+            "mirror_stock_config: fuel tank with no mirrored thrusters; "
+            "nothing drains it (missed addThrusterSet or thruster-less sim).")
+    name = str(tank.getNameOfMassState())
+    rtb = _as_vec3(tank.getR_TB_B())
+    leak = float(tank.getFuelLeakRate())
+    oi.setFuelStateName(name)
+    oi.setFuelTank(rtb[0], rtb[1], rtb[2], leak)
+    oi.setThrusterIsps([float(v) for v in thr_isps])
+    return 1

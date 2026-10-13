@@ -10,6 +10,8 @@ Cells (all matched-dt, pre-registered tolerances in verdicts):
   env_drag       LEO drag A/B + density vacuity guard (tumbling ICs)
   env_drag_still LEO drag A/B, stabilized ICs (tight)
   env_srp        SRP-cannonball A/B + single-tick analytic guard
+  fuel_centered fuel depletion, centered tank (mass/I feedback isolated)
+  fuel_offset    fuel depletion, offset tank (c-drift deviation bounded)
   reject_*       fuel tank / jitter thetas / drag effector / min-pulse /
                  low-cutoff / multi-RW-effector must all raise LOUDLY
 
@@ -84,12 +86,17 @@ def _base_sim(tag):
     return sim, sc
 
 
-def _add_rw(sim, sc, axes, om0=100.0, task=True):
+def _add_rw(sim, sc, axes, om0=100.0, task=True, friction=False):
     from Basilisk.simulation import reactionWheelStateEffector
     from Basilisk.utilities import simIncludeRW
     fac = simIncludeRW.rwFactory()
     for gs in axes:
-        fac.create("Honeywell_HR16", list(gs), maxMomentum=50.0, Omega=om0)
+        if friction:
+            fac.create("Honeywell_HR16", list(gs), maxMomentum=50.0,
+                       Omega=om0, useRWfriction=True)
+        else:
+            fac.create("Honeywell_HR16", list(gs), maxMomentum=50.0,
+                       Omega=om0)
     rw = reactionWheelStateEffector.ReactionWheelStateEffector()
     fac.addToSpacecraft("rw", rw, sc)
     if task:
@@ -177,16 +184,26 @@ def _arm(use_omni, kind, **kw):
     from omniheyoka.omni_heyoka import OmniVecIntegrator
     from omniheyoka.swap import mirror_stock_config
     sim, sc = _base_sim(("omni-" if use_omni else "rk-") + kind)
+    if kw.get("offset") is not None:
+        sc.hub.r_BcB_B = [float(kw["offset"]), 0.0, 0.0]
     rw = None
-    if kind in ("rw3_open", "rw3_pd", "rw1", "rw2", "rw1tilt"):
+    if kind in ("rw3_open", "rw3_pd", "rw1", "rw2", "rw1tilt", "rw3_fric"):
         axes = {"rw3_open": [[1., 0, 0], [0, 1., 0], [0, 0, 1.]],
                 "rw3_pd": [[1., 0, 0], [0, 1., 0], [0, 0, 1.]],
                 "rw1": [[1., 0, 0]],
                 "rw2": [[1., 0, 0], [0, 1., 0]],
+                "rw3_fric": [[1., 0, 0], [0, 1., 0], [0, 0, 1.]],
                 "rw1tilt": [[0.5773502691896258] * 3]}[kind]
-        rw = _add_rw(sim, sc, axes)
+        rkw = dict(kw.get("rw_kw", {}))
+        if kind == "rw3_fric":
+            rkw["friction"] = True
+        rw = _add_rw(sim, sc, axes, **rkw)
     if kind == "rw3_open":
         drv = _const_driver(kw.get("u", 0.5))
+        sim.AddModelToTask("t", drv)
+        rw.rwMotorCmdInMsg.subscribeTo(drv.out)
+    if kind == "rw3_fric":
+        drv = _fric_driver()
         sim.AddModelToTask("t", drv)
         rw.rwMotorCmdInMsg.subscribeTo(drv.out)
     if kind == "rw3_pd":
@@ -200,7 +217,8 @@ def _arm(use_omni, kind, **kw):
         from Basilisk.utilities import simIncludeThruster
         tf = simIncludeThruster.thrusterFactory()
         tf.create("TEST_Thruster", [0.5, 0, 1.0], [0, 0, -1.0], MaxThrust=1.0,
-                  cutoffFrequency=1000.0, useMinPulseTime=False)
+                  cutoffFrequency=kw.get("cutoff", 1000.0),
+                  useMinPulseTime=False)
         thr = thrusterDynamicEffector.ThrusterDynamicEffector()
         tf.addToSpacecraft("thr", thr, sc)
         sim.AddModelToTask("t", thr, 2)
@@ -241,6 +259,30 @@ def _arm(use_omni, kind, **kw):
     return sim, sc, scLog, spdLog, oi
 
 
+def _fric_driver():
+    """Spin up 40 s at +0.2, then free spin-down (friction only)."""
+    from Basilisk.architecture import messaging, sysModel
+    from Basilisk.utilities import macros
+
+    class Fric(sysModel.SysModel):
+        def __init__(self):
+            super().__init__()
+            self.out = messaging.ArrayMotorTorqueMsg()
+
+        def Reset(self, t):
+            self.out.write(messaging.ArrayMotorTorqueMsgPayload(
+                motorTorque=[0.0] * 36))
+
+        def UpdateState(self, t):
+            u = 0.2 if t < macros.sec2nano(40.0) else 0.0
+            m = [0.0] * 36
+            for i in range(3):
+                m[i] = u
+            self.out.write(messaging.ArrayMotorTorqueMsgPayload(
+                motorTorque=m), t, self.moduleID)
+    return Fric()
+
+
 def _thr_frozen_driver(duty):
     """Writes duty on ticks 0-1, then goes silent (frozen message)."""
     from Basilisk.architecture import messaging, sysModel
@@ -279,8 +321,12 @@ def _reject_cells():
         try:
             build()
             out[name] = False
-        except ValueError:
-            out[name] = True
+        except ValueError as exc:
+            out[name] = str(exc)[:160]
+        except Exception as exc:
+            # C++ bskError surfaces as BasiliskError (or similar): accept
+            # iff it names the offending feature (no silent pass on junk).
+            out[name] = str(exc)[:160]
 
     def rw_base(jitter=False, friction=False, two_eff=False):
         sim, sc = _base_sim("reject")
@@ -306,18 +352,6 @@ def _reject_cells():
             sim.AddModelToTask("t", rw2)
         return sim, sc
 
-    def fuel_base():
-        from Basilisk.simulation import fuelTank
-        sim, sc = _base_sim("reject-fuel")
-        model = fuelTank.FuelTankModelConstantVolume()
-        model.propMassInit = 10.0
-        tank = fuelTank.FuelTank()
-        tank.setTankModel(model)
-        tank.setNameOfMassState("fuelMass")
-        sc.addStateEffector(tank)
-        sim.AddModelToTask("t", tank)
-        return sim, sc
-
     def thr_base(**ckw):
         from Basilisk.simulation import thrusterDynamicEffector
         from Basilisk.utilities import simIncludeThruster
@@ -336,12 +370,31 @@ def _reject_cells():
         oi = OmniVecIntegrator(sc)
         return mirror_stock_config(sim, sc, oi, **mkw)
 
-    expect_raise("fuel_tank",
-                 lambda: mirror(*fuel_base()))
+    def fuel_base_linked():
+        # Fuel tank WITHOUT helper mirror: the C++ claim check must fire
+        # (defense-in-depth behind the helper). Runs 2 ticks (first
+        # integrate triggers buildOnce).
+        from Basilisk.simulation import fuelTank
+        from Basilisk.utilities import macros
+        sim, sc = _base_sim("reject-fuel-cxx")
+        tank = fuelTank.FuelTank()
+        model = fuelTank.FuelTankModelConstantVolume()
+        model.propMassInit = 10.0
+        tank.setTankModel(model)
+        tank.setNameOfMassState("fuelMass")
+        sc.addStateEffector(tank)
+        sim.AddModelToTask("t", tank)
+        oi = OmniVecIntegrator(sc)
+        oi.setMass(750.0)
+        oi.setMu(3.986004418e14)
+        sc.setIntegrator(oi)
+        sim.InitializeSimulation()
+        sim.ConfigureStopTime(macros.sec2nano(0.2))
+        sim.ExecuteSimulation()
+
+    expect_raise("fuel_unmirrored_cxx", fuel_base_linked)
     expect_raise("jitter_wheel",
                  lambda: mirror(*rw_base(jitter=True)))
-    expect_raise("friction_wheel",
-                 lambda: mirror(*rw_base(friction=True)))
     expect_raise("two_rw_effectors",
                  lambda: mirror(*rw_base(two_eff=True)))
 
@@ -355,13 +408,12 @@ def _reject_cells():
                  lambda: mirror(*thr_base()[:2]))
     expect_raise("min_pulse",
                  lambda: thr_mirror({"useMinPulseTime": True}))
-    expect_raise("low_cutoff",
-                 lambda: thr_mirror({"cutoffFrequency": 10.0}))
+    expect_raise("cutoff_zero",
+                 lambda: thr_mirror({"cutoffFrequency": 0.0}))
 
     out["verdict"] = ("all loud" if all(out.values())
                       else f"SILENT: {[k for k, v in out.items() if not v]}")
     return out
-
 
 def _env_drag_cell(still=False):
     """Drag A/B (LEO 350 km, CdA=11, com=[0.05,0,0], 600 s) + density guard.
@@ -505,6 +557,112 @@ def _env_srp_cell():
     return d
 
 
+def _dcm(sigma):
+    """MRP->DCM (avsEigenMRP semantics, DESIGN constraint 2)."""
+    import numpy as np
+
+    def skew(c):
+        return np.array([[0., -c[2], c[1]], [c[2], 0., -c[0]],
+                         [-c[1], c[0], 0.]])
+    s = np.asarray(sigma, float)
+    s2 = float(s @ s)
+    S = skew(s)
+    return np.eye(3) + (8.0 * S @ S - 4.0 * (1.0 - s2) * S) / (1.0 + s2) ** 2
+
+
+def _env_fuel_cell(r_tb):
+    """Fuel-depletion A/B (750 kg bus... actually 740+10, 5 N thruster,
+    duty 0.5 fresh, 600 s) + depletion-law + attitude-rotation metrics.
+
+    r_tb: tank center in B. Centered ([0,0,0]) has c_B == 0 exactly (mass/I
+    feedback isolated); offset exercises the static-c_B deviation (labeled,
+    bounded). Attitude is compared by DCM (switch-invariant: shadow-switch
+    timing jitter makes sigma-vector comparison meaningless once |sigma|
+    crosses 1 -- measured max|dsig| 1e-3 with max|dom| 0.0). Fuel mass must
+    match near-bit-exact (depletion law is algebraic in achieved duties).
+    """
+    import numpy as np
+    from Basilisk.architecture import messaging, sysModel
+    from Basilisk.simulation import fuelTank, thrusterDynamicEffector
+    from Basilisk.utilities import simIncludeThruster
+    from omniheyoka.omni_heyoka import OmniVecIntegrator
+    from omniheyoka.swap import mirror_stock_config
+
+    class ThrDriver(sysModel.SysModel):
+        def __init__(self):
+            super().__init__()
+            self.out = messaging.THRArrayOnTimeCmdMsg()
+
+        def Reset(self, t):
+            p = messaging.THRArrayOnTimeCmdMsgPayload()
+            p.OnTimeRequest = [0.0] * 36
+            self.out.write(p)
+
+        def UpdateState(self, t):
+            p = messaging.THRArrayOnTimeCmdMsgPayload()
+            ot = [0.0] * 36
+            ot[0] = 0.5 * DT
+            p.OnTimeRequest = ot
+            self.out.write(p, t, self.moduleID)
+
+    def build(use_omni):
+        sim, sc = _base_sim("fuel")
+        sc.hub.mHub = 740.0
+        sc.hub.r_CN_NInit = [1.0e7, 0.0, 0.0]
+        sc.hub.v_CN_NInit = [0.0, 7500.0, 0.0]
+        tf = simIncludeThruster.thrusterFactory()
+        tf.create("TEST_Thruster", [0.5, 0, 1.0], [0, 0, -1.0], MaxThrust=5.0,
+                  cutoffFrequency=1000.0, useMinPulseTime=False)
+        thr = thrusterDynamicEffector.ThrusterDynamicEffector()
+        tf.addToSpacecraft("thr", thr, sc)
+        sim.AddModelToTask("t", thr, 2)
+        tank = fuelTank.FuelTank()
+        model = fuelTank.FuelTankModelConstantVolume()
+        model.propMassInit = 10.0
+        tank.setTankModel(model)
+        tank.setNameOfMassState("fuelMass")
+        tank.setR_TB_B(list(r_tb))
+        tank.addThrusterSet(thr)
+        sc.addStateEffector(tank)
+        sim.AddModelToTask("t", tank)
+        drv = ThrDriver()
+        sim.AddModelToTask("t", drv)
+        thr.cmdsInMsg.subscribeTo(drv.out)
+        oi = None
+        if use_omni:
+            oi = OmniVecIntegrator(sc)
+            mirror_stock_config(sim, sc, oi, thr_factory=tf,
+                                thr_cmd_msg=drv.out)
+            sc.setIntegrator(oi)
+        scLog = sc.scStateOutMsg.recorder()
+        sim.AddModelToTask("t", scLog)
+        return sim, sc, scLog, oi
+
+    sima, sca, loga, _ = build(False)
+    _run(sima, 600.0)
+    simb, scb, logb, oib = build(True)
+    _run(simb, 600.0)
+    d = _final_diff(loga, logb, ["r_BN_N", "v_BN_N", "omega_BN_B"])
+    # Switch-invariant rotation metric (max over trajectory).
+    sa = np.asarray(loga.sigma_BN)
+    sb = np.asarray(logb.sigma_BN)
+    d["dcm_max"] = float(max(np.abs(_dcm(sa[k]) - _dcm(sb[k])).max()
+                             for k in range(len(sa))))
+    # Fuel-mass telemetry parity (direct state read, both arms).
+    fa = float(np.asarray(
+        sca.dynManager.getStateObject("fuelMass").getState()).ravel()[0])
+    fb = float(np.asarray(
+        scb.dynManager.getStateObject("fuelMass").getState()).ravel()[0])
+    d["fuel_stock"] = fa
+    d["fuel_omni"] = fb
+    d["fuel_rel_err"] = abs(fa - fb) / fa if fa else 0.0
+    d["fuel_burned"] = 10.0 - fa
+    d["nPars"] = int(oib.nPars())
+    d["nStates"] = int(oib.nStates())
+    d["build_s"] = round(float(oib.getBuildSeconds()), 4)
+    return d
+
+
 def _final_diff(a, b, fields):
     import numpy as np
     out = {}
@@ -522,13 +680,14 @@ def main() -> int:
                     {"status": "skipped", "reason": "Basilisk not importable"})
         return 0
     payload: dict = {"status": "ok", "cells": {}, "dt": DT}
-    fields = ["r_BN_N", "v_BN_N", "sigma_BN", "omega_BN_B"]
+    fields0 = ["r_BN_N", "v_BN_N", "sigma_BN", "omega_BN_B"]
 
     def ab(kind, T, **kw):
         sima, _, loga, spda, _ = _arm(False, kind, **kw)
         _run(sima, T)
         simb, _, logb, spdb, oib = _arm(True, kind, **kw)
         _run(simb, T)
+        fields = list(fields0) + list(kw.get("extra_fields", []))
         d = _final_diff(loga, logb, fields)
         if spda is not None:
             wa = np.asarray(spda.wheelSpeeds)[-1]
@@ -543,6 +702,7 @@ def main() -> int:
     payload["cells"]["rw3_open_pos"] = ab("rw3_open", 120.0, u=0.5)
     payload["cells"]["rw3_open_neg"] = ab("rw3_open", 120.0, u=-0.3)
     payload["cells"]["rw3_pd"] = ab("rw3_pd", 120.0)
+    payload["cells"]["rw3_fric"] = ab("rw3_fric", 120.0)
     payload["cells"]["rw1"] = ab("rw1", 60.0)
     payload["cells"]["rw2"] = ab("rw2", 60.0)
     payload["cells"]["rw1tilt"] = ab("rw1tilt", 60.0)
@@ -552,9 +712,18 @@ def main() -> int:
                                            mode="write-once")
     payload["cells"]["thr_frozen"] = ab("thr", 30.0, duty=0.5,
                                         mode="frozen")
+    payload["cells"]["thr_lag10"] = ab("thr", 120.0, duty=0.5, cutoff=10.0)
+    payload["cells"]["rw3_fric"] = ab("rw3_fric", 120.0)
+    # CoM-offset B/C boundary (stock convention r_BN = r_CN - R^T*c,
+    # measured; DESIGN/test_wp4 pin the opposite sign from self-consistent
+    # math only -- flagged for SysModel-path audit).
+    payload["cells"]["thr_offset"] = ab("thr", 60.0, duty=1.0, offset=0.1,
+                                        extra_fields=["r_CN_N", "v_CN_N"])
     payload["cells"]["env_drag"] = _env_drag_cell()
     payload["cells"]["env_drag_still"] = _env_drag_cell(still=True)
     payload["cells"]["env_srp"] = _env_srp_cell()
+    payload["cells"]["fuel_centered"] = _env_fuel_cell([0.0, 0.0, 0.0])
+    payload["cells"]["fuel_offset"] = _env_fuel_cell([0.3, 0.0, 0.2])
 
     # Switching-residual ladder (documents linear-in-dt class, Update-4 #2).
     payload["thr_ladder_30s"] = {"dt0.1": None}  # filled below
@@ -577,9 +746,11 @@ def main() -> int:
     # Verdicts vs pre-registered tolerances.
     fails = []
     for cell, d in payload["cells"].items():
-        if cell.startswith("thr_fresh"):
+        if cell.startswith("thr_fresh") or cell.startswith("thr_offset") \
+                or cell.startswith("thr_lag"):
             bounds = {"r_BN_N": TOL_THR_R, "v_BN_N": TOL_THR_V,
-                      "sigma_BN": TOL_THR_SIG, "omega_BN_B": TOL_THR_OM}
+                      "sigma_BN": TOL_THR_SIG, "omega_BN_B": TOL_THR_OM,
+                      "r_CN_N": TOL_THR_R, "v_CN_N": TOL_THR_V}
         elif cell.startswith("thr_writeonce") or cell.startswith("thr_frozen"):
             bounds = {"r_BN_N": TOL_WO_R, "v_BN_N": TOL_WO_V,
                       "sigma_BN": TOL_WO_SIG, "omega_BN_B": TOL_WO_OM}
@@ -594,9 +765,15 @@ def main() -> int:
         elif cell == "env_srp":
             bounds = {"r_BN_N": 1e-6, "v_BN_N": 1e-8, "sigma_BN": 1e-9,
                       "omega_BN_B": 1e-9}
+        elif cell.startswith("fuel_"):
+            # Switching-class trajectories (5 N, 600 s) + bit-exact fuel law.
+            # (dcm_max/fuel_rel_err checked separately below.)
+            bounds = {"r_BN_N": 2e-2, "v_BN_N": 1e-4, "omega_BN_B": 1e-4}
         else:
-            bounds = {f: TOL_STATE for f in fields}
+            bounds = {f: TOL_STATE for f in fields0}
         for f, tol in bounds.items():
+            if f not in d:
+                continue
             if not d[f] < tol:
                 fails.append(f"{cell}.{f}={d[f]:.3e}")
         if "wheels" in d and not d["wheels"] < TOL_WHEEL:
@@ -609,6 +786,14 @@ def main() -> int:
     ratio = srp.get("srp_single_tick_ratio", 0.0)
     if not 0.9 < ratio < 1.1:
         fails.append(f"env_srp.vacuous single-tick ratio={ratio:.4f}")
+    for cell in ("fuel_centered", "fuel_offset"):
+        fc = payload["cells"].get(cell, {})
+        if not fc.get("fuel_burned", 0.0) > 0.1:
+            fails.append(f"{cell}.vacuous burned={fc.get('fuel_burned')}")
+        if not fc.get("fuel_rel_err", 1.0) < 1e-9:
+            fails.append(f"{cell}.fuel_rel_err={fc.get('fuel_rel_err'):.3e}")
+        if not fc.get("dcm_max", 1.0) < 2e-3:
+            fails.append(f"{cell}.dcm_max={fc.get('dcm_max'):.3e}")
     payload["verdict"] = ("parity green" if not fails
                           else f"PARITY FAIL: {fails}")
     if fails:

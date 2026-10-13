@@ -39,9 +39,11 @@ int main() {
     // inputs: wheels-first registration -> [u1..u3, q0..q11]
     pars[0] = 0.01; pars[1] = -0.005; pars[2] = 0.008;
 
-    // Taylor advance on the symbolic graph.
+    // Taylor advance on the symbolic graph (suffix-truncated pars).
     const auto sysrows = sys.build_symbolic();
-    heyoka::taylor_adaptive<double> ta(sysrows, x0, heyoka::kw::pars = pars,
+    const size_t np = omni::OmniSystem::checked_par_count(sysrows, pars.size());
+    std::vector<double> pTrunc(pars.begin(), pars.begin() + np);
+    heyoka::taylor_adaptive<double> ta(sysrows, x0, heyoka::kw::pars = pTrunc,
                                        heyoka::kw::tol = 1e-14,
                                        heyoka::kw::compact_mode = false);
     std::vector<double> yt = x0;
@@ -50,7 +52,7 @@ int main() {
     const double dt = 0.1;
     for (int k = 0; k < 20; ++k) {
         for (size_t i = 0; i < yt.size(); ++i) sd[i] = yt[i];
-        for (size_t i = 0; i < pars.size(); ++i) pd[i] = pars[i];
+        for (size_t i = 0; i < pars.size() && i < np; ++i) pd[i] = pars[i];
         ta.set_time(0.0);
         ta.propagate_for(dt);
         yt = ta.get_state();

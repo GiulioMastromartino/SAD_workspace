@@ -94,6 +94,18 @@ public:
     void setMagneticMoment(double mx, double my, double mz);
     void setMagneticDipole(double g10, double g11, double h11);
     void setMaxMtbDipole(double dmax);
+    // --- Phase-2 swap: fuel depletion (single tank) --------------------------
+    // fuelStateName is the STOCK registered state name (e.g. "fuelMass" or
+    // "fuelTankMass2"); the graph's canonical state is always "fuelMass"
+    // (last). rTB = tank center in B [m] (point-mass K about B); leak =
+    // constant drain [kg/s]. Thruster Isps (one per mirrored thruster, [s])
+    // feed the mdot law mdot = sum duty*Tmax/(Isp*g0) + leak.
+    void setFuelStateName(const std::string& name);
+    void setFuelTank(double rTBx, double rTBy, double rTBz, double leak);
+    void setThrusterIsps(const std::vector<double>& isp);
+    // Fuel mass/I feedback toggle (default ON). OFF = bookkeeping-only: the
+    // fuel state still integrates (telemetry exact) but hub mass/I pars stay
+    // at build values (WP6-style). Useful to isolate feedback effects.
     // Thruster cluster (stage 2, staircase only): one call per thruster,
     // stock order (must match the THRArrayConfigMsg order). Geometry is
     // structural; duties enter per-step via the staged on-time mailbox.
@@ -106,6 +118,15 @@ public:
     // One call per wheel, stock order (structural constants only; limits
     // live stock-side in ConfigureRWRequests).
     void addWheel(double gsx, double gsy, double gsz, double Js);
+    // Phase-2 friction (Stribeck, module-side, per wheel i): mirrors the
+    // live RWConfigPayload set (fCoulomb/fStatic/betaStatic/cViscous/
+    // omegaLimitCycle). Enabled flag + coefficients; the integrator keeps
+    // per-wheel frictionStribeck/omegaBefore state exactly like stock
+    // (upstream reactionWheelStateEffector.cpp). Jitter stays rejected.
+    void setFrictionEnabled(bool on);
+    void setFrictionParams(size_t i, double fCoulomb, double fStatic,
+                           double betaStatic, double cViscous,
+                           double omegaLimitCycle);
     // Integrator options.
     void setTol(double tol);
     void setCompactMode(bool compact);
@@ -159,6 +180,18 @@ private:
         double Js;
     };
     std::vector<WheelRec> wheelRecs_;
+    // Phase-2 friction records (parallel to wheelRecs_) + per-wheel state.
+    bool frictionOn_ = false;
+    struct FricRec {
+        double fCoulomb = 0.0, fStatic = 0.0, betaStatic = -1.0;
+        double cViscous = 0.0, omegaLimitCycle = 0.0001;
+    };
+    std::vector<FricRec> fricRecs_;
+    struct FricState {
+        int stribeck = 0;
+        double omegaBefore = 0.0;
+    };
+    std::vector<FricState> fricState_;
     // Thruster geometry records, stock order (stage 2).
     std::vector<std::array<double, 3>> thrDirs_;
     std::vector<std::array<double, 3>> thrPos_;
@@ -196,6 +229,12 @@ private:
     double magG10_ = 0.0, magG11_ = 0.0, magH11_ = 0.0;
     double maxMtbDipole_ = 1.0;
     bool envConfigured_ = false;
+    // --- Phase-2 fuel records -------------------------------------------------
+    std::string fuelStateName_;
+    bool hasFuel_ = false;
+    double fuelRTB_[3]{0.0, 0.0, 0.0};
+    double fuelLeak_ = 0.0;
+    std::vector<double> fuelIsps_;
     double tol_ = 1e-12;
     bool compactMode_ = false;
 
@@ -206,7 +245,8 @@ private:
     void buildOnce();  // census + claim + mirror + symbolic build
     // WP5 per-tick (/per-arc) env refresh into the par slots. y = gathered
     // omni-order state; P = live par vector. Module-side doubles only (A3).
-    void updateEnvInputs(const double* y, std::vector<double>& P);
+    void updateEnvInputs(const double* y, std::vector<double>& P,
+                         const double cLive[3]);
 };
 
 #endif  // OMNI_VEC_INTEGRATOR_HPP

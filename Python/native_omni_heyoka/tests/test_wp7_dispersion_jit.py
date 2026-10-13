@@ -118,6 +118,9 @@ RW_INPUTS_PER_WHEEL = 2     # u + tauF (WP2 second slot)
 RW_PARS_PER_WHEEL = 1       # Js (parametric — the Update-5 story)
 RW_STATES_PER_WHEEL = 1     # W
 THR_EXTRA_INPUTS = 1        # swirlScale trailing slot (WP3b)
+THR_C_PARS_MAX = 3          # cBx/cBy/cBz subset by the relevance mask
+                            # (axis kept iff some thruster couples it:
+                            # cx via dy|dz, cy via dx|dz, cz via dx|dy)
 ENV_FIXED_INPUTS = 15       # drag 6 + SRP 6 + mag 3 (single 'e' cluster)
 ENV_INPUTS_PER_BODY = 3     # per-body offset slots
 HUB_PARS = 7                # mass + I6 (no invI6 — Update 4)
@@ -125,14 +128,22 @@ HUB_STATES = 12             # r(3) v(3) sigma(3) omega(3)
 
 
 def expected_layout(n_wheels: int, n_thrusters: int = 0,
-                    n_env_bodies: int = 0) -> tuple[int, int]:
-    """(n_states, n_pars) from the per-kind deltas (A2, name-derived)."""
+                    n_env_bodies: int = 0, n_thr_c: int = 0) -> tuple[int, int]:
+    """(n_states, n_pars) from the per-kind deltas (A2, name-derived).
+
+    n_thr_c is the thruster-CoM relevance-mask popcount for the config's
+    geometry (0-3; all-3 when every direction family is present). The
+    production mask lives in ThrusterContributorT; the call site passes
+    the count its geometry implies.
+    """
     states = HUB_STATES + n_wheels * RW_STATES_PER_WHEEL
     inputs = (n_wheels * RW_INPUTS_PER_WHEEL
               + (n_thrusters + THR_EXTRA_INPUTS if n_thrusters else 0)
               + (n_env_bodies * ENV_INPUTS_PER_BODY + ENV_FIXED_INPUTS
                  if n_env_bodies or _ENV_ALWAYS else 0))
-    pars = inputs + HUB_PARS + n_wheels * RW_PARS_PER_WHEEL
+    pars = (inputs + HUB_PARS + n_wheels * RW_PARS_PER_WHEEL
+            + (n_thr_c if n_thrusters else 0))
+    assert 0 <= n_thr_c <= THR_C_PARS_MAX
     return states, pars
 
 
@@ -157,6 +168,7 @@ def test_layout_growth_math():
     assert expected_layout(3, 0, 0) == (15, 16)    # hub+3RW: 6+7+3
     assert expected_layout(4, 0, 0) == (16, 19)    # hub+4RW: 8+7+4
     assert expected_layout(0, 12, 0) == (12, 20)   # hub+12thr: 13+7
+    assert expected_layout(0, 12, 0, n_thr_c=3) == (12, 23)  # + full mask
     assert expected_layout(3, 0, 1) == (15, 34)    # +env(1 body): 24+7+3
     # Deltas (robust to absolute shifts): one more wheel = +1 state, +3 pars.
     s0, p0 = expected_layout(3, 0, 0)
@@ -1080,7 +1092,8 @@ def test_jit_budget_table():
         for i, d in enumerate(axes):
             sc.addThruster(float(d[0]), float(d[1]), float(d[2]),
                            0.1 * (i % 3), 0.1 * ((i + 1) % 3), 0.0, 1.0)
-        return sc, expected_layout(0, 12, 0)
+        # All three direction families present -> relevance mask all-true.
+        return sc, expected_layout(0, 12, 0, n_thr_c=3)
 
     def cfg_full_env():
         sc = _base_sc(oh)

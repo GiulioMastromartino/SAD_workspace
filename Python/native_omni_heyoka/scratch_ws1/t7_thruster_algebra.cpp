@@ -120,7 +120,7 @@ int main() {
     }
     sys.add_thrusters(d, p, tm);
     std::cout << "states=" << sys.n_states() << " (expect 12), pars=" << sys.n_pars()
-              << " (expect 19 = 12 q + mass + I6)\n";
+              << " (expect 23 = 12 q + swirl + mass + I6 + 3 cB)\n";
 
     std::mt19937_64 rng(777);
     std::uniform_real_distribution<double> U(-1.0, 1.0);

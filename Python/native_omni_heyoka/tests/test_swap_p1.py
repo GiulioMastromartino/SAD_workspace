@@ -41,7 +41,7 @@ def test_p1_ledger_green():
 def test_p1_hub_rw_parity():
     d = _load()["payload"]["cells"]
     for cell in ("hub_60s", "rw3_open_pos", "rw3_open_neg", "rw3_pd",
-                 "rw1", "rw2", "rw1tilt"):
+                 "rw3_fric", "rw1", "rw2", "rw1tilt"):
         assert cell in d, f"missing cell {cell}"
         for f in ("r_BN_N", "v_BN_N", "sigma_BN", "omega_BN_B"):
             assert d[cell][f] < TIGHT, f"{cell}.{f}={d[cell][f]:.3e}"
@@ -56,11 +56,19 @@ def test_p1_hub_rw_parity():
 def test_p1_thruster_parity():
     d = _load()["payload"]["cells"]
     for cell, bounds in (("thr_fresh_05", THR), ("thr_fresh_10", THR),
-                         ("thr_writeonce", WO), ("thr_frozen", WO)):
+                         ("thr_lag10", THR),
+                         ("thr_writeonce", WO), ("thr_frozen", WO),
+                         ("thr_offset", THR)):
         assert cell in d, f"missing cell {cell}"
         for f, tol in bounds.items():
             assert d[cell][f] < tol, f"{cell}.{f}={d[cell][f]:.3e}"
     assert d["thr_fresh_05"]["nStates"] == 12  # thrusters add no states
+    # Offset cell also checks the C-point outputs stock derives.
+    assert d["thr_offset"]["nStates"] == 12
+    for f in ("r_CN_N", "v_CN_N"):
+        assert f in d["thr_offset"], f"missing {f} in thr_offset"
+    assert d["thr_offset"]["r_CN_N"] < THR["r_BN_N"]
+    assert d["thr_offset"]["v_CN_N"] < THR["v_BN_N"]
 
 
 def test_p1_env_parity():
@@ -91,8 +99,26 @@ def test_p1_switching_ladder_linear():
 
 def test_p1_rejects_all_loud():
     r = _load()["payload"]["rejects"]
-    for name in ("fuel_tank", "jitter_wheel", "friction_wheel",
+    for name in ("jitter_wheel",
                  "two_rw_effectors", "thruster_no_factory", "min_pulse",
-                 "low_cutoff"):
-        assert r.get(name) is True, f"{name} did not raise"
+                 "cutoff_zero"):
+        # Helper guards raise ValueError("mirror_stock_config: ..."); any
+        # other exception type/message fails the gate (no vacuous pass).
+        assert str(r.get(name, "")).startswith("mirror_stock_config"), name
+    # C++ defense-in-depth path names the unclaimed state.
+    assert "fuelMass" in str(r.get("fuel_unmirrored_cxx", ""))
     assert r.get("verdict") == "all loud"
+
+
+def test_p1_fuel_parity():
+    d = _load()["payload"]["cells"]
+    for cell in ("fuel_centered", "fuel_offset"):
+        assert cell in d, f"missing cell {cell}"
+        c = d[cell]
+        assert c["r_BN_N"] < 2e-2, f"{cell}.r={c['r_BN_N']:.3e}"
+        assert c["v_BN_N"] < 1e-4, f"{cell}.v={c['v_BN_N']:.3e}"
+        assert c["omega_BN_B"] < 1e-4, f"{cell}.om={c['omega_BN_B']:.3e}"
+        assert c["dcm_max"] < 2e-3, f"{cell}.dcm={c['dcm_max']:.3e}"
+        assert c["fuel_burned"] > 0.1  # effect live, not vacuous
+        assert c["fuel_rel_err"] < 1e-9  # depletion law near-bit-exact
+    assert d["fuel_centered"]["nStates"] == 13  # hub12 + fuel (no wheels)

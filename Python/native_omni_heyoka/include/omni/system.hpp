@@ -20,6 +20,7 @@
 #include <array>
 #include <cmath>
 #include <memory>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -101,6 +102,16 @@ public:
         if (!(mu > 0.0)) throw std::invalid_argument("OmniSystem: mu must be positive");
         mu_ = mu;
         has_gravity_ = true;
+        dirty_ = true;
+    }
+
+    // --- Phase-2 swap: fuel mass (single tank, always LAST in layout) --------
+    // No records needed: depletion flows via state/inputs, and hub mass/I
+    // feedback is applied module-side on the hub par slots. Appended after
+    // the order_ loop so fuel states are always last (documented layout).
+    void add_fuel_tank() {
+        if (has_fuel_) throw std::invalid_argument("OmniSystem: only one fuel tank allowed");
+        has_fuel_ = true;
         dirty_ = true;
     }
 
@@ -310,6 +321,14 @@ public:
         throw std::invalid_argument("OmniSystem: unknown par '" + name + "'");
     }
 
+    // Non-throwing par probe (masked-out thruster c-axes have no slot).
+    bool has_par(const std::string& name) const {
+        refresh();
+        for (const auto& nm : par_names_)
+            if (nm == name) return true;
+        return false;
+    }
+
     // --- numeric evaluation (same contributor code, S = double) ------------
     // Returns [rDDot(3), omegaDot(3), Wdot...].
     std::vector<double> accelerations(const std::vector<double>& state,
@@ -384,6 +403,42 @@ public:
         return build_symbolic_from_ctx(vars, par);
     }
 
+    // heyoka requires the passed par count to EXACTLY match the referenced
+    // set. Thruster CoM axes are masked at the source (ThrusterContributorT
+    // only registers axes its geometry couples), so c-slots never dangle.
+    // Any OTHER geometry-degenerate trailing slot is suffix-dropped here;
+    // anything else (interior gap, the Update-4 invI6 class) throws LOUDLY
+    // instead of silently misbuilding.
+    // Returns the kept count k; callers pass pars[0..k) and must bound all
+    // per-tick get_pars_data() pushes by k (heap safety!).
+    static size_t checked_par_count(
+        const std::vector<std::pair<heyoka::expression, heyoka::expression>>& sysrows,
+        size_t n_pars) {
+        std::set<size_t> seen;
+        for (const auto& pr : sysrows) {
+            for (const auto& p : heyoka::get_params(pr.second)) {
+                std::ostringstream os;
+                os << p;
+                const std::string s = os.str();
+                if (s.size() < 2 || s[0] != 'p') continue;
+                size_t v = 0;
+                bool ok = true;
+                for (size_t i = 1; i < s.size(); ++i) {
+                    if (s[i] < '0' || s[i] > '9') { ok = false; break; }
+                    v = v * 10 + static_cast<size_t>(s[i] - '0');
+                }
+                if (ok) seen.insert(v);
+            }
+        }
+        size_t k = 0;
+        while (k < n_pars && seen.count(k)) ++k;
+        if (seen.size() != k)
+            throw std::runtime_error(
+                "OmniSystem: non-suffix par gap in symbolic graph "
+                "(structurally dead par slot; remove it, Update-4 style)");
+        return k;
+    }
+
     // String marshalling for the Python shim: RHS strings, LHS = state_names().
     // Python reparses each with hy.expression(s) -- verified exact round-trip.
     std::vector<std::string> build_symbolic_rhs_strings() const {
@@ -442,6 +497,7 @@ private:
     std::vector<std::array<double,3>> thrPos_;
     std::vector<double> thrTmax_;
     bool has_thrusters_ = false;
+    bool has_fuel_ = false;
     double mu_ = 3.986004418e14;
     bool has_gravity_ = false;
     bool use_gg_ = true;
@@ -631,6 +687,33 @@ private:
         }
         if (wpos != wheels_.size())
             throw std::runtime_error("OmniSystem: stale order log");
+        // Fuel LAST (documented layout; gather maps the stock name here).
+        if (has_fuel_) {
+            num_.push_back(std::make_unique<FuelMassContributorT<double>>());
+            sym_.push_back(std::make_unique<FuelMassContributorT<heyoka::expression>>());
+        }
+
+        // WP4: wire aggregate c_B into hub + thruster records BEFORE the par
+        // pass, so thruster cBx/cBy/cBz par_defaults snapshot the record
+        // (modules overwrite per tick when live). Telemetry stays about-B.
+        {
+            for (auto& h : num_)
+                if (h->kind() == "hub")
+                    static_cast<HubContributorT<double>*>(h.get())->setComOffset(
+                        hub_.rBcB[0], hub_.rBcB[1], hub_.rBcB[2]);
+            for (auto& h : sym_)
+                if (h->kind() == "hub")
+                    static_cast<HubContributorT<heyoka::expression>*>(h.get())->setComOffset(
+                        hub_.rBcB[0], hub_.rBcB[1], hub_.rBcB[2]);
+            for (auto& c : num_)
+                if (c->kind() == "thruster")
+                    static_cast<ThrusterContributorT<double>*>(c.get())->set_com_offset(
+                        hub_.rBcB[0], hub_.rBcB[1], hub_.rBcB[2]);
+            for (auto& c : sym_)
+                if (c->kind() == "thruster")
+                    static_cast<ThrusterContributorT<heyoka::expression>*>(c.get())->set_com_offset(
+                        hub_.rBcB[0], hub_.rBcB[1], hub_.rBcB[2]);
+        }
 
         // State layout: 12 hub states, then contributor states (A1).
         size_t soff = 12;
@@ -721,27 +804,7 @@ private:
             }
         }
 
-        // WP4: wire aggregate c_B into both hub instantiations, and the
-        // dynamics arm shift ((r - c) x F) into both thruster clusters.
-        // Telemetry stays about-B (module-side). Default zeros = pre-WP4.
-        {
-            for (auto& h : num_)
-                if (h->kind() == "hub")
-                    static_cast<HubContributorT<double>*>(h.get())->setComOffset(
-                        hub_.rBcB[0], hub_.rBcB[1], hub_.rBcB[2]);
-            for (auto& h : sym_)
-                if (h->kind() == "hub")
-                    static_cast<HubContributorT<heyoka::expression>*>(h.get())->setComOffset(
-                        hub_.rBcB[0], hub_.rBcB[1], hub_.rBcB[2]);
-            for (auto& c : num_)
-                if (c->kind() == "thruster")
-                    static_cast<ThrusterContributorT<double>*>(c.get())->set_com_offset(
-                        hub_.rBcB[0], hub_.rBcB[1], hub_.rBcB[2]);
-            for (auto& c : sym_)
-                if (c->kind() == "thruster")
-                    static_cast<ThrusterContributorT<heyoka::expression>*>(c.get())->set_com_offset(
-                        hub_.rBcB[0], hub_.rBcB[1], hub_.rBcB[2]);
-        }
+        // (WP4 wiring moved before the par pass; see above.)
 
         // Fill hub parameter defaults from the registration record.
         // Hub is num_[has_gravity ? 1 : 0]; its par block is mass + I6 (7).

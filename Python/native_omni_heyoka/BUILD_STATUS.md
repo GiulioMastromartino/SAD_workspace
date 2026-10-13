@@ -551,6 +551,89 @@ their wiring is the drag-proven shared path with unchanged validated laws.
   meaningless); `useMinPulseTime=False` at create() zeroes it.
 - Stock default integrator is RK4 (upstream ctor) -- the swap target.
 
+## Update 8 — Phase-2 coverage: offset, fuel, friction, lag (2026-10-13)
+
+### CoM-offset swap gate + stock B/C sign finding
+
+Offset (rBcB=0.1) + thruster A/B: r 5.6e-09, attitude 1e-14 (probe
+thr_offset cell, incl. r_CN/v_CN outputs). Along the way the swap MEASURED
+stock's B/C convention as r_BN = r_CN - R^T*c (r_BN - r_CN = -c exactly),
+opposite to the DESIGN/test_wp4 formula (self-consistent math only, never
+stock-pinned -- flagged for SysModel-path audit; the swap follows the
+measurement). Zero-offset path is IEEE-exact no-op (bit-identical).
+
+### Fuel depletion (flagship): mass/I feedback + bit-exact depletion law
+
+`FuelMassContributorT` (1 state + mdot input) + per-tick hub mass/I par
+overwrite + live aggregate c_B everywhere (no rebuilds in the final design;
+a drift-triggered-rebuild design was tried and reverted: 2 s re-JIT each,
+270 rebuilds = 9 min/sim, and unnecessary once c went parametric):
+- Measured (mass-props message): input I/mass are hub-DRY; aggregate ==
+  input + mFuel*K_pointmass(r_TB) EXACTLY (all 9 entries); c_B exact.
+- mdot from staircase-ACHIEVED duties (matches stock bit-exactly over
+  600 s: fuel_rel_err 0.0 -- both sides use achieved, not commanded).
+- Inertia about TRUE C: I_C = I_hub + mHub*PA(rBcB-c) + mFuel*PA(rTB-c)
+  with LIVE c per tick (using I_B instead costs 0.2 m + 2e-2 rad -- measured).
+- Thruster arms via 3 NEW cBx/cBy/cBz par slots (module-written per tick);
+  structural comOff_ survives as refresh snapshot only. This killed the
+  2 s-per-rebuild re-JIT design (270 rebuilds = 9 min/sim -- dead end,
+  reverted) AND fixed the offset gap (0.2 -> 0.006, switching-class).
+- heyoka demands EXACT par match. Thruster CoM axes are masked AT THE
+  SOURCE: `ThrusterContributorT` registers only axes its geometry couples
+  (cx via dy|dz, cy via dx|dz, cz via dx|dy -- from t=(r-c)xF expansion),
+  so c-slots never dangle. This was forced by the 12U stale-path config
+  (x-only thrust drops cBx = INTERIOR gap: cy,cz live, cx dead -- suffix
+  truncation cannot fix that; the contributor now compacts). Masked-out
+  axes read the structural record literal (provably dead in the graph).
+  Module c-writes are per-axis via `has_par` (NPOS sentinel for masked).
+  `OmniSystem::checked_par_count` remains as the structural backstop
+  (suffix-drop + loud throw on other gaps); all ta constructions truncate
+  + all per-tick pushes heap-bounded (4 ta sites: integrator, SysModel,
+  t8; t3 RW-only untouched). wp7 `expected_layout` gains the `n_thr_c`
+  mask-popcount term (hub+12thr: 23 = 13+7+3).
+- Gates: centered + offset tank (10 kg, 5 N, duty 0.5, 600 s, 1.1 kg
+  burned): fuel bit-exact, trajectories in switching class; c_B static
+  initial would cost 0.2 m (measured) -- live-c everywhere instead.
+- Scope: single tank + all mirrored thrusters drain it (multi-tank raises;
+  subset linkage unverifiable -- documented assumption); empty-tank
+  behavior (clamp mdot, thrust unaffected) labeled; fuel+offset+full-FSW
+  closed loop is follow-up.
+
+### Friction (Stribeck, stock-exact) + cutoff lag (default-ON)
+
+- Friction: per-wheel Stribeck law + stribeck-flag/omegaBefore state
+  transcribed 1:1 from upstream (module-side tauF slots); helper mirrors
+  the live coefficient set (factory-off all-zero = OFF, no records).
+  Gate: spin-up 40 s + free spin-down, 120 s: 1e-14 class all channels.
+  Jitter stays loud-reject (distributional-or-reject per DESIGN; bit-exact
+  impossible across libc++).
+- Cutoff lag: SUPERSEDED -- an unconditional first-order filter DIVERGES
+  from stock (attenuates fresh steps 0.63x at cutoff 10; measured r 0.229).
+  Measured instead: stock cutoff is INERT without ramps (10 vs 1000 vs 100
+  bit-identical over fire AND shutoff transients). Resolution: NO lag model;
+  any cutoff accepted (<=0 still rejected, degenerate unmeasured); ramps
+  stay rejected, and cutoff must be modeled WITH ramps if those ever land
+  (M2 composition). Same caveat recorded for the SysModel WP3b lag path
+  (exact at pinned 1000, unvalidated at 10). Gate: thr_lag10 cell (default
+  cutoff, no pin).
+- u_min/P_max/Omega_max need NO work (stock ConfigureRWRequests applies
+  them; we read post-saturation u_current -- timing-identical).
+
+### Swap debugging ledger additions
+
+- `thrustFactor` telemetry lags dynamics ~3 ticks (all-zeros while firing);
+  omega deltas are the truth (two near-vacuous benches caught).
+- Task priorities load-bearing for stock firing (all-default never fires).
+- Min-pulse effective state is per-thruster MinOnTime (factory flag
+  meaningless); THRArrayConfigMsg functor never links (geometry joins
+  Python-side; `.label` reads abort).
+- Shadow-switch timing jitter makes sigma-vector comparison meaningless
+  past |sigma|=1 (measured 1e-3 with omega exact 0.0); fuel attitude gated
+  by DCM (switch-invariant 4e-16).
+- Translational B-point states exist; `sc.states`/`dynEffectors` are opaque
+  from Python AND unreachable from DynamicObject C++ (task-model walk is
+  the only typed census); MRO walk distinguishes dynamics from field models.
+
 ## Bench vs tests decision (2026-10-12)
 
 The Rev-1 validation matrix names `bench_rw_omni.py` Part A / `bench_thruster.py`

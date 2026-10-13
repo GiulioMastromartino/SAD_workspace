@@ -367,7 +367,39 @@ private:
 };
 
 // ---------------------------------------------------------------------------
-// Central gravity: point-mass field. Produces g_N; runs FIRST (A5).
+// Fuel mass (Phase-2 swap): depletion bookkeeping with mass/I feedback.
+//
+// ONE state (fuel mass [kg]), ONE input (mdot [kg/s], module-side from the
+// quantized thrust levels + leak). The GRAPH integrates mFuelDot = -mdot;
+// the MODULE overwrites the hub mass/I par slots per tick from the live
+// fuel state (m = mDry + mFuel, I_C about the LIVE aggregate c). The live
+// aggregate c itself flows through the thruster cB par slots + the B/C
+// boundary mapping (same tick values; no rebuilds, no lag).
+// Empty-tank behavior: the module clamps mdot <= mFuel/dt (never negative);
+// thrust itself is unaffected (documented; gates never empty the tank).
+// ---------------------------------------------------------------------------
+template <typename S>
+class FuelMassContributorT : public ContributorT<S> {
+public:
+    std::string kind() const override { return "fuel"; }
+    size_t n_states() const override { return 1; }
+    size_t n_inputs() const override { return 1; }  // mdot
+    size_t n_pars() const override { return 0; }
+    std::vector<std::string> state_names() const override { return {"fuelMass"}; }
+    std::vector<std::string> input_names() const override { return {"mdot"}; }
+    std::vector<std::string> par_names() const override { return {}; }
+    std::vector<double> par_defaults() const override { return {}; }
+
+    void updateContributions(double, BackSubMatricesT<S>&, const Vector3<S>&,
+                             const EvalCtx<S>&) const override {}
+
+    std::vector<S> state_derivatives(const Vector3<S>&, const Vector3<S>&,
+                                     const EvalCtx<S>& ctx) const override {
+        // mFuelDot = -mdot (module clamped non-negative; A3-clean: the
+        // clamp lives in the per-tick mdot value, never in the graph).
+        return {-ctx.pars[this->input_offset]};
+    }
+};
 // No states, no inputs, no parameters (mu is a baked structural constant).
 // ---------------------------------------------------------------------------
 template <typename S>
@@ -435,6 +467,23 @@ public:
                          std::vector<double> tmax)
         : dirs_(std::move(dirs)), pos_(std::move(pos)), tmax_(std::move(tmax)) {
         n_ = dirs_.size();
+        // Per-axis CoM relevance (mask): c enters ONLY via t = (r-c) x F,
+        // F = q*Tmax*d. Expanding: cx couples through dy,dz terms; cy
+        // through dx,dz; cz through dx,dy. An axis NO thruster couples gets
+        // NO par slot: heyoka demands the passed par count EXACTLY match
+        // the referenced set, so a dead slot breaks the build -- as a
+        // TRAILING drop (suffix, e.g. cBz with z-only thrust) or an
+        // INTERIOR gap (cBx with x-only thrust: cy,cz live, cx dead -- the
+        // 12U stale-path config hit exactly this). Masked-out axes read
+        // the structural comOff_ literal (provably dead in the graph).
+        bool ux = false, uy = false, uz = false;
+        for (size_t i = 0; i < n_; ++i) {
+            if (tmax_[i] == 0.0) continue;
+            if (dirs_[i][0] != 0.0) { uy = true; uz = true; }
+            if (dirs_[i][1] != 0.0) { ux = true; uz = true; }
+            if (dirs_[i][2] != 0.0) { ux = true; uy = true; }
+        }
+        cMask_ = {ux, uy, uz};
     }
 
     std::string kind() const override { return "thruster"; }
@@ -447,7 +496,31 @@ public:
     // off by default). A dedicated slot is required because the swirl torque
     // points along the thrust axis d, which r x F folding cannot produce.
     size_t n_inputs() const override { return n_ + 1; }
-    size_t n_pars() const override { return 0; }
+    // Phase-2 swap: the aggregate-CoM arm offset lives in OWN parameters
+    // (cBx,cBy,cBz subset by the relevance mask), module-written per tick
+    // from live fuel (or the static record without fuel). Structural
+    // comOff_ survives as the refresh snapshot for par_defaults
+    // (standalone harnesses that never overwrite) and as the literal for
+    // masked-out axes. Rationale: rebuilding the JIT per c-drift costs
+    // ~2 s a piece and is unnecessary; live pars track depletion exactly
+    // with zero rebuilds.
+    size_t n_pars() const override {
+        return (cMask_[0] ? 1u : 0u) + (cMask_[1] ? 1u : 0u)
+             + (cMask_[2] ? 1u : 0u);
+    }
+    std::vector<std::string> par_names() const override {
+        static const char* kAll[3] = {"cBx", "cBy", "cBz"};
+        std::vector<std::string> o;
+        for (int j = 0; j < 3; ++j)
+            if (cMask_[j]) o.push_back(kAll[j]);
+        return o;
+    }
+    std::vector<double> par_defaults() const override {
+        std::vector<double> o;
+        for (int j = 0; j < 3; ++j)
+            if (cMask_[j]) o.push_back(comOff_[j]);
+        return o;
+    }
     std::vector<std::string> state_names() const override { return {}; }
     std::vector<std::string> input_names() const override {
         std::vector<std::string> o;
@@ -455,8 +528,6 @@ public:
         o.push_back("swirlScale");
         return o;
     }
-    std::vector<std::string> par_names() const override { return {}; }
-    std::vector<double> par_defaults() const override { return {}; }
     bool has_force_torque() const override { return true; }
 
     void updateContributions(double, BackSubMatricesT<S>&, const Vector3<S>&,
@@ -492,9 +563,18 @@ public:
             // WP4 measured stock semantics (fire-step bench): dynamics moment
             // arms shift by -c_B (about CoM); TELEMETRY thrustTorquePntB_B
             // stays r_thr x F about B (computed module-side, untouched here).
-            r[0] = make_scalar<S>(pos_[i][0] - comOff_[0]);
-            r[1] = make_scalar<S>(pos_[i][1] - comOff_[1]);
-            r[2] = make_scalar<S>(pos_[i][2] - comOff_[2]);
+            // c_B comes from the OWN masked cB par slots (module-written
+            // per tick; par_defaults snapshot the structural record).
+            // Masked-out axes fall back to the structural literal (dead
+            // in the graph by construction, so this is exact).
+            size_t ck = this->par_offset;
+            const S cx = cMask_[0] ? P[ck++] : make_scalar<S>(comOff_[0]);
+            const S cy = cMask_[1] ? P[ck++] : make_scalar<S>(comOff_[1]);
+            const S cz = cMask_[2] ? P[ck++] : make_scalar<S>(comOff_[2]);
+            (void)ck;
+            r[0] = make_scalar<S>(pos_[i][0]) - cx;
+            r[1] = make_scalar<S>(pos_[i][1]) - cy;
+            r[2] = make_scalar<S>(pos_[i][2]) - cz;
             tB = vecadd3(tB, cross3(r, Fi));
             // WP3b swirl (M6): axis torque about the thrust direction, scaled
             // by the achieved duty in the q slot (A3: pure arithmetic only).
@@ -580,6 +660,8 @@ private:
     std::vector<double> tmax_;
     size_t n_ = 0;
     std::array<double, 3> comOff_{0.0, 0.0, 0.0};
+    // Per-axis CoM relevance (constructor-computed from dirs_/tmax_).
+    std::array<bool, 3> cMask_{true, true, true};
 };
 
 }  // namespace omni

@@ -27,6 +27,8 @@ struct OmniSpacecraft::Impl {
     std::vector<double> pars;
     // RW motor-torque input slots in wheel order (layout is dynamic, A2).
     std::vector<size_t> wheelIn;
+    // Truncated par count owned by ta (suffix-drop; push bound, heap safety).
+    size_t ta_npars = 0;
     // WP2: per-wheel friction-torque (tauF) second slots, same order.
     std::vector<size_t> fricIn;
     // WP2 jitter RNG: one stream per wheel (seed ^ splitmix64(index+1)).
@@ -567,8 +569,12 @@ void OmniSpacecraft::buildIntegrator() {
         p = posOf("omx"); if (p != none) this->omegaOff_ = p;
         p = posOf("W1"); if (p != none) this->wheelOff_ = p;
     }
+    this->impl->ta_npars = omni::OmniSystem::checked_par_count(
+        sysrows, this->impl->pars.size());
+    std::vector<double> pTrunc(this->impl->pars.begin(),
+                               this->impl->pars.begin() + this->impl->ta_npars);
     this->impl->ta.emplace(sysrows, y,
-                           heyoka::kw::pars = this->impl->pars,
+                           heyoka::kw::pars = pTrunc,
                            heyoka::kw::tol = this->tol,
                            heyoka::kw::compact_mode = this->compactMode,
                            heyoka::kw::high_accuracy = false);
@@ -964,7 +970,7 @@ void OmniSpacecraft::UpdateState(uint64_t CurrentSimNanos) {
         && this->impl->swirlOff_ < P.size()) {
         P[this->impl->swirlOff_] = this->swirlOn_ ? this->maxSwirlTorque_ : 0.0;
     }
-    for (size_t i = 0; i < P.size(); ++i) pd[i] = P[i];
+    for (size_t i = 0; i < P.size() && i < this->impl->ta_npars; ++i) pd[i] = P[i];
     {
         // Switch list: 0, interior quantized open-times (epsilon-merged),
         // dt. Thruster j is open during arc k iff openT[j] > sw[k].
@@ -1026,7 +1032,7 @@ void OmniSpacecraft::UpdateState(uint64_t CurrentSimNanos) {
             if (this->impl->hasEnv) this->updateEnvInputs(y.data());
             if (!openT.empty())
                 this->impl->sys.fill_thruster_inputs(dt, eff.data(), eff.size(), P);
-            for (size_t i = 0; i < P.size(); ++i) pd[i] = P[i];
+            for (size_t i = 0; i < P.size() && i < this->impl->ta_npars; ++i) pd[i] = P[i];
             for (size_t i = 0; i < y.size(); ++i) sd[i] = y[i];
             ta.set_time(0.0);
             try {

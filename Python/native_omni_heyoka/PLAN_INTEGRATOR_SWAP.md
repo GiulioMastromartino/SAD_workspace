@@ -188,6 +188,20 @@ DoD per family: probe ledger + parity gate + guard test, full
 regression green. The envelope table in `DESIGN.md` gains a "swap
 coverage" column; the integrator's setup error message cites it.
 
+### Status 2026-10-13 (ledger `swap_p1_parity.json`, gates `test_swap_p1.py`)
+
+| Family | Status |
+|---|---|
+| Fuel depletion | DONE: contributor + live mass/I_C/c-arms/B-C (no rebuilds); centered + offset tanks gated, fuel bit-exact; single-tank scope, empty-tank labeled |
+| Friction (Stribeck) | DONE: stock-exact law + state, mirrored coeffs; spin-up/down gate 1e-14 class; jitter stays loud-reject (DESIGN-compliant) |
+| u_min/P_max/Omega_max | DONE by construction (stock applies, we read post-saturation u_current) |
+| Cutoff lag | Measured INERT without ramps (10 vs 1000 bit-exact over fire+shutoff); accepted unconditionally, never modeled; must compose with ramps if those land (M6/unconditional-filter reverted as divergent) |
+| Min-pulse/ramps/blowdown/swirl | Still rejected (all default-off in stock; verified surface) |
+| CoM offset | DONE: thr_offset gate (r 5.6e-09); B/C sign measured vs stock |
+| drag / SRP-cannonball | DONE (gated); GG flag mirrored (no bench); faceted/mag/J2/N-body stock gates follow-up |
+| Prescribed/flex/slosh | Structural loud-reject (C++ claim check proven by fuel_unmirrored_cxx) |
+| Stochastic | Structurally out (single-integrator slot) |
+
 ## Phase 3 — drop-in acceptance on unmodified sim scripts
 
 - Take the repo demo + one LEO-drag + one thruster-stationkeeping
