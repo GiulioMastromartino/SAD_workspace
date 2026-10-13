@@ -167,6 +167,20 @@ public:
     // Voltage: informational only; wiring is stock MotorVoltageInterface
     // motorTorqueOutMsg -> rwMotorCmdInMsg, zero omni change.
     void setVoltageEnabled(bool on);
+    // --- WP25-B1 bucket (a) fatal-today guards (PLAN_ENVELOPE.md:472-487) ---
+    // Defaults are the stock defaults; any non-default/armed value raises
+    // bskError in checkUnsupported() (Reset + UpdateState heads) before
+    // first propagation. Disarmed (default) configs run unchanged.
+    void setUMin(double uMin);  // stock default 0.0 (off); != 0.0 is fatal
+    void setPMax(double pMax);  // stock default 200.0; any other is fatal
+    void setMaxWheelAcceleration(double maxWheelAccel);  // stock default 1e6
+    void setLargeTorqueThreshold(double threshold);  // stock default 10.0
+    void setMtbGtMatrix(const std::vector<double>& gt9);  // identity OK, else fatal
+    void setSRPFacetRotHat(double rx, double ry, double rz);  // zero OK, else fatal
+    void setPrescribedMotionEnabled(bool on);  // no model: True is fatal
+    void setFlexEnabled(bool on);  // no model: True is fatal
+    void setSloshEnabled(bool on);  // no model: True is fatal
+    void addFuelTank(double m0, double mMax, double isp);  // 2nd-tank reject point
 
     // --- configuration: ICs -------------------------------------------------
     void setR_CN_NInit(double x, double y, double z);
@@ -281,6 +295,30 @@ private:
     bool forceMsgOn_ = true;    // WP3 guard-only: force path has no model
     bool j2On_ = false;         // WP5 (off unless explicitly set)
     bool offsetOn_ = false;     // WP4 (modeled behind setCoMOffset)
+    // WP25-B1 bucket (a) fatal-today guards (PLAN_ENVELOPE.md:472-487,
+    // Decision 3 locked). Defaults are the stock defaults; any armed
+    // non-default raises bskError in checkUnsupported() (Reset + UpdateState
+    // heads) before first propagation. Bucket (b) (modeled-behind-setter)
+    // and bucket (c) (informational) members above NEVER raise.
+    double uMin_ = 0.0;                  // stock source-scan default (off)
+    bool uMinArmed_ = false;             // set via setUMin(!= 0.0)
+    double pMax_ = 200.0;                // stock accepted default
+    bool pMaxArmed_ = false;             // set via setPMax(!= 200.0)
+    double maxWheelAccel_ = 1.0e6;       // stock getMaxWheelAcceleration default
+    bool maxWheelAccelArmed_ = false;    // set via setMaxWheelAcceleration
+    double largeTorqueThreshold_ = 10.0;  // stock getLargeTorqueThreshold default
+    bool largeTorqueArmed_ = false;      // set via setLargeTorqueThreshold
+    bool jitterCoupledArmed_ = false;    // defense copy: setRWModelJitterCoupled
+                                         // raises at the setter (setter-gated;
+                                         // no RWModel member exists to detect)
+    double mtbGt_[9] = {1,0,0, 0,1,0, 0,0,1};  // MTB torque-bar map (identity)
+    bool mtbGtArmed_ = false;            // set via setMtbGtMatrix(non-identity)
+    double srpRotHat_[3] = {0.0, 0.0, 0.0};  // SRP facet rotation Hat (zero)
+    bool srpRotHatArmed_ = false;        // set via setSRPFacetRotHat(nonzero)
+    bool prescribedArmed_ = false;       // prescribed motion (unmodeled)
+    bool flexArmed_ = false;             // flex (unmodeled)
+    bool sloshArmed_ = false;            // slosh (unmodeled)
+    bool extraTankArmed_ = false;        // multi-tank 2nd registration (unmodeled)
     // WP2 state (all default OFF = tauF identically 0).
     double fCoulomb_ = 0.0, fStatic_ = 0.0, betaStatic_ = 0.0;
     double cViscous_ = 0.0, omegaLimitCycle_ = 1.0;

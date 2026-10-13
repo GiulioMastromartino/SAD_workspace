@@ -552,14 +552,23 @@ depletion is UNPROBED on this host — recorded, not guessed.
 
 ## A14. Loud-rejection + layout hygiene (WP0/WP7)
 
-`checkUnsupported()` (Reset + UpdateState heads) raises for what is
-genuinely unmodeled: the `THRArrayCmdForceMsg` link (guard-only by design).
-Everything else in the Risks trap table is modeled behind default-off
-setters (friction, jitter-Simple, min-pulse, ramps, cutoff lag, blowdown,
-swirl, J2, offset, env) or informational (voltage reuse: stock
-`MotorVoltageInterface` stays in the task, `motorTorqueOutMsg` ->
-`rwMotorCmdInMsg`; zero omni-side change). `JitterFullyCoupled` always
-raises (theta states + aOmega/bOmega/cOmega are not registrable).
+`checkUnsupported()` (Reset + UpdateState heads) raises for every bucket-(a)
+fatal-today trap in `PLAN_ENVELOPE.md:472-487` (WP25-B1 amend-then-enforce,
+Decision 3 locked): the `THRArrayCmdForceMsg` link (guard-only by design)
+plus the armed non-defaults (`u_min`/`P_max`/`maxWheelAcceleration`/
+`largeTorqueThreshold`, non-identity `Gt`, nonzero `rotHat`, `nBodies>2`,
+prescribed/flex/slosh, multi-tank 2nd registration). Reconciliation note:
+the force-only position shipped earlier was the interim (the only trap with
+a linkable surface and no model at the time); the amended three-bucket table
+is authoritative now, and the new arming setters give every other (a) item
+the concrete surface the interim lacked. Everything else in the Risks trap
+table is modeled behind default-off setters (friction, jitter-Simple,
+min-pulse, ramps, cutoff accepted, blowdown hold-1.0, swirl, J2, offset,
+env) or informational (voltage reuse: stock `MotorVoltageInterface` stays
+in the task, `motorTorqueOutMsg` -> `rwMotorCmdInMsg`; zero omni-side
+change). `JitterFullyCoupled` raises at its setter (theta states +
+aOmega/bOmega/cOmega are not registrable; setter-gated — no `RWModel`
+member exists on the SysModel surface for setup-time detection).
 
 **Jitter policy.** Bit-exact is prohibited: stock's RNG is an opaque macOS
 dylib and `normal_distribution` differs across libc++/libstdc++ hosts.

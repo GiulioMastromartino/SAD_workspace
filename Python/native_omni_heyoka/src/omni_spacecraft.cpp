@@ -745,26 +745,106 @@ void OmniSpacecraft::writeMsgs(uint64_t CurrentSimNanos) {
     // fuel_offset fuel_rel_err 0.0).
 }
 
-    }
+// --- WP25-B1 bucket (a) arming setters (PLAN_ENVELOPE.md:472-487) ---------
+// Defaults are the stock defaults (disarmed = runs); any non-default arms a
+// fatal checked in checkUnsupported() at the Reset + UpdateState heads.
+// Validation failures raise immediately; envelope fatals raise at the heads.
+void OmniSpacecraft::setUMin(double uMin) {
+    if (!std::isfinite(uMin) || uMin < 0.0)
+        this->bskLogger.bskError("OmniSpacecraft: uMin must be finite non-negative.");
+    this->uMin_ = uMin;
+    this->uMinArmed_ = (uMin != 0.0);
 }
 
-// WP0 loud-reject guard: raises ONLY for features with no model. Every other
-// trap flag below is now MODELED behind its default-off setter (WP1 saturation,
-// WP2 friction/jitter, WP3b timing, WP4 offset, WP5 env) or informational
-// (voltage reuse needs no code), so raising on them would reject the very runs
-// the WPs implement. The single remaining fatal is the force-command path,
-// which has no subscriber model by design. Wheels/thrusters merely being
-// present is fine (no flag).
+void OmniSpacecraft::setPMax(double pMax) {
+    if (!std::isfinite(pMax) || pMax < 0.0)
+        this->bskLogger.bskError("OmniSpacecraft: pMax must be finite non-negative.");
+    this->pMax_ = pMax;
+    this->pMaxArmed_ = (pMax != 200.0);
+}
+
+void OmniSpacecraft::setMaxWheelAcceleration(double maxWheelAccel) {
+    if (!std::isfinite(maxWheelAccel) || !(maxWheelAccel > 0.0))
+        this->bskLogger.bskError("OmniSpacecraft: maxWheelAcceleration must be finite positive.");
+    this->maxWheelAccel_ = maxWheelAccel;
+    this->maxWheelAccelArmed_ = (maxWheelAccel != 1.0e6);
+}
+
+void OmniSpacecraft::setLargeTorqueThreshold(double threshold) {
+    if (!std::isfinite(threshold) || !(threshold > 0.0))
+        this->bskLogger.bskError("OmniSpacecraft: largeTorqueThreshold must be finite positive.");
+    this->largeTorqueThreshold_ = threshold;
+    this->largeTorqueArmed_ = (threshold != 10.0);
+}
+
+void OmniSpacecraft::setMtbGtMatrix(const std::vector<double>& gt9) {
+    if (gt9.size() != 9)
+        this->bskLogger.bskError("OmniSpacecraft: Gt matrix needs exactly 9 entries.");
+    for (double v : gt9) {
+        if (!std::isfinite(v))
+            this->bskLogger.bskError("OmniSpacecraft: Gt matrix must be finite.");
+    }
+    bool ident = true;
+    for (size_t i = 0; i < 9; ++i) {
+        this->mtbGt_[i] = gt9[i];
+        const double want = (i == 0 || i == 4 || i == 8) ? 1.0 : 0.0;
+        if (gt9[i] != want) ident = false;
+    }
+    this->mtbGtArmed_ = !ident;
+}
+
+void OmniSpacecraft::setSRPFacetRotHat(double rx, double ry, double rz) {
+    if (!std::isfinite(rx) || !std::isfinite(ry) || !std::isfinite(rz))
+        this->bskLogger.bskError("OmniSpacecraft: SRP facet rotHat must be finite.");
+    this->srpRotHat_[0] = rx; this->srpRotHat_[1] = ry; this->srpRotHat_[2] = rz;
+    this->srpRotHatArmed_ = (rx != 0.0 || ry != 0.0 || rz != 0.0);
+}
+
+void OmniSpacecraft::setPrescribedMotionEnabled(bool on) { this->prescribedArmed_ = on; }
+
+void OmniSpacecraft::setFlexEnabled(bool on) { this->flexArmed_ = on; }
+
+void OmniSpacecraft::setSloshEnabled(bool on) { this->sloshArmed_ = on; }
+
+void OmniSpacecraft::addFuelTank(double m0, double mMax, double isp) {
+    // Second-tank reject point (PLAN_ENVELOPE.md:472-487 bucket (a)):
+    // setFuelParams() is the single-tank bookkeeping surface; ANY call here
+    // means a second tank, which is unmodeled (no per-tank subsets).
+    (void)m0; (void)mMax; (void)isp;
+    this->extraTankArmed_ = true;
+}
+
+// WP25-B1 amend-then-enforce guard (PLAN_ENVELOPE.md:472-487 bucket (a),
+// Decision 3 locked): every armed-but-unmodeled trap below raises bskError
+// HERE -- called at the Reset + UpdateState heads, before first propagation.
+// Bucket (b) (modeled behind default-off setters: saturation, friction
+// iter-1, jitter-Simple, min-pulse-suppress, ramps-shape, cutoff-accepted,
+// blowdown-hold, swirl-global, J2-analytic, offset, env truth table) and
+// bucket (c) (informational: voltage reuse) NEVER raise. Swap-side
+// reference (unmodified): omniheyoka/swap.py reject messages +
+// OmniVecIntegrator::buildOnce claim check reject the same classes vec-side.
+// Stochastic/diffusion + mid-run stock mutation are WP25-B2.4 (NOT here).
 void OmniSpacecraft::checkUnsupported() {
     std::string active;
-    // Modeled/informational (never fatal): frictionOn_, jitterOn_, voltageOn_,
-    // minPulseOn_, rampsOn_, cutoffLagOn_, blowdownOn_, swirlOn_, j2On_,
-    // offsetOn_ -- each WP owns its model + tests. Only the unmodeled force
-    // path raises (guard-only by design, M6).
+    // Bucket (a) fatal-today. forceMsg link (guard-only by design, M6).
     if (this->forceMsgOn_ && this->thrForceInMsg.isLinked()) active += " forceMsg[forceMsgOn_]";
+    if (this->uMinArmed_) active += " uMin[bucket-(a): unmodeled deadband]";
+    if (this->pMaxArmed_) active += " pMax[bucket-(a): unmodeled foldback]";
+    if (this->maxWheelAccelArmed_) active += " maxWheelAcceleration[bucket-(a): log-vs-clamp unprobed]";
+    if (this->largeTorqueArmed_) active += " largeTorqueThreshold[bucket-(a): log-vs-clamp unprobed]";
+    if (this->jitterCoupledArmed_) active += " JitterFullyCoupled[bucket-(a): no theta states]";
+    if (this->mtbGtArmed_) active += " Gt[bucket-(a): non-identity torque-bar map]";
+    if (this->srpRotHatArmed_) active += " rotHat[bucket-(a): nonzero facet frame]";
+    if (this->envBodyMu.size() > 2) active += " nBodies>2[bucket-(a): no per-index msg vector]";
+    if (this->prescribedArmed_) active += " prescribed[bucket-(a): unmodeled motion]";
+    if (this->flexArmed_) active += " flex[bucket-(a): unmodeled]";
+    if (this->sloshArmed_) active += " slosh[bucket-(a): unmodeled]";
+    if (this->extraTankArmed_) active += " multiTank[bucket-(a): single-tank bookkeeping only]";
     if (!active.empty())
         this->bskLogger.bskError(
-            "OmniSpacecraft: unmodeled feature(s) active:%s.", active.c_str());
+            "OmniSpacecraft: unmodeled feature(s) active (PLAN_ENVELOPE.md:472-487 bucket (a)):%s.", active.c_str());
+}
+
 }
 
 void OmniSpacecraft::Reset(uint64_t CurrentSimNanos) {

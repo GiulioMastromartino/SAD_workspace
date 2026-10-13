@@ -87,13 +87,13 @@ source in shadow setups).
 6. Each WP independently revertible (separate commit, no cross-WP API
    dependencies) **except stated orderings**: WP0/WP7-layout → WP2/WP5;
    WP3-staging → WP5-arc-hooks; WP4-arm-spec → WP3/WP5 torques.
-7. **Loud rejection (new)**: every unmodeled setting `bskError`s rather than
-   runs. Wave-A deliverable covers the full trap list (§Risks table); each WP
-   closes its own slice but may not widen the silent window. No WP is green
-   while its trap slice is silent.
-8. **JIT budget (new)**: `[GRAPH]` bytes + build ms asserted per gate
-   (baseline 4033 RHS bytes, ~74 ms build + ~200 ms first-JIT, 1.07× step
-   overhead); fail if >2× baseline. Effects stay par-inputs, never graph terms.
+7. **Loud rejection (amended WP25-B1, Decision 3 locked)**: every bucket-(a)
+   (fatal-today) setting `bskError`s rather than runs. Wave-A deliverable
+   covers the full trap list (§Risks table, three buckets: (a) fatal-today,
+   (b) modeled-behind-setter, (c) informational); each WP closes its own
+   slice but may not widen the silent window. No WP is green while its trap
+   slice is silent. **Behavioral raise tests (one per (a) item, pre-propagation)
+   are the guard evidence; CI/probe-skip is hygiene only, never proof.**
 9. **MC dispersion gate (new)**: parametric-`Js` + dispersed-geometry ensemble
    vs stock (Update-5 structural-`Js` regression class).
 
@@ -469,22 +469,50 @@ New input blocks appear in `par_names()` and are visible to the layout tests.
 - **Eclipse/facet SRP complexity**: cannonball-first; faceted scoped to
   occlusion-free box with projection proof; full `facetedSRPEffector` geometry
   stays out.
-- **Silent-divergence traps → loud-reject table (Wave-A enforced)**:
+- **Silent-divergence traps → loud-reject table (WP25-B1 amended, three
+  buckets; Decision 3 locked: amend-then-enforce). Bucket (a) every item
+  raises `bskError` at the Reset + UpdateState heads before first
+  propagation (`checkUnsupported()`); disarmed (default) configs run.
+  Behavioral raise tests: `tests/test_wp0_guards.py` (one per (a) item).**
 
-| Trap | Trigger | Required behavior until modeled |
+  Bucket (a) — fatal-today (default set; each row is enforced):
+
+| Trap | Trigger | Required behavior |
 |---|---|---|
-| Stribeck on | `useRWfriction` / stray `cViscous/fStatic` | model (WP2) or `bskError` |
-| Jitter on | `RWModel≠BalancedWheels`, `numRWJitter`, `U_s/U_d`, theta states | distributional (Simple only) or `bskError` (FullyCoupled always until modeled) |
-| Voltage wired | voltage module linked | reuse path (no omni change) |
-| `u_min`/`P_max` | non-default | model or `bskError` |
-| Min-pulse on | `useMinPulseTime=True` | WP3b or `bskError` |
-| Ramps set | non-empty `ThrusterOnRamp/OffRamp` | WP3b or `bskError` |
-| Default cutoff | `cutoffFrequency<~100` | lag state or `bskError` |
-| Blowdown/fuel/swirl/force-msg | coeffs / tank / SEP / force link | model/label-out or `bskError` |
-| Harmonics/J2 on | `USE_J2` / harmonic file | WP5-J2 or `bskError` |
-| Offset nonzero | `r_BcB_B≠0` / `rWB_B≠0` with mass | WP4 or `bskError` |
-| Unlinked env | per-effect table | per-effect truth (error/ON/off-labeled) |
-| Unit confusion | RPM vs rad/s | probe asserts units |
+| Force-msg link | `THRArrayCmdForceMsg` linked (`forceMsgOn_`) | `bskError` (no model by design) |
+| `u_min` non-default | `setUMin(≠0.0)` (stock default 0.0 = off) | `bskError` (unmodeled deadband) |
+| `P_max` non-default | `setPMax(≠200.0)` (stock default 200.0) | `bskError` (unmodeled foldback) |
+| `maxWheelAcceleration` non-default | `setMaxWheelAcceleration(≠1e6)` (stock default 1e6) | `bskError` (log-vs-clamp unprobed) |
+| `largeTorqueThreshold` non-default | `setLargeTorqueThreshold(≠10.0)` (stock default 10.0) | `bskError` (log-vs-clamp unprobed) |
+| `JitterFullyCoupled` | `setRWModelJitterCoupled()` | `bskError` at the setter (setter-gated: no `RWModel` member exists on the SysModel surface for setup-time detection; stock-side values are rejected vec-side by `swap.py`) |
+| Non-identity `Gt` | `setMtbGtMatrix()` non-identity (identity = disarmed) | `bskError` |
+| `rotHat≠0` facet | `setSRPFacetRotHat()` nonzero (zero = disarmed) | `bskError` |
+| `nBodies>2` unlinked | 3rd `addEnvironmentBody()` (no per-index msg vector; static offsets + sun/moon refresh only) | `bskError` |
+| Prescribed motion | `setPrescribedMotionEnabled(True)` | `bskError` (unmodeled) |
+| Flex | `setFlexEnabled(True)` | `bskError` (unmodeled) |
+| Slosh | `setSloshEnabled(True)` | `bskError` (unmodeled) |
+| Multi-tank | `addFuelTank()` 2nd registration (`setFuelParams()` is the single-tank bookkeeping surface) | `bskError` |
+  Bucket (b) — modeled-behind-setter (never fatal; each WP owns its model +
+  tests): saturation (WP1); Stribeck friction `useRWfriction` iter-1 (WP2);
+  `JitterSimple` distributional (WP2); `useMinPulseTime` suppress (WP3b);
+  `ThrusterOnRamp`/`OffRamp` shape (WP3b); `cutoffFrequency` accepted
+  (WP3b); blowdown hold-1.0 + fuel bookkeeping (WP3b/WP6 — WP25-C3 AMENDMENT
+  LOCKED: warn-and-hold-1.0 SHIPPED, escalation to `bskError` REJECTED, per
+  the decision record at `src/omni_spacecraft.cpp:1174-1180`: *"warn-and-hold-1.0
+  SHIPPED. Coeffs are recorded but factors hold 1.0 without a tank; escalation
+  to bskError was REJECTED (stock only warns on the no-tank config the M6 ledger
+  cell pins green — raising would diverge from stock, not match)"*.
+  Decision-4's "must-raise until gated" therefore does NOT apply to the
+  no-tank blowdown config — the M6 `blowdown [0.1] runs with no fuel tank
+  attached warning` ledger cell is the gate); swirl-global
+  (WP3b); harmonics/`USE_J2` analytic (WP5); offset `r_BcB_B` (WP4);
+  per-effect env truth table (WP5; `atmoDensInMsg`/`sunStateInMsg`/MTB links
+  still `bskError` when required-but-unlinked).
+
+  Bucket (c) — informational (never fatal): voltage reuse (stock
+  `MotorVoltageInterface` stays in the task, `motorTorqueOutMsg` ->
+  `rwMotorCmdInMsg`; zero omni-side change); unit-convention probes (RPM vs
+  rad/s assert in the probe, not a guard).
 
 ## Explicitly out even after this batch
 
