@@ -365,8 +365,16 @@ void OmniSpacecraft::setFriction(double fCoulomb, double fStatic, double betaSta
 void OmniSpacecraft::setFrictionEnabled(bool on) { this->frictionOn_ = on; }
 
 void OmniSpacecraft::setFrictionHubSign(double s) {
-    if (s != 1.0 && s != -1.0)
-        this->bskLogger.bskError("OmniSpacecraft: friction hub sign must be +1 or -1 (F4).");
+    // WP25-B2.2 (H8 dead setter): the SysModel path pins s = +1 (exact stock
+    // react-on-hub per F4; ReactionWheelContributorT::frictionHubSign_
+    // defaults +1 and the graph bakes it via make_scalar at build_symbolic
+    // time). Threading s = -1 would need a rebuild + spin-equation change;
+    // until that lands, -1 raises LOUDLY here instead of silently computing
+    // +1 physics. Default/disamed (+1) configs run unchanged.
+    if (s != 1.0)
+        this->bskLogger.bskError("OmniSpacecraft: friction hub sign s = -1 is not modeled "
+            "on the SysModel path (graph bakes +1; PLAN_ENVELOPE.md WP2 F4); "
+            "pass +1 (or leave the default).");
     this->frictionHubSign_ = s;
 }
 
@@ -418,7 +426,16 @@ void OmniSpacecraft::setFuelParams(double m0, double mMax, double isp) {
 void OmniSpacecraft::setUMax(double uMax) {
     if (!(uMax >= 0.0) || !std::isfinite(uMax))
         this->bskLogger.bskError("OmniSpacecraft: uMax must be finite non-negative.");
+    // WP25-B2.2 (H3 staleness): post-registration EFFECTIVE. Rewrite every
+    // recorded per-wheel cap (the UpdateState clamp at wheelUMax[i] and the
+    // RW log u_max echo read wheelUMax live, so no graph term changes) and
+    // mark the build dirty so the next tick rebuilds (buildIntegrator is
+    // rebuild-safe; state preserved when the layout is unchanged). uMax stays
+    // the default for wheels added later. Ground rule: disarmed default 0.2
+    // runs unchanged (PLAN_ENVELOPE.md WP1).
     this->uMax = uMax;
+    for (size_t i = 0; i < this->wheelUMax.size(); ++i) this->wheelUMax[i] = uMax;
+    this->configDirty = true;
 }
 
 void OmniSpacecraft::setTol(double t) {
@@ -486,6 +503,14 @@ double OmniSpacecraft::getWheelSpeed(int i) {
 // ---------------------------------------------------------------------------
 void OmniSpacecraft::buildIntegrator() {
     const auto t0 = std::chrono::steady_clock::now();
+    // WP25-B2.2 rebuild safety: post-Reset structural edits (setUMax, ...)
+    // set configDirty and rebuild HERE on the live backend, so start from a
+    // fresh Impl (registration replay never double-adds) and preserve the
+    // live state vector when the layout is unchanged (a fresh Reset has an
+    // empty st and takes the IC fill below).
+    const std::vector<double> stKeep = this->st;
+    const bool haveLive = !stKeep.empty();
+    this->impl = std::make_unique<Impl>();
 
     this->impl->sys.set_gravity(this->mu);
     this->impl->sys.set_use_gravity_gradient(this->useGG);
@@ -535,6 +560,27 @@ void OmniSpacecraft::buildIntegrator() {
         this->impl->sys.setMagneticDipole(this->magG10, this->magG11, this->magH11);
     }
 
+    // WP25-B2.3 (M12): resolve-then-fill -- state-block offsets are resolved
+    // BY NAME from the derived layout BEFORE the IC fill below uses them
+    // (fill-before-resolve was benign-today only because the canonical
+    // defaults coincide; resolve-first is correct under any layout drift).
+    // WP0/WP7 layout hygiene (A1/A2): keep the canonical default for any
+    // absent name (e.g. W1 when no wheels are registered).
+    {
+        const std::vector<std::string> sn = this->impl->sys.state_names();
+        const size_t none = static_cast<size_t>(-1);
+        auto posOf = [&](const char* nm) -> size_t {
+            for (size_t i = 0; i < sn.size(); ++i)
+                if (sn[i] == nm) return i;
+            return none;
+        };
+        size_t p = posOf("rx"); if (p != none) this->rOff_ = p;
+        p = posOf("vx"); if (p != none) this->vOff_ = p;
+        p = posOf("s1"); if (p != none) this->sigmaOff_ = p;
+        p = posOf("omx"); if (p != none) this->omegaOff_ = p;
+        p = posOf("W1"); if (p != none) this->wheelOff_ = p;
+    }
+
     // Initial state: hub ICs + wheel speeds converted RPM -> rad/s.
     const size_t n = this->impl->sys.n_states();
     std::vector<double> y(n, 0.0);
@@ -565,23 +611,6 @@ void OmniSpacecraft::buildIntegrator() {
         this->impl->envMag = es.mag;
         this->impl->envNBodies = es.nBodies;
     }
-    // WP0/WP7 layout hygiene (A1/A2): resolve state-block offsets by NAME
-    // from the derived layout; keep the canonical default for any absent
-    // name (e.g. W1 when no wheels are registered).
-    {
-        const std::vector<std::string> sn = this->impl->sys.state_names();
-        const size_t none = static_cast<size_t>(-1);
-        auto posOf = [&](const char* nm) -> size_t {
-            for (size_t i = 0; i < sn.size(); ++i)
-                if (sn[i] == nm) return i;
-            return none;
-        };
-        size_t p = posOf("rx"); if (p != none) this->rOff_ = p;
-        p = posOf("vx"); if (p != none) this->vOff_ = p;
-        p = posOf("s1"); if (p != none) this->sigmaOff_ = p;
-        p = posOf("omx"); if (p != none) this->omegaOff_ = p;
-        p = posOf("W1"); if (p != none) this->wheelOff_ = p;
-    }
     this->impl->ta_npars = omni::OmniSystem::checked_par_count(
         sysrows, this->impl->pars.size());
     std::vector<double> pTrunc(this->impl->pars.begin(),
@@ -591,7 +620,16 @@ void OmniSpacecraft::buildIntegrator() {
                            heyoka::kw::tol = this->tol,
                            heyoka::kw::compact_mode = this->compactMode,
                            heyoka::kw::high_accuracy = false);
-    this->st = y;
+    // WP25-B2.2: preserve the live state across mid-run rebuilds when the
+    // layout is unchanged (fresh builds take the IC fill). The propagator
+    // state is overwritten from st every tick, so the IC-seeded ta above is
+    // consistent either way.
+    if (haveLive && stKeep.size() == y.size()) {
+        this->st = stKeep;
+        this->impl->state = stKeep;
+    } else {
+        this->st = y;
+    }
 
     const auto t1 = std::chrono::steady_clock::now();
     this->buildSeconds =
@@ -666,6 +704,15 @@ void OmniSpacecraft::writeMsgs(uint64_t CurrentSimNanos) {
     // --- WP6: RWConfigLog publish (full 23-field shape, per wheel per tick) ---
     // u_current = post-saturation/cut torque actually applied: read BACK from
     // the input slot P[wheelIn[i]] (equality by construction; never re-derive).
+    // WP25-B2.1: every field is sourced or labeled -- Omega_max/u_min/P_max
+    // echo CONFIG (never rated defaults for an OFF wheel): custom addWheel
+    // caps OFF (omegaMaxRad = -1, stock custom convention); uMin_/pMax_ echo
+    // the B1 disarmed defaults (armed non-defaults raise in checkUnsupported
+    // before first propagation, so they never reach telemetry). frictionTorque
+    // is the LIVE module-side tauF read back from P[fricIn[i]] (ported
+    // stock-exact Stribeck incl. live fStatic/betaStatic -- see setFriction). theta/U_s/
+    // U_d stay 0.0 LABELED (no theta states on the SysModel path;
+    // JitterFullyCoupled rejected at its setter).
     if (this->rwOutMsgs.size() != nw) this->rwOutMsgs.resize(nw);
     for (size_t i = 0; i < nw; ++i) {
         RWConfigLogMsgPayload lg = this->rwOutMsgs[i].zeroMsgPayload;
@@ -673,11 +720,15 @@ void OmniSpacecraft::writeMsgs(uint64_t CurrentSimNanos) {
         double uCur = 0.0;
         if (this->impl && i < this->impl->wheelIn.size() && this->impl->wheelIn[i] < this->impl->pars.size())
             uCur = this->impl->pars[this->impl->wheelIn[i]];
+        double tauF = 0.0;
+        if (this->impl && i < this->impl->fricIn.size() && this->impl->fricIn[i] < this->impl->pars.size())
+            tauF = this->impl->pars[this->impl->fricIn[i]];
         const double Js = (i < this->wheels.size()) ? this->wheels[i].Js : 0.0;
         const double um = (i < this->wheelUMax.size()) ? this->wheelUMax[i] : this->uMax;
         lg.Omega = Om; lg.Js = Js; lg.u_current = uCur; lg.u_max = um;
-        lg.u_min = 1e-6; lg.Omega_max = 6000.0 * 2.0 * 3.141592653589793 / 60.0;
-        lg.P_max = 200.0; lg.frictionTorque = 0.0;
+        lg.u_min = this->uMin_;
+        lg.Omega_max = (i < this->wheels.size()) ? this->wheels[i].omegaMaxRad : -1.0;
+        lg.P_max = this->pMax_; lg.frictionTorque = tauF;
         lg.theta = 0.0; lg.U_s = 0.0; lg.U_d = 0.0; lg.d = 0.0; lg.J13 = 0.0;
         lg.Jt = 0.5 * Js; lg.Jg = 0.0; lg.u_f = 0.0; lg.linearFrictionRatio = 0.0;
         lg.RWModel = static_cast<RWModels>(0);  // stock default model slot (BalancedWheels-class); echo only
@@ -845,17 +896,57 @@ void OmniSpacecraft::checkUnsupported() {
             "OmniSpacecraft: unmodeled feature(s) active (PLAN_ENVELOPE.md:472-487 bucket (a)):%s.", active.c_str());
 }
 
+// --- WP25-B2 guard appendix (APPEND-ONLY; B1's table above is untouched) ---
+// B2.1 RWArrayConfigMsg hijack (PLAN_ENVELOPE.md WP1): the FSW config message
+// carries uMax/JsList/GsMatrix_B (NO Omega_max -- setter-only). Omni takes
+// geometry ONLY via addWheel/addRatedWheel (+setters); a LINKED
+// rwArrayConfigInMsg would silently disagree with the records, so it raises
+// LOUDLY here -- called at the Reset + UpdateState heads next to
+// checkUnsupported(), before first propagation. Disarmed (unlinked, default)
+// configs run unchanged (no silent third state).
+// B2.4 stochastic/diffusion + mid-run stock mutation (deferred from B1):
+// the SysModel path owns NO stock StateData (omni integrates its private st;
+// stock integrators/diffusion never touch it), so diffusion enablement is
+// inapplicable AND unobservable module-side -- nothing to arm, nothing to
+// silently diverge. Enforcement lives where stock state IS visible:
+// (a) vec path: OmniVecIntegrator::buildOnce rejects getNumNoiseSources()>0
+// on every claimed state (the state-name check is insufficient by
+// construction -- diffusion attaches to the SAME names);
+// (b) swap mirror: mirror_stock_config task census (unmodified reference).
+// Mid-run stock mutation on this path = message-hijack inputs only, which are
+// DESIGNED per-tick (motor/on-time/env); structural records freeze at Reset
+// (replayed into a fresh Impl) and post-Reset structural edits rebuild via
+// configDirty with live state preserved when the layout is unchanged.
+void OmniSpacecraft::checkB2Guards() {
+    if (this->rwArrayConfigInMsg.isLinked())
+        this->bskLogger.bskError(
+            "OmniSpacecraft: RWArrayConfigMsg linked but unmodeled on the SysModel path "
+            "(uMax/JsList/GsMatrix_B come from addWheel/addRatedWheel only; "
+            "Omega_max is setter-only per PLAN_ENVELOPE.md WP1); unlink it.");
 }
 
 void OmniSpacecraft::Reset(uint64_t CurrentSimNanos) {
     this->checkUnsupported();
+    this->checkB2Guards();  // WP25-B2 appendix (RWArrayConfig link reject)
     this->initDone = false;
     this->prevNanos = 0;
     this->thrStaged.clear();
     this->lastThrStamp = -1;
     this->mrpSwitches = 0;
+    // WP25-B2.3 (M12 staleness): outer accumulators do NOT survive a fresh
+    // Impl -- clear DV, non-conservative accel, and fuel bookkeeping. Fuel
+    // returns to a FULL tank (fuelMax_); restoring the setFuelParams m0 needs
+    // an m0 record owned by S4 (leftover -- fuel blocks untouched here).
+    this->accumDV_CN_N_[0] = this->accumDV_CN_N_[1] = this->accumDV_CN_N_[2] = 0.0;
+    this->accumDV_BN_B_[0] = this->accumDV_BN_B_[1] = this->accumDV_BN_B_[2] = 0.0;
+    this->accumDVBdy_[0] = this->accumDVBdy_[1] = this->accumDVBdy_[2] = 0.0;
+    this->nonConsAccelB_[0] = this->nonConsAccelB_[1] = this->nonConsAccelB_[2] = 0.0;
+    this->fuelMass_ = this->fuelMax_;
     this->impl = std::make_unique<Impl>();
-    // Fresh OmniSystem: buildIntegrator() replays the recorded wheel specs.
+    // Fresh-Impl behavior (documented): lagState_/rampClock_/lastFilt_/
+    // lastQ_/minPulseState_/thrStepCount_/jitterRng_/fricState_/swirlOff_/
+    // blowdownWarned_/lastWDot all restart empty/zero and are lazily
+    // (re)sized in UpdateState.
     this->buildIntegrator();
     if (this->rwOutMsgs.size() != this->wheels.size())  // WP6: size publishers
         this->rwOutMsgs.resize(this->wheels.size());
@@ -866,6 +957,7 @@ void OmniSpacecraft::Reset(uint64_t CurrentSimNanos) {
 
 void OmniSpacecraft::UpdateState(uint64_t CurrentSimNanos) {
     this->checkUnsupported();
+    this->checkB2Guards();  // WP25-B2 appendix (RWArrayConfig link reject)
     if (this->configDirty) this->buildIntegrator();
 
     if (!this->initDone) {
@@ -1171,9 +1263,31 @@ void OmniSpacecraft::UpdateState(uint64_t CurrentSimNanos) {
             this->accumDVBdy_[0] += Fx * k;
             this->accumDVBdy_[1] += Fy * k;
             this->accumDVBdy_[2] += Fz * k;
-            this->accumDV_CN_N_[0] += Fx * k;
-            this->accumDV_CN_N_[1] += Fy * k;
-            this->accumDV_CN_N_[2] += Fz * k;
+            // WP25-B2.3 (M11 frame bug): the inertial slot carries the BODY
+            // impulse rotated by R_BN = C_BN(sigma) at end-of-step attitude
+            // (v_N = R^T v_B; the shadow-set switch preserves R, so pre/post
+            // switch are equivalent). Body slots keep F*dt/m as-is. The DCM
+            // is built locally here; writeMsgs owns its B/C copy (untouched).
+            double Rbn[3][3];
+            {
+                const double s0 = this->st[this->sigmaOff_],
+                             s1 = this->st[this->sigmaOff_ + 1],
+                             s2 = this->st[this->sigmaOff_ + 2];
+                const double s2n = s0 * s0 + s1 * s1 + s2 * s2;
+                const double dd = (1.0 + s2n) * (1.0 + s2n);
+                const double Sx[3][3] = {{0.0, -s2, s1}, {s2, 0.0, -s0}, {-s1, s0, 0.0}};
+                double S2[3][3] = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+                for (int i = 0; i < 3; ++i)
+                    for (int j = 0; j < 3; ++j)
+                        for (int q = 0; q < 3; ++q) S2[i][j] += Sx[i][q] * Sx[q][j];
+                for (int i = 0; i < 3; ++i)
+                    for (int j = 0; j < 3; ++j)
+                        Rbn[i][j] = (i == j ? 1.0 : 0.0)
+                            + (8.0 * S2[i][j] - 4.0 * (1.0 - s2n) * Sx[i][j]) / dd;
+            }
+            this->accumDV_CN_N_[0] += (Rbn[0][0] * Fx + Rbn[1][0] * Fy + Rbn[2][0] * Fz) * k;
+            this->accumDV_CN_N_[1] += (Rbn[0][1] * Fx + Rbn[1][1] * Fy + Rbn[2][1] * Fz) * k;
+            this->accumDV_CN_N_[2] += (Rbn[0][2] * Fx + Rbn[1][2] * Fy + Rbn[2][2] * Fz) * k;
             this->accumDV_BN_B_[0] += Fx * k;
             this->accumDV_BN_B_[1] += Fy * k;
             this->accumDV_BN_B_[2] += Fz * k;

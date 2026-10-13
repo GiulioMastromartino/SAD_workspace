@@ -28,6 +28,7 @@ struct OmniVecIntegrator::Impl {
     size_t ta_npars = 0;  // truncated par count owned by ta (push bound)
     static constexpr size_t NPOS = static_cast<size_t>(-1);
     std::vector<std::string> claimed;  // registered names, stock order
+    std::vector<size_t> claimedRows;  // registered rows, same order (B2.4 freeze)
     // Cached live StateData sources (fixed after InitializeSimulation).
     StateData* hubR = nullptr;
     StateData* hubV = nullptr;
@@ -871,6 +872,30 @@ void OmniVecIntegrator::claimAndGrab(
         im->passSrc[1] = has("BcGravVelocity") ? grab("BcGravVelocity") : nullptr;
     }
 
+    // WP25-B2.4: stochastic/diffusion loud-reject at setup. The state-NAME
+    // claim check above is insufficient by construction (diffusion attaches
+    // to the SAME names via StateData::setNumNoiseSources), so inspect
+    // enablement directly on every cached source: any noise source means SDE
+    // dynamics the Taylor propagator cannot follow (PLAN_INTEGRATOR_SWAP.md
+    // envelope: stochastic permanently out). Raises BEFORE first propagation.
+    {
+        const StateData* stochSrc[8] = {im->hubR, im->hubV, im->hubS, im->hubO,
+                                        im->omegas, im->fuelSrc,
+                                        im->passSrc[0], im->passSrc[1]};
+        for (const StateData* s : stochSrc) {
+            if (s == nullptr) continue;
+            const size_t nSrc = s->getNumNoiseSources();
+            if (nSrc > 0)
+                this->bskLogger.bskError(
+                    "OmniVecIntegrator: object %zu: state '%s' has %zu noise "
+                    "source(s); stochastic diffusion is out of envelope "
+                    "(Taylor != SDE, PLAN_INTEGRATOR_SWAP.md); run without "
+                    "diffusion.",
+                    obj, s->getName().c_str(), nSrc);
+        }
+    }
+}
+
 void OmniVecIntegrator::buildObjectFull(
     size_t obj, const std::vector<std::pair<std::string, size_t>>& census) {
     const auto t0 = std::chrono::steady_clock::now();
@@ -1235,6 +1260,11 @@ void OmniVecIntegrator::integrate(double /*currentTime*/, double timeStep) {
     if (this->needsBuild()) this->buildOnce();
     if (!(timeStep > 0.0) || !std::isfinite(timeStep)) return;
 
+    // WP25-B2.4: stock-side freeze, per object (see freezeObject).
+    const auto census = this->takeCensus();
+    for (size_t i = 0; i < this->dynPtrs.size(); ++i)
+        this->freezeObject(i, census[i]);
+
     // Phase-0 ordering (swap_p0_ordering.py:47,73): this single call steps
     // EVERY dynPtr exactly once -- the leader's integrateState covers synced
     // followers, and each follower's own integrateState returns early, so
@@ -1244,6 +1274,30 @@ void OmniVecIntegrator::integrate(double /*currentTime*/, double timeStep) {
     for (size_t i = 0; i < this->dynPtrs.size(); ++i)
         this->stepObject(i, timeStep);
     ++this->integrateCalls_;
+}
+
+// WP25-B2.4: stock-side freeze. Records freeze at build (first integrate,
+// post-InitializeSimulation); stock-side edits after that (new/removed
+// states, a second dynamics object) would run against stale records, so
+// detect here and reject LOUDLY instead of rebuilding (detect-or-rebuild:
+// detect). A normal stop/restart with an unchanged census passes silently.
+// Compared as a SET per object (index-keyed census: same-named states on
+// two objects never collide); the single-object verdict is unchanged.
+void OmniVecIntegrator::freezeObject(
+    size_t obj, const std::vector<std::pair<std::string, size_t>>& census) {
+    Impl* im = this->impls_[obj].get();
+    std::vector<std::pair<std::string, size_t>> now = census;
+    std::vector<std::pair<std::string, size_t>> want;
+    for (size_t k = 0; k < im->claimed.size() && k < im->claimedRows.size(); ++k)
+        want.emplace_back(im->claimed[k], im->claimedRows[k]);
+    std::sort(now.begin(), now.end());
+    std::sort(want.begin(), want.end());
+    if (now != want)
+        this->bskLogger.bskError(
+            "OmniVecIntegrator: stock state census changed after the build "
+            "freeze (records freeze at first integrate); stock-side edits "
+            "post-InitializeSimulation are rejected -- rebuild the "
+            "integrator instead.");
 }
 
 void OmniVecIntegrator::stepObject(size_t obj, double timeStep) {
@@ -1555,6 +1609,21 @@ void OmniVecIntegrator::stepObject(size_t obj, double timeStep) {
         }
         // Preserve the non-thruster single-arc path exactly (no openT => one
         // segment already handled above with eff all zero).
+    }
+
+    // WP25-B2.5: count MRP shadow-set crossings per tick (scatter hook). Stock
+    // owns the switch (postIntegration flips the scattered B-point state);
+    // the integrator only records that |sigma|^2 > 1 post-propagation -- the
+    // same >1 threshold as the SysModel path. Leg-total gate vs stock is
+    // equality +-1 with the tick trace RECORDED (tick-exact equality is NOT
+    // required: saturation-edge timing jitter can legitimately flip
+    // individual ticks -- flag it if observed, do not force it).
+    {
+        const double s0 = y[im->sOff], s1 = y[im->sOff + 1], s2 = y[im->sOff + 2];
+        if (s0 * s0 + s1 * s1 + s2 * s2 > 1.0) {
+            ++this->mrpSwitchCount_;
+            ++C.mrpCount;
+        }
     }
 
     // Scatter back into the stock states (C -> B). MRP shadow switching, DV

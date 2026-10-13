@@ -248,6 +248,7 @@ public:
     size_t nPars() const;
     size_t nWheels() const;
     double getBuildSeconds() const;
+    // WP25-B2.5 vec MRP switch count (Phase-3 FSW dependency). Stock owns the
     // shadow-set switch (postIntegration flips the scattered B-point state);
     // the integrator only COUNTS crossings per tick (|sigma|^2 > 1
     // post-propagation, same threshold as the SysModel path). Cumulative
@@ -255,6 +256,7 @@ public:
     // Python (swap helper/test builds the tick trace); leg-total gate vs
     // stock is equality +-1 (tick-exact equality NOT required). The SysModel
     // mrpSwitches member is untouched (reference implementation).
+    uint64_t getMRPSwitchCount() const { return mrpSwitchCount_; }
     // Claimed registered-state names, stock order (census proof for tests).
     std::vector<std::string> claimedNames() const;
     // --- WP25-A4 multi introspection ------------------------------------------
@@ -403,6 +405,8 @@ private:
     bool sharedGraph_ = false;
     uint64_t integrateCalls_ = 0;
     double buildSeconds_ = 0.0;  // slot-0 build time (legacy accessor compat)
+    // WP25-B2.5: cumulative shadow-set crossing count (see getter above).
+    uint64_t mrpSwitchCount_ = 0;
 
     // Slot lifecycle: auto-grow (never shrinks; a stale extra slot fails the
     // build loudly via the slots==dynPtrs check, never silently idles).

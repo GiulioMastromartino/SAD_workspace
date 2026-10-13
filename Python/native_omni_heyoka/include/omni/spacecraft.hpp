@@ -28,6 +28,7 @@
 #include "architecture/msgPayloadDefC/THRArrayCmdForceMsgPayload.h"
 #include "architecture/msgPayloadDefCpp/THROutputMsgPayload.h"
 #include "architecture/msgPayloadDefC/RWSpeedMsgPayload.h"
+#include "architecture/msgPayloadDefC/RWArrayConfigMsgPayload.h"
 #include "architecture/msgPayloadDefC/RWConfigLogMsgPayload.h"
 #include "architecture/msgPayloadDefC/FuelTankMsgPayload.h"
 #include "architecture/msgPayloadDefC/AtmoPropsMsgPayload.h"
@@ -58,6 +59,12 @@ public:
     void UpdateState(uint64_t CurrentSimNanos) override;
 
     ReadFunctor<ArrayMotorTorqueMsgPayload> rwMotorCmdInMsg;
+    // WP25-B2.1 RW-array config hijack (PLAN_ENVELOPE.md WP1): the FSW message
+    // carries uMax/JsList/GsMatrix_B (NO Omega_max -- setter-only). Omni takes
+    // geometry ONLY via addWheel/addRatedWheel (+setters); this functor exists
+    // so a LINKED message is LOUDLY rejected in checkB2Guards() (Reset +
+    // UpdateState heads), never silently disagreed with. Unlinked = disarmed.
+    ReadFunctor<RWArrayConfigMsgPayload> rwArrayConfigInMsg;
     ReadFunctor<THRArrayOnTimeCmdMsgPayload> thrOnTimeInMsg;  //!< thruster on-times
     ReadFunctor<THRArrayCmdForceMsgPayload> thrForceInMsg;  //!< WP3: force-path guard ONLY (never subscribed; bskError if linked)
     Message<SCStatesMsgPayload> scStateOutMsg;
@@ -149,6 +156,10 @@ public:
     void setMaxSwirlTorque(double maxSwirlTorque);
 
     // --- configuration: integrator / saturation -----------------------------
+    // setUMax is post-registration EFFECTIVE (WP25-B2.2): it rewrites every
+    // recorded per-wheel cap (the UpdateState clamp + RW log read wheelUMax
+    // live, so no graph term changes) and marks the build dirty. Disarmed
+    // default 0.2 runs unchanged.
     void setUMax(double uMax);
     void setTol(double tol);
     void setCompactMode(bool compact);
@@ -158,14 +169,15 @@ public:
     void setFriction(double fCoulomb, double fStatic, double betaStatic,
                      double cViscous, double omegaLimitCycle);
     void setFrictionEnabled(bool on);
-    void setFrictionHubSign(double s);  // default +1 (F4 react-on-hub)
+    void setFrictionHubSign(double s);  // WP25-B2.2 (H8): pinned +1 (F4
+    // react-on-hub parity); s = -1 raises LOUDLY (graph bakes +1, unthreaded)
     // JitterSimple only (distributional parity, never bit-exact).
     void setJitterEnabled(bool on);
     void setJitterSeed(uint64_t seed);
     void setJitterSigma(double sigmaNm);
     void setRWModelJitterCoupled();     // ALWAYS bskError (no theta states)
     // Voltage: informational only; wiring is stock MotorVoltageInterface
-    // motorTorqueOutMsg -> rwMotorCmdInMsg, zero omni change.
+    // motorTorqueOutMsg -> rwMotorCmdInMsg; zero omni change.
     void setVoltageEnabled(bool on);
     // --- WP25-B1 bucket (a) fatal-today guards (PLAN_ENVELOPE.md:472-487) ---
     // Defaults are the stock defaults; any non-default/armed value raises
@@ -366,6 +378,10 @@ private:
     // feature. Called at the top of Reset() and UpdateState(). (Non-const:
     // ReadFunctor::isLinked() is not const-qualified.)
     void checkUnsupported();
+    // WP25-B2 guard appendix (B2.1 RWArrayConfig link reject; B2.4
+    // stochastic/mutation rationale). Appended, never merged into B1's table.
+    // Called at the top of Reset() and UpdateState() next to checkUnsupported().
+    void checkB2Guards();
     // WP3: ramp profile factor at event time t (module-side, doubles only).
     double rampFactor(double t, const std::vector<double>& knots, bool isOn) const;
     // WP5 per-tick (/per-arc) env refresh: body offsets (per-tick, never

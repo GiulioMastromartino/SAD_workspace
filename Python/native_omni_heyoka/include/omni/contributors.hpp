@@ -270,10 +270,13 @@ private:
 // States: W (1, wheel speed relative to hub).
 //
 // Constraint (1): D is untouched. The ONLY rotational contribution is
-//   vecRot += -(omega x h) - u*gs - s*tauF*gs,  h = Js*(W + omega.gs)*gs,
-// with s = frictionHubSign_ (default +1, stock react-on-hub per F4).
-// Spin: Wdot = (u + tauF - Js*(gs.omegaDot))/Js  (coupled, stock ordering).
-// Spin: Wdot = u/Js  (matches heyoka_rw.py / native_rw / stock parity).
+//   vecRot += -(omega x h) - u*gs - s*tauF*gs,  h = Js*W*gs,
+// with s = frictionHubSign_ (default +1, stock react-on-hub per F4; the
+// SysModel setter pins +1 and rejects -1, so the baked +1 -- and the bare
+// tauF in the spin below -- is exact, WP25-B2.2).
+// Spin: Wdot = (u + s*tauF - Js*(gs.omegaDot))/Js  (coupled, stock ordering;
+// the decoupled u/Js form is SUPERSEDED -- it drops gs.omegaDot and drifts
+// wheel speeds on momentum-stiff buses).
 // ---------------------------------------------------------------------------
 template <typename S>
 class ReactionWheelContributorT : public ContributorT<S> {

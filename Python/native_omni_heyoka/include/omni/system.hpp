@@ -63,6 +63,13 @@ public:
     }
 
     void add_reaction_wheel(const std::vector<double>& gs, double Js, double /*Jt_ignored*/) {
+        // WP25-B2.2: Jt (transverse rotor inertia) is INTENTIONALLY unused --
+        // validated, not an oversight. Constraint 1 (contributors.hpp): a
+        // balanced rotor contributes NO Js*gs*gs^T to matrixD and the spin
+        // equation needs only Js; the transverse part lives in the total
+        // input inertia the hub block inverts. Telemetry echoes Jt = 0.5*Js
+        // (writeMsgs, labeled). Callers pass 0.0; any value is accepted and
+        // ignored by design (it never enters D, vecRot, or the spin).
         if (gs.size() != 3) throw std::invalid_argument("OmniSystem: gs needs 3 entries");
         const double n = std::sqrt(gs[0] * gs[0] + gs[1] * gs[1] + gs[2] * gs[2]);
         if (!(n > 0.0)) throw std::invalid_argument("OmniSystem: gs must be nonzero");
@@ -192,6 +199,15 @@ public:
     }
 
     void set_use_gravity_gradient(bool v) { use_gg_ = v; dirty_ = true; }
+    // WP25-B2.2: u_max_ is a RECORD-ONLY default, not a dead accessor. It is
+    // read by the standalone-OmniSystem Python harness (driver.u_max_of
+    // default, presets system.set_u_max) as the caller-side saturation bound.
+    // It is INTENTIONALLY unread by the module/vec graphs: saturation is a
+    // caller-side pre-write clamp (A3 -- min/max/if degrade the Taylor
+    // graph), so wiring it into the graph would be the bug, and deleting it
+    // would break driver/presets/mock. The SysModel path clamps per wheel in
+    // UpdateState from wheelUMax (setUMax, post-registration effective); the
+    // vec path reads back stock-saturated u_current.
     void set_u_max(double v) {
         if (!(v >= 0.0)) throw std::invalid_argument("OmniSystem: u_max must be non-negative");
         u_max_ = v;

@@ -492,6 +492,9 @@ New input blocks appear in `par_names()` and are visible to the layout tests.
 | Flex | `setFlexEnabled(True)` | `bskError` (unmodeled) |
 | Slosh | `setSloshEnabled(True)` | `bskError` (unmodeled) |
 | Multi-tank | `addFuelTank()` 2nd registration (`setFuelParams()` is the single-tank bookkeeping surface) | `bskError` |
+| Stochastic / diffusion | diffusion enable | (WP25-B2.4) — NOT enforced in B1 |
+| Mid-run stock mutation | post-init stock-side edits | (WP25-B2.4) — NOT enforced in B1 |
+
   Bucket (b) — modeled-behind-setter (never fatal; each WP owns its model +
   tests): saturation (WP1); Stribeck friction `useRWfriction` iter-1 (WP2);
   `JitterSimple` distributional (WP2); `useMinPulseTime` suppress (WP3b);

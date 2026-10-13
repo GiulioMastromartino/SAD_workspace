@@ -56,6 +56,10 @@ struct RWSpeedMsg_C;
 %include "architecture/msgPayloadDefC/RWConfigLogMsgPayload.h"
 struct RWConfigLogMsg_C;
 %template(RWConfigLogMsgVector) std::vector<Message<RWConfigLogMsgPayload>>;
+// WP25-B2.1: RW-array config hijack surface (guard-only ReadFunctor on the
+// SysModel; a linked message is loudly rejected, never read).
+%include "architecture/msgPayloadDefC/RWArrayConfigMsgPayload.h"
+struct RWArrayConfigMsg_C;
 %include "architecture/msgPayloadDefC/FuelTankMsgPayload.h"
 struct FuelTankMsg_C;
 %include "architecture/msgPayloadDefC/THRArrayOnTimeCmdMsgPayload.h"
