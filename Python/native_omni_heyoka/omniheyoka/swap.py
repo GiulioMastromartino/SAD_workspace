@@ -30,7 +30,7 @@ from __future__ import annotations
 
 from typing import Any
 
-__all__ = ["mirror_stock_config", "task_effectors"]
+__all__ = ["mirror_stock_config", "mirror_sync_configs", "task_effectors"]
 
 # Task models that are NOT dynamics: anything outside Basilisk.simulation
 # (FSW, recorders, drivers) is none of our business. Inside it, only these
@@ -83,7 +83,12 @@ def _bases(model: Any) -> set:
 
 def mirror_stock_config(sim: Any, sc: Any, oi: Any,
                         thr_factory: Any = None,
-                        thr_cmd_msg: Any = None) -> dict:
+                        thr_cmd_msg: Any = None,
+                        object_index: int = 0,
+                        rw_models: Any = None,
+                        thr_models: Any = None,
+                        fuel_models: Any = None,
+                        use_gg: Any = None) -> dict:
     """Push hub/RW/thruster/gravity config from stock into ``oi``.
 
     ``thr_factory`` (simIncludeThruster factory) is required when a
@@ -94,8 +99,26 @@ def mirror_stock_config(sim: Any, sc: Any, oi: Any,
     ``thr_cmd_msg`` is the driver's ``THRArrayOnTimeCmdMsg``, subscribed to
     ``oi.thrOnTimeInMsg``.
 
-    Returns the mirrored record for ledgers/tests.
+    WP25-A4 multi-spacecraft: ``object_index`` selects the integrator's
+    per-object config slot (C++ auto-grows it; that slot alone is marked
+    mirrored+dirty, so object B never silently inherits object A's graph).
+    ``object_index == 0`` with all explicit lists ``None`` is the legacy
+    single-object path (task-list scan, byte-identical behavior). Any other
+    combination is the per-object path and REQUIRES explicit
+    ``rw_models``/``thr_models``/``fuel_models`` (pass ``[]`` when the
+    object has none) plus explicit ``use_gg``: the task-list scan cannot
+    attribute effectors to objects. The C++ per-object claim check
+    (wheel-count, fuel-name, unknown-state rejects against THAT object's
+    registered states) closes the attribution gap. Use
+    :func:`mirror_sync_configs` for the full synced set. Returns the
+    mirrored record for ledgers/tests.
     """
+    legacy = (object_index == 0 and rw_models is None and thr_models is None
+              and fuel_models is None and use_gg is None)
+    if not legacy:
+        return _mirror_single_object(sim, sc, oi, object_index,
+                                     rw_models, thr_models, fuel_models,
+                                     use_gg, thr_factory, thr_cmd_msg)
     rw_models = []
     thr_models = []
     fuel_models = []
@@ -139,6 +162,52 @@ def mirror_stock_config(sim: Any, sc: Any, oi: Any,
     mu = _central_mu(sc)
     oi.setMu(mu)
 
+    n_wheels, fric_on = _mirror_wheels(rw_models, oi)
+
+    n_thrusters, thr_isps = _mirror_thrusters(thr_models, thr_factory,
+                                             thr_cmd_msg, oi)
+    n_fuel = _mirror_fuel(fuel_models, oi, thr_isps)
+
+    return {"mass": hub["mass"], "mu": mu, "use_gg": use_gg,
+            "n_wheels": n_wheels, "n_thrusters": n_thrusters,
+            "n_fuel": n_fuel, "friction_on": fric_on, "rBcB": hub["rBcB"],
+            "object_index": 0}
+
+
+def _reject_unmirrorable_tasks(sim: Any) -> None:
+    """Global envelope scan for the per-object path: any dynamics task model
+    outside the mirrorable set raises (same message as the legacy scan).
+    RW/thruster/fuel/GravityGradient collections are NOT used here -- the
+    per-object path trusts its explicit model lists (the C++ per-object
+    claim check closes the attribution gap: wheel-count, fuel-name, and
+    unknown-state rejects run against THAT object's registered states)."""
+    for task_name, model in task_effectors(sim):
+        cls = type(model).__name__
+        if cls in _MIRRORED:
+            continue
+        if cls in ("GravityGradientEffector", "FuelTank"):
+            continue
+        bases = _bases(model)
+        if "DynamicEffector" in bases or "StateEffector" in bases:
+            raise ValueError(
+                f"mirror_stock_config: task '{task_name}' holds "
+                f"{cls}; envelope is hub + wheels + staircase "
+                f"thrusters + central gravity + explicit omni env "
+                f"(stock env effectors: use omni env setters instead).")
+
+
+def _mirror_wheels(rw_models: list, oi: Any,
+                   object_index: Any = None) -> tuple:
+    """Mirror wheel records + u_current log links + Stribeck sets.
+
+    ``object_index=None`` is the legacy slot-0 surface (identical calls);
+    otherwise the per-object setters run for that slot alone (only it is
+    marked mirrored+dirty). Returns (n_wheels, friction_on).
+    """
+    if len(rw_models) > 1:
+        raise ValueError(
+            f"mirror_stock_config: {len(rw_models)} RW effectors; stock "
+            f"registration order is ambiguous -- use one effector.")
     n_wheels = 0
     fric_on = False
     for eff in rw_models:
@@ -155,9 +224,14 @@ def mirror_stock_config(sim: Any, sc: Any, oi: Any,
                     f"mirror_stock_config: wheel {n_wheels} RWModel={model}; "
                     f"only BalancedWheels is mirrored (jitter: loud reject).")
             gs = _as_vec3(w.gsHat_B)
-            oi.addWheel(gs[0], gs[1], gs[2], float(w.Js))
-            # u_current readback: timing-identical by construction (see header).
-            oi.linkWheelLog(n_wheels, logs[k])
+            if object_index is None:
+                oi.addWheel(gs[0], gs[1], gs[2], float(w.Js))
+                # u_current readback: timing-identical by construction.
+                oi.linkWheelLog(n_wheels, logs[k])
+            else:
+                oi.addWheelForObject(object_index, gs[0], gs[1], gs[2],
+                                     float(w.Js))
+                oi.linkWheelLogForObject(object_index, n_wheels, logs[k])
             # Phase-2 friction: mirror the live Stribeck set when any
             # coefficient is active (factory-off zeroes fCoulomb only, so an
             # all-zero set means OFF and needs no records).
@@ -167,25 +241,106 @@ def mirror_stock_config(sim: Any, sc: Any, oi: Any,
             bS = float(getattr(w, "betaStatic", -1.0))
             oL = float(getattr(w, "omegaLimitCycle", 0.0001))
             if fC != 0.0 or fS != 0.0 or cV != 0.0 or bS > 0.0:
-                oi.setFrictionEnabled(True)
-                oi.setFrictionParams(n_wheels, fC, fS, bS, cV, oL)
+                if object_index is None:
+                    oi.setFrictionEnabled(True)
+                    oi.setFrictionParams(n_wheels, fC, fS, bS, cV, oL)
+                else:
+                    oi.setFrictionEnabledForObject(object_index, True)
+                    oi.setFrictionParamsForObject(object_index, n_wheels,
+                                                  fC, fS, bS, cV, oL)
                 fric_on = True
             n_wheels += 1
+    return n_wheels, fric_on
 
+
+def _mirror_single_object(sim: Any, sc: Any, oi: Any, idx: int,
+                          rw_models: Any, thr_models: Any,
+                          fuel_models: Any, use_gg: Any,
+                          thr_factory: Any, thr_cmd_msg: Any) -> dict:
+    """Per-object mirror (WP25-A4): explicit model lists into slot ``idx``.
+
+    The task-list scan cannot attribute effectors to objects, so every list
+    must be explicit (``[]`` when the object has none) and ``use_gg`` must
+    be an explicit bool. Only slot ``idx`` is marked mirrored+dirty; the
+    C++ build requires every dynPtr slot mirrored, so a forgotten object
+    fails loudly instead of inheriting another object's graph.
+    """
+    if rw_models is None or thr_models is None or fuel_models is None:
+        raise ValueError(
+            f"mirror_stock_config: object {idx} needs explicit "
+            f"rw_models/thr_models/fuel_models lists (pass [] when the "
+            f"object has none); the task-list scan cannot attribute "
+            f"effectors to objects, and object B must never silently "
+            f"inherit object A's graph.")
+    if use_gg is None:
+        raise ValueError(
+            f"mirror_stock_config: object {idx} needs explicit use_gg "
+            f"(True/False); gravity-gradient task models cannot be "
+            f"attributed to objects by the scan.")
+    _reject_unmirrorable_tasks(sim)
+    oi.setUseGravityGradientForObject(idx, bool(use_gg))
+
+    hub = _hub_record(sc)
+    oi.setMassForObject(idx, hub["mass"])
+    oi.setInertiaForObject(idx, hub["Ixx"], hub["Iyy"], hub["Izz"],
+                           hub["Ixy"], hub["Ixz"], hub["Iyz"])
+    oi.setCoMOffsetForObject(idx, *hub["rBcB"])
+    mu = _central_mu(sc)
+    oi.setMuForObject(idx, mu)
+
+    n_wheels, fric_on = _mirror_wheels(rw_models, oi, idx)
     n_thrusters, thr_isps = _mirror_thrusters(thr_models, thr_factory,
-                                             thr_cmd_msg, oi)
-    n_fuel = _mirror_fuel(fuel_models, oi, thr_isps)
+                                              thr_cmd_msg, oi, idx)
+    n_fuel = _mirror_fuel(fuel_models, oi, thr_isps, idx)
 
-    return {"mass": hub["mass"], "mu": mu, "use_gg": use_gg,
+    return {"mass": hub["mass"], "mu": mu, "use_gg": bool(use_gg),
             "n_wheels": n_wheels, "n_thrusters": n_thrusters,
-            "n_fuel": n_fuel, "friction_on": fric_on, "rBcB": hub["rBcB"]}
+            "n_fuel": n_fuel, "friction_on": fric_on, "rBcB": hub["rBcB"],
+            "object_index": idx}
+
+
+def mirror_sync_configs(sim: Any, oi: Any, specs: list) -> list:
+    """Mirror EVERY object of a synced set into ONE integrator (WP25-A4).
+
+    ``specs`` is one dict per object, in dynPtrs order (leader first):
+    ``{"sc", "rw_models", "thr_models", "thr_factory", "thr_cmd_msg",
+    "fuel_models", "use_gg"}``. All of ``rw_models``/``thr_models``/
+    ``fuel_models``/``use_gg`` must be explicit (no scan attribution).
+    Recipe after this call::
+
+        scA.setIntegrator(oi)
+        scA.syncDynamicsIntegration(scB)  # B follows A (upstream
+        # dynamicObject.cpp: pushes B into A's integrator, marks B synced)
+
+    Returns the per-object mirrored records.
+    """
+    if not specs:
+        raise ValueError("mirror_sync_configs: need >= 1 object spec.")
+    out = []
+    for idx, spec in enumerate(specs):
+        for key in ("rw_models", "thr_models", "fuel_models", "use_gg"):
+            if spec.get(key) is None:
+                raise ValueError(
+                    f"mirror_sync_configs: object {idx} spec needs explicit "
+                    f"'{key}' (object B must never silently inherit object "
+                    f"A's graph).")
+        out.append(mirror_stock_config(
+            sim, spec["sc"], oi, object_index=idx,
+            thr_factory=spec.get("thr_factory"),
+            thr_cmd_msg=spec.get("thr_cmd_msg"),
+            rw_models=spec["rw_models"], thr_models=spec["thr_models"],
+            fuel_models=spec["fuel_models"], use_gg=spec["use_gg"]))
+    return out
 
 
 def _mirror_thrusters(thr_models: list, thr_factory: Any,
-                      thr_cmd_msg: Any, oi: Any) -> tuple:
+                      thr_cmd_msg: Any, oi: Any,
+                      object_index: Any = None) -> tuple:
     """Mirror thruster geometry + gate the staircase envelope.
 
     Returns (count, steadyIsp-per-thruster) for the fuel mdot law.
+    ``object_index=None`` is the legacy slot-0 surface; otherwise the
+    per-object setters/subscribes run for that slot alone.
     """
     if not thr_models:
         return 0, []
@@ -247,15 +402,23 @@ def _mirror_thrusters(thr_models: list, thr_factory: Any,
             raise ValueError(
                 "mirror_stock_config: MaxSwirlTorque != 0; swirl is out of "
                 "the staircase envelope.")
-        oi.addThruster(th[0], th[1], th[2], loc[0], loc[1], loc[2],
-                       float(cfg.MaxThrust))
+        if object_index is None:
+            oi.addThruster(th[0], th[1], th[2], loc[0], loc[1], loc[2],
+                           float(cfg.MaxThrust))
+        else:
+            oi.addThrusterForObject(object_index, th[0], th[1], th[2],
+                                    loc[0], loc[1], loc[2],
+                                    float(cfg.MaxThrust))
         isps.append(float(cfg.steadyIsp))
         n += 1
     if thr_cmd_msg is None:
         raise ValueError(
             "mirror_stock_config: thrusters mirrored but no thr_cmd_msg "
             "given; pass the driver's THRArrayOnTimeCmdMsg.")
-    oi.thrOnTimeInMsg.subscribeTo(thr_cmd_msg)
+    if object_index is None:
+        oi.thrOnTimeInMsg.subscribeTo(thr_cmd_msg)
+    else:
+        oi.subscribeThrCmdForObject(object_index, thr_cmd_msg)
     # Pre-init command snapshot (Reset-equivalent staging for tick 0):
     # a pre-written command (write-once path) fires tick 0; an unwritten
     # message reads zeros (fresh fill path, idles tick 0). Snapshot NOW
@@ -268,11 +431,15 @@ def _mirror_thrusters(thr_models: list, thr_factory: Any,
         _snap = [float(v) for v in list(_snap_reader().OnTimeRequest)]
     except Exception:
         _snap = [0.0] * 36
-    oi.setInitialThrusterCmd(_snap)
+    if object_index is None:
+        oi.setInitialThrusterCmd(_snap)
+    else:
+        oi.setInitialThrusterCmdForObject(object_index, _snap)
     return n, isps
 
 
-def _mirror_fuel(fuel_models: list, oi: Any, thr_isps: list) -> int:
+def _mirror_fuel(fuel_models: list, oi: Any, thr_isps: list,
+                 object_index: Any = None) -> int:
     """Mirror a single fuel tank (Phase-2 depletion, v1 scope).
 
     Reads the stock registered state name, tank center, and leak rate;
@@ -281,6 +448,8 @@ def _mirror_fuel(fuel_models: list, oi: Any, thr_isps: list) -> int:
     mirrored thrusters raises (nothing drains it -- likely a missed
     addThrusterSet, fail loud rather than bookkeep zeros).
     Mass/I_C feedback + live aggregate c (per-tick; see swap fuel gate).
+    ``object_index=None`` is the legacy slot-0 surface; otherwise the
+    per-object setters run for that slot alone.
     """
     if not fuel_models:
         return 0
@@ -296,7 +465,13 @@ def _mirror_fuel(fuel_models: list, oi: Any, thr_isps: list) -> int:
     name = str(tank.getNameOfMassState())
     rtb = _as_vec3(tank.getR_TB_B())
     leak = float(tank.getFuelLeakRate())
-    oi.setFuelStateName(name)
-    oi.setFuelTank(rtb[0], rtb[1], rtb[2], leak)
-    oi.setThrusterIsps([float(v) for v in thr_isps])
+    if object_index is None:
+        oi.setFuelStateName(name)
+        oi.setFuelTank(rtb[0], rtb[1], rtb[2], leak)
+        oi.setThrusterIsps([float(v) for v in thr_isps])
+    else:
+        oi.setFuelStateNameForObject(object_index, name)
+        oi.setFuelTankForObject(object_index, rtb[0], rtb[1], rtb[2], leak)
+        oi.setThrusterIspsForObject(object_index,
+                                    [float(v) for v in thr_isps])
     return 1

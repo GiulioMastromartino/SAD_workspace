@@ -30,6 +30,26 @@
  * switching, DV accumulators, energy/momentum, telemetry. The integrator is
  * purely gather -> propagate -> scatter.
  *
+ * WP25-A4 multi-spacecraft (sync path): ONE integrator instance serves every
+ * entry of dynPtrs (stock appends followers via
+ * DynamicObject::syncDynamicsIntegration; the leader's integrateState then
+ * runs preIntegration[all] -> integrate -> postIntegration[all] while each
+ * follower's integrateState returns early -- upstream dynamicObject.cpp,
+ * v2.12.0). Each object owns a per-object config slot (ObjCfg) and a
+ * per-object runtime (Impl): per-object census/claim/gather/scatter with
+ * name-derived slots resolved per object. Config-dirty is PER OBJECT: an
+ * indexed setter rebuilds only its own slot, and a slot that was never
+ * mirrored is a LOUD build error (object B never silently inherits object
+ * A's graph). The symbolic graph is SHARED (one heyoka build, stepped
+ * sequentially per object) iff every slot's config fingerprint is identical;
+ * otherwise each object builds its own graph. tol/compactMode stay global
+ * (JIT options, not graph structure). isDynamicsSynced is honored as: every
+ * dynPtr is stepped exactly once per integrate() (the leader's call covers
+ * synced followers -- stock never calls us twice per tick); a primary that
+ * is itself synced, or more than one unsynced object sharing this
+ * integrator, are loud build errors (both would silently double-step or
+ * stall). Per-object step counters back the no-double-step audit.
+ *
  * SWIG note: `class Spacecraft;` is only forward-declared. It unifies with
  * the stock proxy BY CLASS NAME (cSysModel precedent), so
  * OmniVecIntegrator(sc) accepts a stock Spacecraft. The .cpp round-trips the
@@ -67,6 +87,10 @@ public:
     void integrate(double currentTime, double timeStep) override;
 
     // --- setup-time records (mirrored from stock BEFORE first integrate) ----
+    // Legacy single-object surface: slot-0 shorthand. Each delegates to its
+    // ...ForObject(0, ...) twin (identical semantics by construction); the
+    // single-object stepping path reads slot 0 through the same per-object
+    // helpers as the sync path.
     void setMass(double m);
     void setInertia(double Ixx, double Iyy, double Izz,
                     double Ixy = 0.0, double Ixz = 0.0, double Iyz = 0.0);
@@ -127,9 +151,71 @@ public:
     void setFrictionParams(size_t i, double fCoulomb, double fStatic,
                            double betaStatic, double cViscous,
                            double omegaLimitCycle);
-    // Integrator options.
+    // Integrator options (GLOBAL: JIT/stepping options, not graph structure;
+    // shared-graph objects always step under one tol).
     void setTol(double tol);
     void setCompactMode(bool compact);
+
+    // --- WP25-A4 per-object mirror (sync path) --------------------------------
+    // Indexed twins of every setter above: slot `obj` is created on first
+    // use (auto-grow) and that slot alone is marked mirrored+dirty, so
+    // object B can never silently inherit object A's graph, and a setter
+    // rebuilds only its own object. buildOnce() requires slots == dynPtrs
+    // AND every slot mirrored, loudly otherwise.
+    void setMassForObject(size_t obj, double m);
+    void setInertiaForObject(size_t obj, double Ixx, double Iyy, double Izz,
+                             double Ixy = 0.0, double Ixz = 0.0,
+                             double Iyz = 0.0);
+    void setCoMOffsetForObject(size_t obj, double x, double y, double z);
+    void setMuForObject(size_t obj, double mu);
+    void setUseGravityGradientForObject(size_t obj, bool useGG);
+    void addEnvironmentBodyForObject(size_t obj, double mu,
+                                     double ox, double oy, double oz);
+    void setJ2ForObject(size_t obj, double J2);
+    void setDragParamsForObject(size_t obj, double CdA,
+                                double cx, double cy, double cz);
+    void addSRPFacetForObject(size_t obj, double area,
+                              double nx, double ny, double nz,
+                              double copx, double copy, double copz,
+                              double c_diffuse, double c_specular);
+    void setSRPCannonballForObject(size_t obj, double area, double cr);
+    void setSunStateForObject(size_t obj, double px, double py, double pz);
+    void setMagneticMomentForObject(size_t obj, double mx, double my,
+                                    double mz);
+    void setMagneticDipoleForObject(size_t obj, double g10, double g11,
+                                    double h11);
+    void setMaxMtbDipoleForObject(size_t obj, double dmax);
+    void setFuelStateNameForObject(size_t obj, const std::string& name);
+    void setFuelTankForObject(size_t obj, double rTBx, double rTBy,
+                              double rTBz, double leak);
+    void setThrusterIspsForObject(size_t obj, const std::vector<double>& isp);
+    void addThrusterForObject(size_t obj, double dx, double dy, double dz,
+                              double px, double py, double pz, double tmax);
+    void setInitialThrusterCmdForObject(size_t obj,
+                                        const std::vector<double>& onTimes);
+    void addWheelForObject(size_t obj, double gsx, double gsy, double gsz,
+                           double Js);
+    void setFrictionEnabledForObject(size_t obj, bool on);
+    void setFrictionParamsForObject(size_t obj, size_t i, double fCoulomb,
+                                    double fStatic, double betaStatic,
+                                    double cViscous, double omegaLimitCycle);
+    // Per-object message links (reads only: never mark dirty, never mark
+    // mirrored -- a forgotten config mirror must still fail loudly at
+    // build even if its messages were linked).
+    void linkWheelLogForObject(size_t obj, size_t i,
+                               Message<RWConfigLogMsgPayload>* src);
+    void subscribeThrCmdForObject(size_t obj,
+                                  Message<THRArrayOnTimeCmdMsgPayload>* src);
+    void subscribeAtmoForObject(size_t obj, Message<AtmoPropsMsgPayload>* src);
+    void subscribeWindForObject(size_t obj, Message<WindMsgPayload>* src);
+    void subscribeEclipseForObject(size_t obj,
+                                   Message<EclipseMsgPayload>* src);
+    void subscribeSunForObject(size_t obj,
+                               Message<SpicePlanetStateMsgPayload>* src);
+    void subscribeMoonForObject(size_t obj,
+                                Message<SpicePlanetStateMsgPayload>* src);
+    void subscribeMagForObject(size_t obj,
+                               Message<MagneticFieldMsgPayload>* src);
 
     // --- wheel-log inputs: u_current, timing-identical by construction ----
     // Link i-th wheel to the stock effector's i-th rwOutMsgs element:
@@ -138,14 +224,18 @@ public:
     // so task order cannot skew us (a direct motor-message read could lead
     // or lag stock by a tick depending on task order -- rejected design).
     // Unlinked slots read 0, exactly like a never-configured stock wheel.
+    // (Slot-0 storage; slots >= 1 live in extraMsgs_ via the ForObject
+    // linkers above. Untouched by the A4 refactor.)
     std::vector<ReadFunctor<RWConfigLogMsgPayload>> rwLogInMsgs;
     void linkWheelLog(size_t i, Message<RWConfigLogMsgPayload>* src);
     // Thruster channel (stage 2): on-time command mailbox. Geometry arrives
     // via addThruster records (joined Python-side from factory + effector);
     // the config message is deliberately NOT consumed (its functor
     // subscription does not link in this build -- documented dead end).
+    // (Slot-0 storage; see above.)
     ReadFunctor<THRArrayOnTimeCmdMsgPayload> thrOnTimeInMsg;
     // --- WP5 environment message hijack (field inputs, stage 3) --------------
+    // (Slot-0 storage; see above.)
     ReadFunctor<AtmoPropsMsgPayload> atmoDensInMsg;
     ReadFunctor<WindMsgPayload> windVelInMsg;
     ReadFunctor<EclipseMsgPayload> eclipseInMsg;
@@ -158,94 +248,190 @@ public:
     size_t nPars() const;
     size_t nWheels() const;
     double getBuildSeconds() const;
+    // shadow-set switch (postIntegration flips the scattered B-point state);
+    // the integrator only COUNTS crossings per tick (|sigma|^2 > 1
+    // post-propagation, same threshold as the SysModel path). Cumulative
+    // since construction (rebuilds do not reset it). Polled per tick from
+    // Python (swap helper/test builds the tick trace); leg-total gate vs
+    // stock is equality +-1 (tick-exact equality NOT required). The SysModel
+    // mrpSwitches member is untouched (reference implementation).
     // Claimed registered-state names, stock order (census proof for tests).
     std::vector<std::string> claimedNames() const;
+    // --- WP25-A4 multi introspection ------------------------------------------
+    // Config slots (slot 0 pre-exists; ForObject setters auto-grow).
+    size_t nObjects() const;
+    // Cumulative propagate count for one object (survives rebuilds). The
+    // no-double-step audit asserts steps[i] == ticks for every object.
+    uint64_t getStepCountForObject(size_t obj) const;
+    // integrate() invocations since construction. Healthy sync runs satisfy
+    // calls == ticks (stock calls the leader once per tick) and
+    // steps[i] == calls (each object stepped exactly once per call).
+    uint64_t getIntegrateCallCount() const { return integrateCalls_; }
+    uint64_t getMRPSwitchCountForObject(size_t obj) const;
+    double getBuildSecondsForObject(size_t obj) const;
+    // True when every slot's config fingerprint matched and one heyoka
+    // build serves all objects (probe-first on build cost: per-object
+    // build seconds are recorded either way; JIT tiers still bind).
+    bool sharedGraphUsed() const { return sharedGraph_; }
+    // Canonical config fingerprint (graph-affecting fields only: commands,
+    // message links, tol, and the stock state NAME are excluded). Equal
+    // fingerprints share one graph; any difference builds per-object
+    // graphs. Never silent: an unmirrored slot fails the build loudly.
+    std::string configFingerprintForObject(size_t obj) const;
+    std::vector<std::string> claimedNamesForObject(size_t obj) const;
 
     mutable BSKLogger bskLogger;
 
 private:
     struct Impl;
-    std::unique_ptr<Impl> impl;
+    // Per-object runtime (build artifacts only): sys + heyoka + live pars +
+    // cached StateData sources + name-derived offsets. Replaced wholesale on
+    // that object's rebuild; counters/friction-state/mailbox-edge live in
+    // ObjCfg so rebuilds never reset them (batch-2 semantics preserved).
+    std::vector<std::unique_ptr<Impl>> impls_;
     DynamicObject* dyn_;  // borrowed: owned by the Python sim
 
-    // Staged records (replayed into a fresh OmniSystem at build).
-    double mass_ = 750.0;
-    double Ixx_ = 900.0, Iyy_ = 800.0, Izz_ = 600.0;
-    double Ixy_ = 0.0, Ixz_ = 0.0, Iyz_ = 0.0;
-    double rBcB_[3]{0.0, 0.0, 0.0};
-    double mu_ = 3.986004418e14;
-    bool useGG_ = true;
     struct WheelRec {
         double gs[3];
         double Js;
     };
-    std::vector<WheelRec> wheelRecs_;
-    // Phase-2 friction records (parallel to wheelRecs_) + per-wheel state.
-    bool frictionOn_ = false;
+    // Phase-2 friction records (parallel to wheels) + per-wheel state.
     struct FricRec {
         double fCoulomb = 0.0, fStatic = 0.0, betaStatic = -1.0;
         double cViscous = 0.0, omegaLimitCycle = 0.0001;
     };
-    std::vector<FricRec> fricRecs_;
     struct FricState {
         int stribeck = 0;
         double omegaBefore = 0.0;
     };
-    std::vector<FricState> fricState_;
-    // Thruster geometry records, stock order (stage 2).
-    std::vector<std::array<double, 3>> thrDirs_;
-    std::vector<std::array<double, 3>> thrPos_;
-    std::vector<double> thrTmax_;
-    // Staged on-time mailbox (stock edge-triggered semantics). Advance rule:
-    // fire the CURRENT message iff first-sight or timestamp strictly
-    // advanced (frozen ticks idle); the tick-0 fill is covered by the
-    // pre-staged snapshot below (Reset-equivalent staging).
-    int64_t lastThrStamp_ = -1;
-    // Pre-init command snapshot (write-once path): staged at build, fired
-    // once on tick 0, then consumed. Empty = fresh/fill path (idle tick 0).
-    std::vector<double> preStaged_;
-    bool havePreStaged_ = false;
-    // --- WP5 env config (staged until build; mirrors OmniSpacecraft) ---------
-    std::vector<double> envBodyMu_;
-    std::vector<double> envBodyOff0_;
-    double envJ2_ = 0.0;
-    bool j2On_ = false;
-    bool dragOn_ = false;
-    double envCdA_ = 0.0;
-    double envComOff_[3]{0.0, 0.0, 0.0};
     struct SRPFacetSpec {
         double area = 0;
         double nHat[3]{1, 0, 0};
         double rCop[3]{0, 0, 0};
         double cd = 0, cs = 0;
     };
-    std::vector<SRPFacetSpec> srpFacets_;
-    bool cannonballOn_ = false;
-    double cbArea_ = 0.0, cbCr_ = 0.0;
-    double sunState_[3]{0.0, 0.0, 0.0};
-    bool hasSun_ = false;
-    bool magOn_ = false;
-    double magM_[3]{0.0, 0.0, 0.0};
-    double magG10_ = 0.0, magG11_ = 0.0, magH11_ = 0.0;
-    double maxMtbDipole_ = 1.0;
-    bool envConfigured_ = false;
-    // --- Phase-2 fuel records -------------------------------------------------
-    std::string fuelStateName_;
-    bool hasFuel_ = false;
-    double fuelRTB_[3]{0.0, 0.0, 0.0};
-    double fuelLeak_ = 0.0;
-    std::vector<double> fuelIsps_;
+    // WP25-A4 per-object staged config + lifecycle. Slot 0 is the legacy
+    // single-object record (legacy setters write here via the ForObject
+    // twins); slots >= 1 serve synced followers. Message links are NOT
+    // stored here: slot 0 uses the legacy public members, slots >= 1 use
+    // extraMsgs_ (routed uniformly through msgsFor()).
+    struct ObjCfg {
+        // Staged records (replayed into a fresh OmniSystem at build).
+        double mass = 750.0;
+        double Ixx = 900.0, Iyy = 800.0, Izz = 600.0;
+        double Ixy = 0.0, Ixz = 0.0, Iyz = 0.0;
+        double rBcB[3]{0.0, 0.0, 0.0};
+        double mu = 3.986004418e14;
+        bool useGG = true;
+        std::vector<WheelRec> wheels;
+        bool frictionOn = false;
+        std::vector<FricRec> fricRecs;
+        // Runtime Stribeck state (survives rebuilds, as before the refactor).
+        std::vector<FricState> fricState;
+        // Thruster geometry records, stock order (stage 2).
+        std::vector<std::array<double, 3>> thrDirs;
+        std::vector<std::array<double, 3>> thrPos;
+        std::vector<double> thrTmax;
+        // Staged on-time mailbox edge (survives rebuilds, as before).
+        int64_t lastThrStamp = -1;
+        // Pre-init command snapshot (write-once path).
+        std::vector<double> preStaged;
+        bool havePreStaged = false;
+        // --- WP5 env config (staged until build; mirrors OmniSpacecraft) -----
+        std::vector<double> envBodyMu;
+        std::vector<double> envBodyOff0;
+        double envJ2 = 0.0;
+        bool j2On = false;
+        bool dragOn = false;
+        double envCdA = 0.0;
+        double envComOff[3]{0.0, 0.0, 0.0};
+        std::vector<SRPFacetSpec> srpFacets;
+        bool cannonballOn = false;
+        double cbArea = 0.0, cbCr = 0.0;
+        double sunState[3]{0.0, 0.0, 0.0};
+        bool hasSun = false;
+        bool magOn = false;
+        double magM[3]{0.0, 0.0, 0.0};
+        double magG10 = 0.0, magG11 = 0.0, magH11 = 0.0;
+        double maxMtbDipole = 1.0;
+        bool envConfigured = false;
+        // --- Phase-2 fuel records ---------------------------------------------
+        std::string fuelStateName;
+        bool hasFuel = false;
+        double fuelRTB[3]{0.0, 0.0, 0.0};
+        double fuelLeak = 0.0;
+        std::vector<double> fuelIsps;
+        // --- WP25-A4 lifecycle -------------------------------------------------
+        // mirrored: any set*/add* twin ran for this slot. Links/subscribes
+        // never set it (a forgotten config mirror must fail loudly even if
+        // its messages were linked). built/dirty drive per-object rebuilds.
+        bool mirrored = false;
+        bool built = false;
+        bool dirty = true;
+        double buildSeconds = 0.0;
+        uint64_t stepCount = 0;
+        uint64_t mrpCount = 0;
+    };
+    // Owned message links for slots >= 1 (slot 0 = legacy public members).
+    struct ObjMsgSet {
+        std::vector<ReadFunctor<RWConfigLogMsgPayload>> rwLogs;
+        ReadFunctor<THRArrayOnTimeCmdMsgPayload> thrCmd;
+        ReadFunctor<AtmoPropsMsgPayload> atmo;
+        ReadFunctor<WindMsgPayload> wind;
+        ReadFunctor<EclipseMsgPayload> eclipse;
+        ReadFunctor<SpicePlanetStateMsgPayload> sun;
+        ReadFunctor<SpicePlanetStateMsgPayload> moon;
+        ReadFunctor<MagneticFieldMsgPayload> mag;
+    };
+    // Uniform per-object message view (pointers; slot 0 aliases the legacy
+    // public members so the stepping path is single-sourced).
+    struct ObjMsgs {
+        std::vector<ReadFunctor<RWConfigLogMsgPayload>>* rwLogs = nullptr;
+        ReadFunctor<THRArrayOnTimeCmdMsgPayload>* thrCmd = nullptr;
+        ReadFunctor<AtmoPropsMsgPayload>* atmo = nullptr;
+        ReadFunctor<WindMsgPayload>* wind = nullptr;
+        ReadFunctor<EclipseMsgPayload>* eclipse = nullptr;
+        ReadFunctor<SpicePlanetStateMsgPayload>* sun = nullptr;
+        ReadFunctor<SpicePlanetStateMsgPayload>* moon = nullptr;
+        ReadFunctor<MagneticFieldMsgPayload>* mag = nullptr;
+    };
+    std::vector<ObjCfg> objCfgs_{1};  // slot 0 pre-exists (legacy surface)
+    std::vector<ObjMsgSet> extraMsgs_;  // slot i>=1 <-> extraMsgs_[i-1]
     double tol_ = 1e-12;
     bool compactMode_ = false;
 
-    bool built_ = false;
-    bool configDirty_ = true;
-    double buildSeconds_ = 0.0;
+    bool sharedGraph_ = false;
+    uint64_t integrateCalls_ = 0;
+    double buildSeconds_ = 0.0;  // slot-0 build time (legacy accessor compat)
 
-    void buildOnce();  // census + claim + mirror + symbolic build
+    // Slot lifecycle: auto-grow (never shrinks; a stale extra slot fails the
+    // build loudly via the slots==dynPtrs check, never silently idles).
+    void ensureSlot(size_t obj);
+    ObjCfg& cfgFor(size_t obj);
+    const ObjCfg& cfgAt(size_t obj) const;
+    ObjMsgs msgsFor(size_t obj);
+    // Canonical graph-affecting fingerprint for the shared-graph rule.
+    std::string calcFingerprint(size_t obj) const;
+    bool needsBuild() const;
+    // Per-object (index-keyed) census: ExtendedStateVector keys are
+    // (dynIndex, name) upstream, so same-named states on two objects never
+    // collide here (the old index-blind census would have merged them).
+    std::vector<std::vector<std::pair<std::string, size_t>>> takeCensus() const;
+    void checkSyncGuards();
+    void buildOnce();  // guards + shared-graph decision + per-slot builds
+    void claimAndGrab(
+        size_t obj, const std::vector<std::pair<std::string, size_t>>& census,
+        size_t& nW, size_t& nF);
+    void buildObjectFull(
+        size_t obj, const std::vector<std::pair<std::string, size_t>>& census);
+    void buildObjectShared(
+        size_t obj, const std::vector<std::pair<std::string, size_t>>& census);
+    void freezeObject(
+        size_t obj, const std::vector<std::pair<std::string, size_t>>& census);
+    void stepObject(size_t obj, double timeStep);
     // WP5 per-tick (/per-arc) env refresh into the par slots. y = gathered
     // omni-order state; P = live par vector. Module-side doubles only (A3).
-    void updateEnvInputs(const double* y, std::vector<double>& P,
+    void updateEnvInputs(size_t obj, const double* y, std::vector<double>& P,
                          const double cLive[3]);
 };
 
