@@ -31,6 +31,13 @@ struct OmniSpacecraft::Impl {
     size_t ta_npars = 0;
     // WP2: per-wheel friction-torque (tauF) second slots, same order.
     std::vector<size_t> fricIn;
+    // WP25-B3: per-wheel Stribeck state for the ported stock-exact law
+    // (stribeck flag + omegaBefore latch; mirrors vec FricState in
+    // include/omni/vec_integrator.hpp, read-only reference). Lives in Impl
+    // (fresh on Reset, lazily resized in UpdateState); module-side doubles,
+    // A3-clean (never graph terms, never pars).
+    struct FricState { int stribeck = 0; double omegaBefore = 0.0; };
+    std::vector<FricState> fricState_;
     // WP2 jitter RNG: one stream per wheel (seed ^ splitmix64(index+1)).
     std::vector<std::mt19937_64> jitterRng_;
     uint64_t jitterInitSeed_ = 0;
@@ -351,8 +358,13 @@ void OmniSpacecraft::setFriction(double fCoulomb, double fStatic, double betaSta
                                  double cViscous, double omegaLimitCycle) {
     // Live RWConfigPayload address (fCoulomb/fStatic/betaStatic/cViscous/
     // omegaLimitCycle). Stores params; setFrictionEnabled() activates.
-    // Iter-1 model uses fCoulomb/cViscous/omegaLimitCycle; fStatic/betaStatic
-    // shape iter-2 (documented hook, accepted-but-inert until then).
+    // WP25-B3 (Decision 5: port path): the SysModel per-tick block below ports
+    // the vec stock-exact Stribeck law verbatim (stribeck flag/latch +
+    // omegaBefore + limit-cycle rescale; reference
+    // src/omni_vec_integrator.cpp:828-876, READ-ONLY). All five knobs are
+    // LIVE here (one global set shared by every wheel; vec keeps per-wheel
+    // recs -- single-valued configs coincide exactly). betaStatic <= 0 keeps
+    // the stiction band off (vec OFF convention is betaStatic = -1.0).
     for (double v : {fCoulomb, fStatic, betaStatic, cViscous, omegaLimitCycle}) {
         if (!std::isfinite(v) || v < 0.0)
             this->bskLogger.bskError("OmniSpacecraft: friction params must be finite non-negative.");
@@ -1027,17 +1039,28 @@ void OmniSpacecraft::UpdateState(uint64_t CurrentSimNanos) {
     }
     // WP2 friction + JitterSimple (module-side doubles; A3-clean): AFTER the
     // WP1 saturation cut above, for each wheel read W_i, compute signed tauF
-    // opposing W (iter-1: -fC*tanh(W/k) - cV*W, k = omegaLimitCycle_; tanh
-    // HERE is fine, never in the graph), add JitterSimple noise (own
+    // opposing W (WP25-B3 port of the vec stock-exact Stribeck law: stribeck
+    // flag + latch + omegaBefore + limit-cycle rescale; tanh/exp HERE are
+    // fine, never in the graph), add JitterSimple noise (own
     // per-wheel mt19937_64 streams, seed ^ splitmix64(index+1),
     // normal_distribution(0, jitterSigma_)) when on, write P[fricIn[i]].
-    // Off (frictionOn_ false): tauF slot identically 0 (deviation from
-    // factory-off documented in tests/test_wp2_friction_jitter.py). Jitter
-    // with friction off still writes pure noise; both off writes 0.0.
-    // NOTE: JitterFullyCoupled/theta states are rejected at the setter.
+    // Port reference (READ-ONLY): src/omni_vec_integrator.cpp:828-876. Law:
+    // stribeck engages for |W| < 0.10*omegaLimitCycle with betaStatic > 0,
+    // latches while sign(W) agrees with sign(W - omegaBefore), uses the
+    // Gaussian+tanh static branch inside the band and signO*fC + cV*W
+    // outside, then rescales linearly through the origin for
+    // |W| < omegaLimitCycle. SysModel params are one GLOBAL set shared by
+    // all wheels (vec: per-wheel recs). Off (frictionOn_ false): tauF slot
+    // identically 0 (deviation from factory-off documented in
+    // tests/test_wp2_friction_jitter.py). Jitter with friction off still
+    // writes pure noise; both off writes 0.0.
+    // NOTE: JitterFullyCoupled/theta states are rejected at the setter
+    // (setter-gated ONLY -- this path never auto-reads a stock wheel's
+    // RWModel string; vec-side auto-reject lives in the swap mirror).
     {
         const size_t nw = this->wheels.size();
         const std::vector<size_t>& foff = this->impl->fricIn;
+        if (this->impl->fricState_.size() != nw) this->impl->fricState_.resize(nw);
         if (this->jitterOn_ && this->jitterSigma_ > 0.0) {
             if (!this->impl->jitterRngInit_ || this->impl->jitterInitSeed_ != this->jitterSeed_) {
                 this->impl->jitterRng_.clear();
@@ -1053,13 +1076,51 @@ void OmniSpacecraft::UpdateState(uint64_t CurrentSimNanos) {
             }
         }
         std::normal_distribution<double> jitterDist(0.0, this->jitterSigma_);
-        const double k = (this->omegaLimitCycle_ > 0.0) ? this->omegaLimitCycle_ : 1.0;
+        const double fC = this->fCoulomb_, fS = this->fStatic_;
+        const double bS = this->betaStatic_, cV = this->cViscous_;
+        const double oL = (this->omegaLimitCycle_ > 0.0) ? this->omegaLimitCycle_ : 1.0;
         for (size_t i = 0; i < nw && i < foff.size(); ++i) {
             if (foff[i] >= P.size()) continue;
             double tauF = 0.0;
-            if (this->frictionOn_ && this->wheelOff_ + i < this->st.size()) {
-                const double Wi = this->st[this->wheelOff_ + i];
-                tauF = -this->fCoulomb_ * std::tanh(Wi / k) - this->cViscous_ * Wi;
+            if (this->frictionOn_ && this->wheelOff_ + i < this->st.size()
+                && i < this->impl->fricState_.size()) {
+                const double W = this->st[this->wheelOff_ + i];
+                Impl::FricState& fst = this->impl->fricState_[i];
+                if (std::fabs(W) < 0.10 * oL && bS > 0.0)
+                    fst.stribeck = 1;
+                const double signO = ((W > 0.0) ? 1.0 : 0.0) - ((W < 0.0) ? 1.0 : 0.0);
+                const double omegaDot = W - fst.omegaBefore;
+                const double signOD = ((omegaDot > 0.0) ? 1.0 : 0.0)
+                                    - ((omegaDot < 0.0) ? 1.0 : 0.0);
+                if (fst.stribeck == 1 && std::fabs(signO - signOD) < 2.0
+                    && bS > 0.0) {
+                    fst.stribeck = 1;
+                } else {
+                    fst.stribeck = 0;
+                }
+                double frictionForce;
+                double frictionForceAtLimitCycle;
+                if (fst.stribeck == 1) {
+                    const double e = std::exp(-(W / bS) * (W / bS) / 2.0);
+                    const double kk = std::sqrt(2.0 * std::exp(1.0));
+                    frictionForce = kk * (fS - fC) * e * W
+                                        / (bS * std::sqrt(2.0))
+                                    + fC * std::tanh(W * 10.0 / bS)
+                                    + cV * W;
+                    const double eL = std::exp(-(oL / bS) * (oL / bS) / 2.0);
+                    frictionForceAtLimitCycle =
+                        kk * (fS - fC) * eL * oL / (bS * std::sqrt(2.0))
+                        + fC * std::tanh(oL * 10.0 / bS)
+                        + cV * oL;
+                } else {
+                    frictionForce = signO * fC + cV * W;
+                    frictionForceAtLimitCycle =
+                        fC + cV * oL;
+                }
+                if (std::fabs(W) < oL && oL > 0.0)
+                    frictionForce = frictionForceAtLimitCycle / oL * W;
+                tauF = -frictionForce;
+                fst.omegaBefore = W;
             }
             if (this->jitterOn_ && this->jitterSigma_ > 0.0 && i < this->impl->jitterRng_.size())
                 tauF += jitterDist(this->impl->jitterRng_[i]);

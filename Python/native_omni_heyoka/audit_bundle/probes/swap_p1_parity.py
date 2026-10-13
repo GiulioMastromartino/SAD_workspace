@@ -724,7 +724,6 @@ def main() -> int:
     payload["cells"]["thr_frozen"] = ab("thr", 30.0, duty=0.5,
                                         mode="frozen")
     payload["cells"]["thr_lag10"] = ab("thr", 120.0, duty=0.5, cutoff=10.0)
-    payload["cells"]["rw3_fric"] = ab("rw3_fric", 120.0)
     # CoM-offset B/C boundary (stock convention r_BN = r_CN - R^T*c,
     # measured; DESIGN/test_wp4 pin the opposite sign from self-consistent
     # math only -- flagged for SysModel-path audit).

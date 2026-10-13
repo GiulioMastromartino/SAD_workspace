@@ -18,7 +18,12 @@ Sub-probe IDs:
 
 Execution order per PLAN Rev 1: J FIRST, then F, then V.
 Constraints: stdlib + numpy + Basilisk only; never raise; each friction run
-<= 40 ticks; N_JITTER_TICKS=400 default (raise to 2000 on host).
+<= 40 ticks; N_JITTER_TICKS=400 TRUE horizon (WP25-B3 rev 2: the
+`min(n_ticks, 40)` cap is removed, so jitter determinism is proven at the
+claimed 400, not 40; friction callers still pass <= 40).
+F-ledger scope (WP25-B3 rev 2): F1-F6 `ok:true` means "sim ran", NOT "law
+matched" -- quantitative Stribeck-law evidence is SUPERSEDED to the vec
+`rw3_fric` cell (1e-14 class); the F-section records that pointer.
 """
 
 import sys
@@ -76,8 +81,8 @@ try:
 except Exception:
     HAS_BASILISK = False
 
-# Jitter horizon: default 400 ticks so CI/container stays <5 min. Raise to
-# 2000 on a fast host for the full PLAN Rev 1 jitter window.
+# Jitter horizon: 400 ticks, run at the TRUE horizon (WP25-B3: no cap).
+# Friction stays <= 40 ticks per PLAN Rev 1 (passed explicitly per call).
 N_JITTER_TICKS = 400
 N_FRICTION_TICKS = 40
 DT_DEFAULT = 0.02
@@ -226,7 +231,9 @@ def _rw_sim(friction_kwargs, u_profile, dt=DT_DEFAULT, n_ticks=N_FRICTION_TICKS,
         res["rw_module_attrs_hint"] = [a for a in dir(rw_mod) if "rict" in a or "RW" in a][:20]
         # drive: constant-or-profile torque rewritten every tick by a Driver
         # SysModel (proven wp1/wp3 pattern); traces from recorders.
-        n = int(min(n_ticks, 40))
+        # WP25-B3: TRUE horizon -- _rw_sim honors n_ticks exactly (friction
+        # callers pass <= 40 per PLAN Rev 1; jitter passes N_JITTER_TICKS).
+        n = int(n_ticks)
         if callable(u_profile):
             u_cmd = [float(u_profile(i)) for i in range(n)]
         elif isinstance(u_profile, (list, tuple)):
@@ -334,6 +341,8 @@ def _section_jitter():
             j1["max_abs_delta_u_cmd"] = "unavailable: %r" % (e,)
             j1["deterministic"] = False
         j1["notes"].append("RWModel=JitterSimple fixed RNGSeed=20260511")
+        j1["notes"].append("TRUE 2x%d-tick horizon (WP25-B3: min(n,40) cap removed)"
+                           % N_JITTER_TICKS)
         j1["ok"] = bool(r1.get("ok") and r2.get("ok"))
     except Exception as e:
         j1["error"] = repr(e)
@@ -350,7 +359,9 @@ def _section_jitter():
                      rw_model="BalancedWheels", rng_seed=7, n_wheels=3)
         j2["zero_u_run"] = {k: r1.get(k) for k in ("ok", "skipped", "error", "n_ticks")}
         j2["three_wheel_run"] = {k: r2.get(k) for k in ("ok", "skipped", "error", "n_ticks")}
-        j2["notes"].append("jitter-free reference; 1-wheel zero-u + 3-wheel const-u")
+        j2["notes"].append("jitter-free reference; 1-wheel zero-u (TRUE %d-tick horizon) + "
+                           "3-wheel const-u at 40 ticks (horizon reference only, no determinism claim)"
+                           % N_JITTER_TICKS)
         j2["ok"] = bool(r1.get("ok"))
     except Exception as e:
         j2["error"] = repr(e)
@@ -391,8 +402,13 @@ def _section_jitter():
         except Exception as e:
             census["synthetic_increment_autocorr_lag1"] = "error: %r" % (e,)
         j3["census"] = census
+        j3["omni_wheelThetas"] = ("zeros -- omni SysModel/vec paths register no theta "
+                                  "states and never write RWSpeedMsg wheelThetas "
+                                  "(WP25-B3 label; JitterFullyCoupled, the only stock model "
+                                  "with thetas, is rejected)")
         j3["ok"] = True
         j3["notes"].append("real per-tick theta logs unavailable headless; synthetic corr documents expected shape")
+        j3["notes"].append("synthetic series ONLY -- omni publishes no thetas (zeros, labeled above)")
     except Exception as e:
         j3["error"] = repr(e)
         j3["traceback"] = traceback.format_exc()[-2000:]
@@ -413,6 +429,12 @@ def _section_jitter():
         j4["theta_hint"] = theta_hint
         j4["verdict"] = "loud-reject"
         j4["notes"].append("JitterFullyCoupled adds theta states / coupling; rejected for WP2 distrib use")
+        j4["notes"].append("WP25-B3 setter-gated limitation: the SysModel path rejects ONLY via "
+                           "OmniSpacecraft::setRWModelJitterCoupled (always fatal) -- it never "
+                           "auto-reads a stock wheel's RWModel string, so a stock-side "
+                           "RWModel=JitterFullyCoupled misconfiguration is NOT auto-detected "
+                           "SysModel-side. Vec-side IS auto-rejected by the swap mirror "
+                           "(omniheyoka/swap.py: mirror_stock_config RWModel gate).")
         j4["ok"] = True
     except Exception as e:
         j4["error"] = repr(e)
@@ -429,7 +451,18 @@ def _section_jitter():
 # ---------------- SECTION F ----------------
 
 def _section_friction():
-    out = {"ticks_cap": N_FRICTION_TICKS, "baseline": dict(HR16_DEFAULTS), "probes": {}}
+    out = {"ticks_cap": N_FRICTION_TICKS, "baseline": dict(HR16_DEFAULTS), "probes": {},
+           # WP25-B3 F-ledger supersede-pointer (M13/F-ledger, M8): F1-F6 ok:true
+           # below means "sim ran", NEVER "law matched" (readback_w0 rows are
+           # null: factory.rwList holds name strings in this Basilisk, so
+           # _read_rw_params mis-addresses -- documented, not silently passed).
+           # Quantitative Stribeck-law evidence is the vec rw3_fric cell
+           # (audit_bundle/results/swap_p1_parity.json, 1e-14 class) plus the
+           # SysModel ported-law contract
+           # (tests/test_wp2_friction_jitter.py::test_cpp_contract_sysmodel_stribeck_port).
+           # Min-pulse stays suppress-only + dead-memory (M8 label, same test file).
+           "law_evidence": "SUPERSEDED to vec rw3_fric (swap_p1_parity.json, 1e-14 class); "
+                            "F1-F6 are sim-ran characterization only"}
     # F0: read back stock defaults
     try:
         r0 = _rw_sim({}, 0.0, n_ticks=3)
@@ -495,6 +528,7 @@ def _section_friction():
         r = _rw_sim({}, 0.0, n_ticks=10)
         f4["run"] = {k: r.get(k) for k in ("ok", "skipped", "error")}
         f4["notes"].append("friction-only state: wheel drag must back-drive hub opposite sign (reaction); sign recorded qualitatively")
+        f4["notes"].append("WP25-B3: QUALITATIVE ONLY -- not law evidence (see section law_evidence pointer to rw3_fric)")
         f4["reaction_sign"] = "wheel-decay -> hub-rate opposite sign (to be confirmed on host with sigma_BN log)"
         f4["ok"] = bool(r.get("ok"))
     except Exception as e:
@@ -677,7 +711,7 @@ def _section_voltage():
 def main():
     t0 = time.time()
     payload = {
-        "plan_rev": 1,
+        "plan_rev": 2,
         "order": "J,F,V",
         "N_JITTER_TICKS": N_JITTER_TICKS,
         "N_FRICTION_TICKS": N_FRICTION_TICKS,
