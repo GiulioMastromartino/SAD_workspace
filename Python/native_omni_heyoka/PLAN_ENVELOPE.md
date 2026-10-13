@@ -94,6 +94,24 @@ source in shadow setups).
    slice but may not widen the silent window. No WP is green while its trap
    slice is silent. **Behavioral raise tests (one per (a) item, pre-propagation)
    are the guard evidence; CI/probe-skip is hygiene only, never proof.**
+8. **JIT budget (WP25-C3 amended 2026-10-13: per-config tiers, flat 2x struck)**:
+    `[GRAPH]` bytes + build ms asserted per gate against per-config tiers
+    (measured 2026-10-12, BSK 2.12.0/macOS arm64, pinned in
+    `tests/test_wp7_dispersion_jit.py:BUILD_TIER_CAP_S`): hub+3RW 0.548 s
+    (= 2x baseline: 0.074 + 0.200 first-JIT), hub+4RW-tilted 3.3 s,
+    hub+12thr 3.3 s (same tier by graph size), hub+3RW+env 5.0 s (largest
+    graph, loosest honest tier). Rationale: JIT cost is nonlinear in graph
+    size (hub+3RW 9.4 ms vs hub+4RW-tilted 1635.8 ms measured), so a FLAT
+    2x-baseline cap cannot hold larger configs — the gate catches pathological
+    growth (graph terms instead of par-inputs, 10x+), not absolute speed.
+    Effects stay par-inputs, never graph terms. TECH-DEBT (explicit, not a
+    silent pass): there is no module RHS-bytes accessor, so the probe-side
+    `graph_bytes` check skips when the value is `None` — recorded here,
+    owned as follow-up (cf. `OmniSystem` accessor); the skip is never cited
+    as a budget pass. HYGIENE ONLY: the `wp0_guards.py` probe purity scan is
+    a non-gate mirror (naive token regex, `GRAPH_FUNCS` wider than the
+    symbolic bodies) — `scripts/ci_envelope_checks.sh` (scoped awk over the
+    four symbolic bodies) is the authoritative gate.
 9. **MC dispersion gate (new)**: parametric-`Js` + dispersed-geometry ensemble
    vs stock (Update-5 structural-`Js` regression class).
 
@@ -445,7 +463,7 @@ New input blocks appear in `par_names()` and are visible to the layout tests.
 | New per-effect env benches | each ≤ **pre-registered** tolerance vs stock module (N-body, J2, drag-LEO, SRP-cannonball, SRP-faceted+penumbra ladder, magnetic-direct+mag cross-check, ERP field-only) |
 | Guards | every Risks-trap setting provably `bskError`s when unmodeled |
 | JIT + MC | `[GRAPH]` bytes/build-ms ≤ 2× baseline; dispersed-`Js`/geometry MC ensemble vs stock |
-| Bundle ledger (locked 2026-10-12) | `audit_bundle/results/bundle_summary.json`: **7/7 probes, 0 fail files**, BSK 2.12.0 / heyoka 7.12.1 / macOS arm64; wp1 edge re-run pending (tuple-accessor fix landed); wp6 T3 burn isolated (`WP6_RUN_FUEL_SIM=1`), viz sim isolated (`WP6_RUN_VIZ_SIM=1`) |
+| Bundle ledger (recounted WP25-C3 2026-10-13) | `audit_bundle/results/bundle_summary.json`: **11/11 probes, 0 fail files** (`collect.py` `wp*.json` glob: wp0_guards, wp1_sat, wp1_threshold, wp2_friction_jitter_voltage, wp3_timing, wp45_combo, wp4_offset, wp5_env, wp6_fuel_bisect, wp6_telem_viz_fuel, wp7_tilt_debug — verified against the files on disk), BSK 2.12.0 / heyoka 7.12.1 / macOS arm64; `swap_p1_parity.json` + `swap_multi.json` are NOT bundle members (non-`wp*` names) — gated separately by `tests/test_swap_p1.py` / `tests/test_swap_multi.py`. (Was "7/7" — stale since the bundle grew past 7.) wp1 edge re-run pending (tuple-accessor fix landed); wp6 T3 burn isolated (`WP6_RUN_FUEL_SIM=1`), viz sim isolated (`WP6_RUN_VIZ_SIM=1`) |
 
 ## Implementation order (locked from bundle evidence)
 

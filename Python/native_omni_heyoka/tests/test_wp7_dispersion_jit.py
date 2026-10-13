@@ -1,5 +1,11 @@
 """Track B — MC-dispersion + JIT-budget gates (PLAN_ENVELOPE.md Ground rules 8-9).
 
+SCOPE (WP25-C3): despite the filename, this file covers parametric-``Js``
+dispersion + JIT budget ONLY. Friction/Stribeck gates live in
+``test_wp2_friction_jitter.py`` (+ the vec-arm ``rw3_fric`` ledger cell);
+jitter distributional gates live there too. Do not read "dispersion_jit" as a
+friction/jitter parity claim.
+
 Ground rule 9 (MC dispersion gate): parametric-``Js`` + dispersed-geometry
 ensemble vs stock (Update-5 structural-``Js`` regression class).
 Ground rule 8 (JIT budget): ``[GRAPH]`` bytes + build ms asserted per gate;
@@ -32,7 +38,8 @@ Validated envelope for the MC gate (stated explicitly):
     whole run. Comparisons use explicit rtol/atol (see ``_assert_parity``).
 
 Env baseline (audit_bundle/results/bundle_summary.json, present):
-  BSK 2.12.0 / heyoka 7.12.1 / macOS arm64, 7/7 probes ok, 0 fail files.
+  BSK 2.12.0 / heyoka 7.12.1 / macOS arm64, 11/11 probes ok, 0 fail files.
+  (`collect.py` `wp*.json` glob; swap ledgers gated separately.)
 
 Layout growth (Update 6 + headers — pure math, runs anywhere):
   * RW: n_inputs 2 (u + tauF, WP2 second slot), n_pars 1 (Js), n_states 1.
@@ -181,7 +188,14 @@ def test_layout_growth_math():
 
 
 def test_bundle_env_baseline():
-    """Bundle ledger present: 7/7 probes ok, env baseline pinned (no sim)."""
+    """Bundle ledger present: 11/11 probes ok, env baseline pinned (no sim).
+
+    11 = the `collect.py` `wp*.json` glob on disk (recounted WP25-C3
+    2026-10-13; was 7/7 when the bundle was smaller). `swap_p1_parity.json`
+    and `swap_multi.json` are NOT bundle members — gated separately by
+    `tests/test_swap_p1.py` / `tests/test_swap_multi.py` (the latter skips
+    without its host ledger: `swap_multi.json` absent in-tree).
+    """
     import json
 
     if not BUNDLE_SUMMARY.exists():
@@ -192,7 +206,7 @@ def test_bundle_env_baseline():
     assert env["heyoka"] == "7.12.1"
     assert env["os_tag"] == "macOS"
     payload = data["payload"]
-    assert payload["n_probes"] == 11  # 7 + wp45_combo + wp6_fuel_bisect + wp1_threshold + wp6_telem_viz_fuel + wp7_tilt_debug
+    assert payload["n_probes"] == 11  # wp0_guards, wp1_sat, wp1_threshold, wp2_friction_jitter_voltage, wp3_timing, wp45_combo, wp4_offset, wp5_env, wp6_fuel_bisect, wp6_telem_viz_fuel, wp7_tilt_debug (recounted WP25-C3)
     assert payload["n_ok"] == 11
     assert payload["n_fail_files"] == 0
 

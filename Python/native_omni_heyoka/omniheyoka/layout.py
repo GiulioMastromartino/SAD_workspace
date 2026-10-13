@@ -4,22 +4,28 @@ Two rules that used to be hard-coded in this package and no longer are:
 
 **A1 -- state layout is derived.**  States are always, in order,
 ``r(3), v(3), sigma(3), omega(3)`` for the hub, followed by each contributor's
-own states in registration order (a reaction wheel contributes ``W_i(3)`` per
-wheel).  So 3 wheels -> 15 states named ``rx,ry,rz,vx,vy,vz,s1,s2,s3,omx,omy,omz,
+own states in registration order (a reaction wheel contributes ``W_i(1)`` per
+wheel — one speed state each).  So 3 wheels -> 15 states named ``rx,ry,rz,vx,vy,vz,s1,s2,s3,omx,omy,omz,
 W1,W2,W3`` (identical to ``heyoka_rw.STATE_NAMES`` and to ``native_rw``), one
-wheel -> 14, four wheels -> 18, hub only -> 12.  ``system.state_names()`` is the
-single source of truth.
+wheel -> 13, four wheels -> 16, hub only -> 12.  ``system.state_names()`` is the
+single source of truth.  (WP25-C3: was ``W_i(3)``/14/18 — corrected to the live
+math pinned by ``tests/test_wp7_dispersion_jit.py:expected_layout``.)
 
 **A2 -- parameter slots are assigned dynamically.**  The input-port block comes
 first (one contiguous block per contributor declaring an input port, in
 registration order; a reaction wheel declares the motor-torque input), then each
-contributor's own parameters in registration order.  For the hub + 3RW preset
-this reproduces ``native_rw`` / ``heyoka_rw.pack_rw_pars()`` exactly::
+contributor's own parameters in registration order.  The ORIGINAL
+``native_rw`` / ``heyoka_rw.pack_rw_pars()`` fixed layout is kept below for
+archaeology only (it predates the WP2 ``tauF`` second input and the Update-4
+``invI6`` removal)::
 
     u1,u2,u3, mass, Ixx,Iyy,Izz,Ixy,Ixz,Iyz,
     invIxx,invIyy,invIzz,invIxy,invIxz,invIyz, Js1,Js2,Js3        (19)
 
-Hub-only gives ``mass, I6, invI6`` (13) with no leading input block.  Because
+LIVE (vec arm, ``audit_bundle/results/swap_p1_parity.json``): hub+3RW =
+16 = 6 (u+tauF) + 7 (mass+I6) + 3 (Js) (``rw3_open_pos`` cell:
+``nPars=16, nStates=15``); hub-only = 7 (``hub_60s`` cell); hub+12thr =
+20 default / 23 full-mask (``n_thr_c`` popcount).  Because
 the layout depends on *registration*, downstream code must never hard-code an
 index: use :func:`par_index` / :func:`par_slice` / :func:`par_layout` instead.
 """

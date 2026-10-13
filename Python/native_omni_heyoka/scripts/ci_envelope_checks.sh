@@ -1,21 +1,39 @@
 #!/usr/bin/env bash
-# scripts/ci_envelope_checks.sh -- WP0/WP7 envelope CI grep gates.
+# scripts/ci_envelope_checks.sh -- WP0/WP7 envelope CI grep gates (WP25-C3 extended).
 #
-# Three checks (PLAN_ENVELOPE.md Ground rules 1/2/7, Rev 1):
+# Five checks (PLAN_ENVELOPE.md Ground rules 1/2/7/8, Rev 1 + WP25-C3):
 #   (a) graph purity (A3): no min(/max(/std::min/std::max/std::abs/abs(/
 #       tanh(/sign inside the symbolic graph paths of
-#       include/omni/contributors.hpp and include/omni/system.hpp, i.e.
+#       include/omni/contributors.hpp, include/omni/system.hpp,
+#       include/omni/environment.hpp, include/omni/force_torque.hpp,
+#       include/omni/backsub_t.hpp and include/omni/linear3.hpp, i.e.
 #       inside updateContributions / computeForceTorque / state_derivatives /
 #       field bodies. Allowed: `if constexpr (...is_expression_v<S>)`
 #       idle-skips, and the step-time double-side converters fillInputs /
-#       quantize / onTime / thruster_on_times (never symbolic).
+#       quantize / onTime / thruster_on_times (never symbolic). The env wrench
+#       helpers (dragWrench/srpFacet) are double-only free functions
+#       (module-side, never symbolic) -- outside the tracked bodies by
+#       construction, same as the converters.
+#       AUTHORITATIVE GATE: the wp0_guards.py probe purity scan is a non-gate
+#       mirror (naive token regex over wider GRAPH_FUNCS, verdict vacuous on
+#       `if (` noise) -- this scoped awk is what binds.
 #   (b) layout hygiene (A2): no hard-coded parameter counts
 #       (`nPars() == 19`-style, `RW_N_PARS = 19`, `len(pars) - 16`) in
 #       omniheyoka/*.py, tests/, scratch*. Full-line `#` comments are exempt
 #       (historical notes); code must use par_names()/layout helpers.
+#       Bare-`19` width args (`parse_system(..., names, 19)`) are check (e).
 #   (c) layout hygiene (A1/A2): no hard-coded numeric state subscripts
 #       (`st[12 + i]`-style) in src/ -- use state_offset-based members or
 #       layout helpers. Full-line `//` comments are exempt.
+#   (d) layout hygiene (A1): no UNJUSTIFIED numeric `.state[N]` subscripts in
+#       omniheyoka/ctypes_driver.py (legacy RW-only ABI). Lines carrying a
+#       trailing `LAYOUT-OK:` justification (hub block fixed 12 by A1, revive
+#       via layout helpers) are exempt -- the driver itself is untouched.
+#   (e) layout hygiene (A2): no bare-`19` par-width args
+#       (`names, 19)`-shape, the historical reference-layout width) in
+#       omniheyoka/, tests/, scratch*/ or the BUILD_STATUS.md Gate-G repro.
+#       Lines carrying `CI-EXEMPT(bare-19)` (reference-layout repros pinned to
+#       heyoka_rw.pack_rw_pars, never live counts) are exempt.
 #
 # Prints PASS/FAIL per check; exits 0 iff all pass, 1 otherwise.
 # Pure grep/awk -- runs on Linux CI and the macOS host alike (no build).
@@ -84,7 +102,9 @@ END { exit (fails > 0 ? 1 : 0); }
 check_graph_purity() {
   local f out rc bad_all
   bad_all=""
-  for f in include/omni/contributors.hpp include/omni/system.hpp; do
+  for f in include/omni/contributors.hpp include/omni/system.hpp \
+           include/omni/environment.hpp include/omni/force_torque.hpp \
+           include/omni/backsub_t.hpp include/omni/linear3.hpp; do
     if [ ! -f "$f" ]; then
       fail "graph-purity: missing file $f"
       return
@@ -134,9 +154,38 @@ check_state_indices() {
   fi
 }
 
+# ------------------------------------------------------------------ (d) -----
+check_ctypes_state_indices() {
+  local hits
+  hits="$(grep -rnE -e 'state\[[[:space:]]*[0-9]' omniheyoka/ctypes_driver.py 2>/dev/null \
+    | grep -v 'LAYOUT-OK:' || true)"
+  if [ -z "$hits" ]; then
+    pass "layout-ctypes: no unjustified .state[N] subscripts in ctypes_driver.py"
+  else
+    printf '%s\n' "$hits"
+    fail "layout-ctypes: numeric .state[N] in ctypes_driver.py without LAYOUT-OK: justification"
+  fi
+}
+
+# ------------------------------------------------------------------ (e) -----
+check_bare19_widths() {
+  local hits
+  hits="$(grep -rnE -e 'names,[[:space:]]*19[[:space:]]*\)' \
+    omniheyoka tests scratch scratch_ws1 scratch_ws2 BUILD_STATUS.md 2>/dev/null \
+    | grep -v -e __pycache__ -e 'CI-EXEMPT(bare-19)' || true)"
+  if [ -z "$hits" ]; then
+    pass "layout-bare19: no unjustified bare-19 par-width args"
+  else
+    printf '%s\n' "$hits"
+    fail "layout-bare19: bare '19' par width (use par_names()-derived counts or tag CI-EXEMPT(bare-19) with justification)"
+  fi
+}
+
 check_graph_purity
 check_hardcoded_counts
 check_state_indices
+check_ctypes_state_indices
+check_bare19_widths
 
 echo "ci_envelope_checks: PASS=${PASS} FAIL=${FAIL}"
 if [ "$FAIL" -ne 0 ]; then echo "RESULT: FAIL"; exit 1; fi

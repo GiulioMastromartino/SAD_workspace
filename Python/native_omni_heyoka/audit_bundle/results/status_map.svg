@@ -1,0 +1,1060 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 782" width="700" height="782" style="background:#0d1117; font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;">
+  <text x="16" y="24" fill="#e6edf3" font-size="14" font-weight="600">native_omni_heyoka — High-Granularity Parity Matrix (264 Units)</text>
+  <text x="684" y="24" fill="#8b949e" font-size="11" text-anchor="end">Progress: 87.8% (208/264 Green)</text>
+  <g id="u_0"><title>test_multi_ledger_green (unstarted: 10%)&#10;Automated test case in test_swap_multi.py (line 43).</title>
+    <rect x="16" y="40" width="38" height="38" rx="4" fill="#8b949e" fill-opacity="0.05" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="2,2"/>
+    <text x="35.0" y="62.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_1"><title>test_multi_shared_leg_parity (unstarted: 10%)&#10;Automated test case in test_swap_multi.py (line 58).</title>
+    <rect x="58" y="40" width="38" height="38" rx="4" fill="#8b949e" fill-opacity="0.05" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="2,2"/>
+    <text x="77.0" y="62.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_2"><title>test_multi_split_leg_parity (unstarted: 10%)&#10;Automated test case in test_swap_multi.py (line 66).</title>
+    <rect x="100" y="40" width="38" height="38" rx="4" fill="#8b949e" fill-opacity="0.05" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="2,2"/>
+    <text x="119.0" y="62.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_3"><title>test_multi_step_audit_no_double_step (unstarted: 10%)&#10;Automated test case in test_swap_multi.py (line 74).</title>
+    <rect x="142" y="40" width="38" height="38" rx="4" fill="#8b949e" fill-opacity="0.05" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="2,2"/>
+    <text x="161.0" y="62.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_4"><title>test_multi_build_and_share_rule (unstarted: 10%)&#10;Automated test case in test_swap_multi.py (line 87).</title>
+    <rect x="184" y="40" width="38" height="38" rx="4" fill="#8b949e" fill-opacity="0.05" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="2,2"/>
+    <text x="203.0" y="62.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_5"><title>test_multi_vacuity_and_mrp (unstarted: 10%)&#10;Automated test case in test_swap_multi.py (line 105).</title>
+    <rect x="226" y="40" width="38" height="38" rx="4" fill="#8b949e" fill-opacity="0.05" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="2,2"/>
+    <text x="245.0" y="62.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_6"><title>test_multi_unmirrored_slot_loud (unstarted: 10%)&#10;Automated test case in test_swap_multi.py (line 121).</title>
+    <rect x="268" y="40" width="38" height="38" rx="4" fill="#8b949e" fill-opacity="0.05" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="2,2"/>
+    <text x="287.0" y="62.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_7"><title>test_p0_callback_absent (verified: 100%)&#10;Automated test case in test_swap_p0.py (line 27).</title>
+    <rect x="310" y="40" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="329.0" y="62.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_8"><title>test_p0_census_layout_and_roundtrip (verified: 100%)&#10;Automated test case in test_swap_p0.py (line 36).</title>
+    <rect x="352" y="40" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="371.0" y="62.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_9"><title>test_p0_swig_surface (verified: 100%)&#10;Automated test case in test_swap_p0.py (line 57).</title>
+    <rect x="394" y="40" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="413.0" y="62.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_10"><title>test_p0_ordering_record (verified: 100%)&#10;Automated test case in test_swap_p0.py (line 68).</title>
+    <rect x="436" y="40" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="455.0" y="62.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_11"><title>test_p1_ledger_green (verified: 100%)&#10;Automated test case in test_swap_p1.py (line 34).</title>
+    <rect x="478" y="40" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="497.0" y="62.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_12"><title>test_p1_hub_rw_parity (verified: 100%)&#10;Automated test case in test_swap_p1.py (line 41).</title>
+    <rect x="520" y="40" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="539.0" y="62.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_13"><title>test_p1_thruster_parity (verified: 100%)&#10;Automated test case in test_swap_p1.py (line 56).</title>
+    <rect x="562" y="40" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="581.0" y="62.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_14"><title>test_p1_env_parity (verified: 100%)&#10;Automated test case in test_swap_p1.py (line 74).</title>
+    <rect x="604" y="40" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="623.0" y="62.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_15"><title>test_p1_switching_ladder_linear (verified: 100%)&#10;Automated test case in test_swap_p1.py (line 92).</title>
+    <rect x="646" y="40" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="665.0" y="62.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_16"><title>test_p1_rejects_all_loud (verified: 100%)&#10;Automated test case in test_swap_p1.py (line 100).</title>
+    <rect x="16" y="82" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="35.0" y="104.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_17"><title>test_p1_fuel_parity (verified: 100%)&#10;Automated test case in test_swap_p1.py (line 113).</title>
+    <rect x="58" y="82" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="77.0" y="104.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_18"><title>test_p1_sysmodel_fuel_publisher_absent (arm_split: 40%)&#10;Automated test case in test_swap_p1.py (line 127).</title>
+    <rect x="100" y="82" width="38" height="38" rx="4" fill="#d29922" fill-opacity="0.39" stroke="#d29922" stroke-width="1.5" />
+    <text x="119.0" y="104.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_19"><title>test_p1_fuel_env_scope (verified: 100%)&#10;Automated test case in test_swap_p1.py (line 139).</title>
+    <rect x="142" y="82" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="161.0" y="104.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_20"><title>test_staircase_edges_match_stock (verified: 100%)&#10;Automated test case in test_thruster_stock.py (line 127).</title>
+    <rect x="184" y="82" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="203.0" y="104.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_21"><title>test_no_valve_lag (arm_split: 55%)&#10;Automated test case in test_thruster_stock.py (line 133).</title>
+    <rect x="226" y="82" width="38" height="38" rx="4" fill="#d29922" fill-opacity="0.48" stroke="#d29922" stroke-width="1.5" />
+    <text x="245.0" y="104.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_22"><title>test_stale_message_goes_idle (verified: 100%)&#10;Automated test case in test_thruster_stock.py (line 137).</title>
+    <rect x="268" y="82" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="287.0" y="104.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_23"><title>test_omni_matches_stock_stale_path (verified: 100%)&#10;Automated test case in test_thruster_stock.py (line 153).</title>
+    <rect x="310" y="82" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="329.0" y="104.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_24"><title>test_geometry_helper_round_trip (verified: 100%)&#10;Automated test case in test_thruster_stock.py (line 207).</title>
+    <rect x="352" y="82" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="371.0" y="104.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_25"><title>test_vec_mrp_switch_leg_total_pm1_with_trace (verified: 100%)&#10;Automated test case in test_vec_mrp_switch.py (line 120).</title>
+    <rect x="394" y="82" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="413.0" y="104.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_26"><title>test_ci_envelope_checks_pass_on_current_tree (verified: 100%)&#10;Automated test case in test_wp0_guards.py (line 78).</title>
+    <rect x="436" y="82" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="455.0" y="104.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_27"><title>test_layout_name_api_present (verified: 100%)&#10;Automated test case in test_wp0_guards.py (line 91).</title>
+    <rect x="478" y="82" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="497.0" y="104.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_28"><title>test_plan_trap_list_documented (verified: 100%)&#10;Automated test case in test_wp0_guards.py (line 106).</title>
+    <rect x="520" y="82" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="539.0" y="104.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_29"><title>test_guard_force_msg_raises_and_disarmed_runs (in_progress: 50%)&#10;Automated test case in test_wp0_guards.py (line 164).</title>
+    <rect x="562" y="82" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="581.0" y="104.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_30"><title>test_guard_umin_raises_and_disarmed_runs (in_progress: 50%)&#10;Automated test case in test_wp0_guards.py (line 182).</title>
+    <rect x="604" y="82" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="623.0" y="104.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_31"><title>test_guard_pmax_raises_and_disarmed_runs (in_progress: 50%)&#10;Automated test case in test_wp0_guards.py (line 194).</title>
+    <rect x="646" y="82" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="665.0" y="104.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_32"><title>test_guard_max_wheel_accel_raises_and_disarmed_runs (in_progress: 50%)&#10;Automated test case in test_wp0_guards.py (line 206).</title>
+    <rect x="16" y="124" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="35.0" y="146.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_33"><title>test_guard_large_torque_threshold_raises_and_disarmed_runs (in_progress: 50%)&#10;Automated test case in test_wp0_guards.py (line 218).</title>
+    <rect x="58" y="124" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="77.0" y="146.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_34"><title>test_guard_jitter_fully_coupled_setter_raises (in_progress: 50%)&#10;Automated test case in test_wp0_guards.py (line 230).</title>
+    <rect x="100" y="124" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="119.0" y="146.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_35"><title>test_guard_mtb_gt_raises_and_identity_runs (in_progress: 50%)&#10;Automated test case in test_wp0_guards.py (line 248).</title>
+    <rect x="142" y="124" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="161.0" y="146.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_36"><title>test_guard_srp_rot_hat_raises_and_zero_runs (in_progress: 50%)&#10;Automated test case in test_wp0_guards.py (line 260).</title>
+    <rect x="184" y="124" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="203.0" y="146.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_37"><title>test_guard_nbodies_gt2_raises_and_two_runs (in_progress: 50%)&#10;Automated test case in test_wp0_guards.py (line 272).</title>
+    <rect x="226" y="124" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="245.0" y="146.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_38"><title>test_guard_prescribed_raises_and_disarmed_runs (in_progress: 50%)&#10;Automated test case in test_wp0_guards.py (line 288).</title>
+    <rect x="268" y="124" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="287.0" y="146.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_39"><title>test_guard_flex_raises_and_disarmed_runs (in_progress: 50%)&#10;Automated test case in test_wp0_guards.py (line 300).</title>
+    <rect x="310" y="124" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="329.0" y="146.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_40"><title>test_guard_slosh_raises_and_disarmed_runs (in_progress: 50%)&#10;Automated test case in test_wp0_guards.py (line 312).</title>
+    <rect x="352" y="124" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="371.0" y="146.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_41"><title>test_guard_multi_tank_raises_and_single_runs (unstarted: 10%)&#10;Automated test case in test_wp0_guards.py (line 324).</title>
+    <rect x="394" y="124" width="38" height="38" rx="4" fill="#8b949e" fill-opacity="0.05" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="2,2"/>
+    <text x="413.0" y="146.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_42"><title>test_guard_update_state_head_raises_post_init (in_progress: 50%)&#10;Automated test case in test_wp0_guards.py (line 337).</title>
+    <rect x="436" y="124" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="455.0" y="146.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_43"><title>test_guard_default_config_runs (verified: 100%)&#10;Automated test case in test_wp0_guards.py (line 352).</title>
+    <rect x="478" y="124" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="497.0" y="146.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_44"><title>test_printer_par_index_format_pinned (verified: 100%)&#10;Automated test case in test_wp0_guards.py (line 365).</title>
+    <rect x="520" y="124" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="539.0" y="146.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_45"><title>test_wp1_sat_exists (verified: 100%)&#10;Automated test case in test_wp1_bundle.py (line 12).</title>
+    <rect x="562" y="124" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="581.0" y="146.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_46"><title>test_common_save_result_api_present (verified: 100%)&#10;Automated test case in test_wp1_bundle.py (line 19).</title>
+    <rect x="604" y="124" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="623.0" y="146.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_47"><title>test_plan_omega_max_by_message_struck (verified: 100%)&#10;Automated test case in test_wp1_bundle.py (line 30).</title>
+    <rect x="646" y="124" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="665.0" y="146.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_48"><title>test_add_rated_wheel_js_derivation_no_sim (verified: 100%)&#10;Automated test case in test_wp1_saturation.py (line 130).</title>
+    <rect x="16" y="166" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="35.0" y="188.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_49"><title>test_approach_below_overshoot_and_plateau (verified: 100%)&#10;Automated test case in test_wp1_saturation.py (line 156).</title>
+    <rect x="58" y="166" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="77.0" y="188.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_50"><title>test_negative_spin_mirror (verified: 100%)&#10;Automated test case in test_wp1_saturation.py (line 172).</title>
+    <rect x="100" y="166" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="119.0" y="188.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_51"><title>test_from_above_hold (verified: 100%)&#10;Automated test case in test_wp1_saturation.py (line 182).</title>
+    <rect x="142" y="166" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="161.0" y="188.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_52"><title>test_reverse_descent (verified: 100%)&#10;Automated test case in test_wp1_saturation.py (line 191).</title>
+    <rect x="184" y="166" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="203.0" y="188.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_53"><title>test_setter_only_cap_via_setWheelOmegaMax (verified: 100%)&#10;Automated test case in test_wp1_saturation.py (line 199).</title>
+    <rect x="226" y="166" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="245.0" y="188.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_54"><title>test_custom_default_off (verified: 100%)&#10;Automated test case in test_wp1_saturation.py (line 210).</title>
+    <rect x="268" y="166" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="287.0" y="188.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_55"><title>test_b2_rwarrayconfig_linked_raises_and_unlinked_runs (in_progress: 50%)&#10;Automated test case in test_wp25_b2.py (line 81).</title>
+    <rect x="310" y="166" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="329.0" y="188.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_56"><title>test_b2_friction_hub_sign_minus_one_raises (in_progress: 50%)&#10;Automated test case in test_wp25_b2.py (line 102).</title>
+    <rect x="352" y="166" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="371.0" y="188.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_57"><title>test_b24_vec_diffusion_enabled_raises (verified: 100%)&#10;Automated test case in test_wp25_b2.py (line 152).</title>
+    <rect x="394" y="166" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="413.0" y="188.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_58"><title>test_b24_vec_freeze_stop_restart_clean (verified: 100%)&#10;Automated test case in test_wp25_b2.py (line 181).</title>
+    <rect x="436" y="166" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="455.0" y="188.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_59"><title>test_tauf_slot_names_decided (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 125).</title>
+    <rect x="478" y="166" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="497.0" y="188.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_60"><title>test_iter1_zero_at_rest (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 135).</title>
+    <rect x="520" y="166" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="539.0" y="188.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_61"><title>test_iter1_odd_symmetry (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 139).</title>
+    <rect x="562" y="166" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="581.0" y="188.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_62"><title>test_iter1_opposes_motion (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 146).</title>
+    <rect x="604" y="166" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="623.0" y="188.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_63"><title>test_iter1_coulomb_plateau (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 153).</title>
+    <rect x="646" y="166" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="665.0" y="188.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_64"><title>test_iter1_limit_cycle_zone_slope (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 160).</title>
+    <rect x="16" y="208" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="35.0" y="230.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_65"><title>test_iter1_k_from_omega_limit_cycle (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 168).</title>
+    <rect x="58" y="208" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="77.0" y="230.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_66"><title>test_iter1_iteration2_hooks_accepted_but_inert (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 177).</title>
+    <rect x="100" y="208" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="119.0" y="230.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_67"><title>test_off_state_is_identically_zero (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 184).</title>
+    <rect x="142" y="208" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="161.0" y="230.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_68"><title>test_port_zero_at_rest (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 255).</title>
+    <rect x="184" y="208" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="203.0" y="230.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_69"><title>test_port_opposes_motion_outside_band (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 259).</title>
+    <rect x="226" y="208" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="245.0" y="230.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_70"><title>test_port_beta_nonpositive_disables_band (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 266).</title>
+    <rect x="268" y="208" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="287.0" y="230.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_71"><title>test_port_limit_cycle_rescale_linear (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 276).</title>
+    <rect x="310" y="208" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="329.0" y="230.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_72"><title>test_port_latch_drops_on_deceleration (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 287).</title>
+    <rect x="352" y="208" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="371.0" y="230.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_73"><title>test_ledger_j1_deterministic (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 308).</title>
+    <rect x="394" y="208" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="413.0" y="230.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_74"><title>test_ledger_j1_horizon_matches_plan_rev (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 316).</title>
+    <rect x="436" y="208" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="455.0" y="230.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_75"><title>test_ledger_friction_probes_ok (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 332).</title>
+    <rect x="478" y="208" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="497.0" y="230.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_76"><title>test_ledger_friction_law_evidence_superseded (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 339).</title>
+    <rect x="520" y="208" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="539.0" y="230.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_77"><title>test_ledger_friction_baseline_param_set (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 353).</title>
+    <rect x="562" y="208" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="581.0" y="230.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_78"><title>test_ledger_f4_hub_reaction_sign (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 365).</title>
+    <rect x="604" y="208" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="623.0" y="230.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_79"><title>test_ledger_voltage_probes_ok (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 377).</title>
+    <rect x="646" y="208" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="665.0" y="230.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_80"><title>test_ledger_voltage_reuse_address (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 383).</title>
+    <rect x="16" y="250" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="35.0" y="272.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_81"><title>test_jitter_streams_split_per_wheel (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 394).</title>
+    <rect x="58" y="250" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="77.0" y="272.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_82"><title>test_jitter_seed_reproducible_distributionally (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 400).</title>
+    <rect x="100" y="250" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="119.0" y="272.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_83"><title>test_jitter_envelope_mean_var (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 415).</title>
+    <rect x="142" y="250" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="161.0" y="272.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_84"><title>test_jitter_zero_sigma_is_silent (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 425).</title>
+    <rect x="184" y="250" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="203.0" y="272.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_85"><title>test_cpp_contract_rw_second_slot (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 442).</title>
+    <rect x="226" y="250" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="245.0" y="272.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_86"><title>test_cpp_contract_no_tanh_in_graph (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 448).</title>
+    <rect x="268" y="250" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="287.0" y="272.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_87"><title>test_cpp_contract_friction_offsets_helper (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 465).</title>
+    <rect x="310" y="250" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="329.0" y="272.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_88"><title>test_cpp_contract_spacecraft_flags (arm_split: 55%)&#10;Automated test case in test_wp2_friction_jitter.py (line 470).</title>
+    <rect x="352" y="250" width="38" height="38" rx="4" fill="#d29922" fill-opacity="0.48" stroke="#d29922" stroke-width="1.5" />
+    <text x="371.0" y="272.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_89"><title>test_cpp_contract_module_friction_block (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 479).</title>
+    <rect x="394" y="250" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="413.0" y="272.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_90"><title>test_cpp_contract_sysmodel_stribeck_port (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 484).</title>
+    <rect x="436" y="250" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="455.0" y="272.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_91"><title>test_cpp_contract_no_thetas_written (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 494).</title>
+    <rect x="478" y="250" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="497.0" y="272.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_92"><title>test_cpp_contract_fully_coupled_setter_gated_only (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 503).</title>
+    <rect x="520" y="250" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="539.0" y="272.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_93"><title>test_cpp_contract_min_pulse_dead_memory (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 522).</title>
+    <rect x="562" y="250" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="581.0" y="272.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_94"><title>test_cpp_contract_fully_coupled_rejects (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 540).</title>
+    <rect x="604" y="250" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="623.0" y="272.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_95"><title>test_cpp_contract_no_voltage_port (verified: 100%)&#10;Automated test case in test_wp2_friction_jitter.py (line 550).</title>
+    <rect x="646" y="250" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="665.0" y="272.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_96"><title>test_staircase_mirror_edges (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 228).</title>
+    <rect x="16" y="292" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="35.0" y="314.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_97"><title>test_min_pulse_gate_mirror (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 242).</title>
+    <rect x="58" y="292" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="77.0" y="314.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_98"><title>test_ramp_factor_mirror (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 251).</title>
+    <rect x="100" y="292" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="119.0" y="314.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_99"><title>test_lag_step_mirror (arm_split: 55%)&#10;Automated test case in test_wp3_timing_models.py (line 266).</title>
+    <rect x="142" y="292" width="38" height="38" rx="4" fill="#d29922" fill-opacity="0.48" stroke="#d29922" stroke-width="1.5" />
+    <text x="161.0" y="314.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_100"><title>test_blowdown_poly_mirror (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 279).</title>
+    <rect x="184" y="292" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="203.0" y="314.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_101"><title>test_swirl_axis_mirror (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 287).</title>
+    <rect x="226" y="292" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="245.0" y="314.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_102"><title>test_arc_cut_mirror_structure (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 297).</title>
+    <rect x="268" y="292" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="287.0" y="314.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_103"><title>test_offramp_tail_truncation_predicate (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 309).</title>
+    <rect x="310" y="292" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="329.0" y="314.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_104"><title>test_m1_ramp_shape_pure_prediction (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 323).</title>
+    <rect x="352" y="292" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="371.0" y="314.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_105"><title>test_ledger_mq_staircase_green (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 336).</title>
+    <rect x="394" y="292" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="413.0" y="314.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_106"><title>test_ledger_m3_suppress_fire_classes (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 348).</title>
+    <rect x="436" y="292" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="455.0" y="314.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_107"><title>test_ledger_m2_ladder_identical_at_dt01 (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 364).</title>
+    <rect x="478" y="292" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="497.0" y="314.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_108"><title>test_ledger_m1_empty_ramps (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 375).</title>
+    <rect x="520" y="292" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="539.0" y="314.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_109"><title>test_ledger_m6_blowdown_swirl_force (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 382).</title>
+    <rect x="562" y="292" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="581.0" y="314.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_110"><title>test_ledger_smsg_thr_9_and_config_4 (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 392).</title>
+    <rect x="604" y="292" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="623.0" y="314.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_111"><title>test_ledger_t1_dump_values (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 400).</title>
+    <rect x="646" y="292" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="665.0" y="314.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_112"><title>test_cpp_contract_header_flags_setters_telemetry (arm_split: 55%)&#10;Automated test case in test_wp3_timing_models.py (line 431).</title>
+    <rect x="16" y="334" width="38" height="38" rx="4" fill="#d29922" fill-opacity="0.48" stroke="#d29922" stroke-width="1.5" />
+    <text x="35.0" y="356.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_113"><title>test_cpp_contract_module_timing_states (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 447).</title>
+    <rect x="58" y="334" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="77.0" y="356.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_114"><title>test_cpp_contract_contributor_hooks_only (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 456).</title>
+    <rect x="100" y="334" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="119.0" y="356.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_115"><title>test_cpp_contract_no_branch_in_graph (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 470).</title>
+    <rect x="142" y="334" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="161.0" y="356.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_116"><title>test_cpp_contract_swig_payloads (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 480).</title>
+    <rect x="184" y="334" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="203.0" y="356.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_117"><title>test_cpp_contract_m14_fuel_guards (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 486).</title>
+    <rect x="226" y="334" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="245.0" y="356.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_118"><title>test_telemetry_nine_fields_tick0_and_steady (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 656).</title>
+    <rect x="268" y="334" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="287.0" y="356.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_119"><title>test_force_msg_guard_raises (in_progress: 50%)&#10;Automated test case in test_wp3_timing_models.py (line 686).</title>
+    <rect x="310" y="334" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="329.0" y="356.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_120"><title>test_timing_setters_validation_raises (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 692).</title>
+    <rect x="352" y="334" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="371.0" y="356.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_121"><title>test_timing_models_enabled_run_stays_sane (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 727).</title>
+    <rect x="394" y="334" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="413.0" y="356.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_122"><title>test_m3_min_pulse_rows_on_sim (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 742).</title>
+    <rect x="436" y="334" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="455.0" y="356.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_123"><title>test_m2_ladder_default_path_matches_ledger (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 768).</title>
+    <rect x="478" y="334" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="497.0" y="356.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_124"><title>test_t2_chatter_row_dt001 (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 814).</title>
+    <rect x="520" y="334" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="539.0" y="356.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_125"><title>test_m4_phase_row_delayed_matches_normal (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 823).</title>
+    <rect x="562" y="334" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="581.0" y="356.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_126"><title>test_m5_over_negative_rows (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 841).</title>
+    <rect x="604" y="334" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="623.0" y="356.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_127"><title>test_swirl_axis_telemetry_and_dynamics (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 851).</title>
+    <rect x="646" y="334" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="665.0" y="356.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_128"><title>test_blowdown_no_tank_factors_one (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 876).</title>
+    <rect x="16" y="376" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="35.0" y="398.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_129"><title>test_m4_phase_stock_vs_omni_with_half_step_control (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 972).</title>
+    <rect x="58" y="376" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="77.0" y="398.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_130"><title>test_m5_true_20hz_train_dt005 (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 1008).</title>
+    <rect x="100" y="376" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="119.0" y="398.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_131"><title>test_m0_two_writes_same_stamp_arbitration (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 1029).</title>
+    <rect x="142" y="376" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="161.0" y="398.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_132"><title>test_telemetry_timing_vs_dynamics_truth (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 1052).</title>
+    <rect x="184" y="376" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="203.0" y="398.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_133"><title>test_m1_ramp_shape_trace_gate (verified: 100%)&#10;Automated test case in test_wp3_timing_models.py (line 1077).</title>
+    <rect x="226" y="376" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="245.0" y="398.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_134"><title>test_ledgers_present_for_combo (verified: 100%)&#10;Automated test case in test_wp45_env_offset.py (line 107).</title>
+    <rect x="268" y="376" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="287.0" y="398.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_135"><title>test_shifted_minus_unshifted_is_minus_cxF (verified: 100%)&#10;Automated test case in test_wp45_env_offset.py (line 119).</title>
+    <rect x="310" y="376" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="329.0" y="398.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_136"><title>test_magnetic_gravity_have_no_arm (verified: 100%)&#10;Automated test case in test_wp45_env_offset.py (line 133).</title>
+    <rect x="352" y="376" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="371.0" y="398.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_137"><title>test_zero_offset_shift_identity (verified: 100%)&#10;Automated test case in test_wp45_env_offset.py (line 146).</title>
+    <rect x="394" y="376" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="413.0" y="398.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_138"><title>test_combo_ledger_verdict_shape_if_present (verified: 100%)&#10;Automated test case in test_wp45_env_offset.py (line 155).</title>
+    <rect x="436" y="376" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="455.0" y="398.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_139"><title>test_host_drag_offset_direct_parity (verified: 100%)&#10;Automated test case in test_wp45_env_offset.py (line 360).</title>
+    <rect x="478" y="376" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="497.0" y="398.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_140"><title>test_host_srp_offset_direct_parity (verified: 100%)&#10;Automated test case in test_wp45_env_offset.py (line 523).</title>
+    <rect x="520" y="376" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="539.0" y="398.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_141"><title>test_host_mag_no_arm_smoke (verified: 100%)&#10;Automated test case in test_wp45_env_offset.py (line 566).</title>
+    <rect x="562" y="376" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="581.0" y="398.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_142"><title>test_ledger_present_and_ids (verified: 100%)&#10;Automated test case in test_wp4_offset.py (line 86).</title>
+    <rect x="604" y="376" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="623.0" y="398.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_143"><title>test_offset_norm_preserved_under_rotation (verified: 100%)&#10;Automated test case in test_wp4_offset.py (line 108).</title>
+    <rect x="646" y="376" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="665.0" y="398.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_144"><title>test_signed_component_gate_static_attitude (verified: 100%)&#10;Automated test case in test_wp4_offset.py (line 122).</title>
+    <rect x="16" y="418" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="35.0" y="440.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_145"><title>test_sysmodel_vs_swap_cross_path_gate (verified: 100%)&#10;Automated test case in test_wp4_offset.py (line 146).</title>
+    <rect x="58" y="418" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="77.0" y="440.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_146"><title>test_sysmodel_source_sign_pin (verified: 100%)&#10;Automated test case in test_wp4_offset.py (line 193).</title>
+    <rect x="100" y="418" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="119.0" y="440.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_147"><title>test_zero_offset_identity_regression (verified: 100%)&#10;Automated test case in test_wp4_offset.py (line 206).</title>
+    <rect x="142" y="418" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="161.0" y="440.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_148"><title>test_B_C_blocks_antisymmetric_pair (verified: 100%)&#10;Automated test case in test_wp4_offset.py (line 221).</title>
+    <rect x="184" y="418" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="203.0" y="440.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_149"><title>test_parallel_axis_exact_for_x_offset (verified: 100%)&#10;Automated test case in test_wp4_offset.py (line 232).</title>
+    <rect x="226" y="418" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="245.0" y="440.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_150"><title>test_gravity_moment_rev0_fix_nonzero (verified: 100%)&#10;Automated test case in test_wp4_offset.py (line 240).</title>
+    <rect x="268" y="418" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="287.0" y="440.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_151"><title>test_dynamics_vs_telemetry_arm_split (verified: 100%)&#10;Automated test case in test_wp4_offset.py (line 251).</title>
+    <rect x="310" y="418" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="329.0" y="440.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_152"><title>test_friction_shaft_torque_no_arm_and_rWB_fenced (verified: 100%)&#10;Automated test case in test_wp4_offset.py (line 266).</title>
+    <rect x="352" y="418" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="371.0" y="440.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_153"><title>test_no_new_par_slots_static (verified: 100%)&#10;Automated test case in test_wp4_offset.py (line 281).</title>
+    <rect x="394" y="418" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="413.0" y="440.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_154"><title>test_graph_purity_static (verified: 100%)&#10;Automated test case in test_wp4_offset.py (line 295).</title>
+    <rect x="436" y="418" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="455.0" y="440.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_155"><title>test_stock_finite_difference_anchor_host (verified: 100%)&#10;Automated test case in test_wp4_offset.py (line 400).</title>
+    <rect x="478" y="418" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="497.0" y="440.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_156"><title>test_omni_offset_bench_openloop_both_arms_host (verified: 100%)&#10;Automated test case in test_wp4_offset.py (line 443).</title>
+    <rect x="520" y="418" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="539.0" y="440.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_157"><title>test_zero_offset_regression_host (verified: 100%)&#10;Automated test case in test_wp4_offset.py (line 610).</title>
+    <rect x="562" y="418" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="581.0" y="440.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_158"><title>test_ledger_grav_central_sign (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 135).</title>
+    <rect x="604" y="418" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="623.0" y="440.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_159"><title>test_ledger_sun_tide (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 142).</title>
+    <rect x="646" y="418" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="665.0" y="440.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_160"><title>test_ledger_staleness_bound (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 147).</title>
+    <rect x="16" y="460" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="35.0" y="482.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_161"><title>test_ledger_j2_cbar (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 155).</title>
+    <rect x="58" y="460" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="77.0" y="482.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_162"><title>test_ledger_j2_rel (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 163).</title>
+    <rect x="100" y="460" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="119.0" y="482.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_163"><title>test_ledger_drag_numbers (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 169).</title>
+    <rect x="142" y="460" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="161.0" y="482.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_164"><title>test_ledger_srp_cannonball (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 177).</title>
+    <rect x="184" y="460" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="203.0" y="482.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_165"><title>test_ledger_srp_faceted (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 183).</title>
+    <rect x="226" y="460" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="245.0" y="482.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_166"><title>test_ledger_mag_chain (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 198).</title>
+    <rect x="268" y="460" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="287.0" y="482.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_167"><title>test_ledger_absent_link_rows (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 205).</title>
+    <rect x="310" y="460" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="329.0" y="482.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_168"><title>test_ledger_modules_present (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 224).</title>
+    <rect x="352" y="460" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="371.0" y="482.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_169"><title>test_ledger_erp_field_only (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 234).</title>
+    <rect x="394" y="460" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="413.0" y="482.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_170"><title>test_ref_nbody_sign_and_tide (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 243).</title>
+    <rect x="436" y="460" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="455.0" y="482.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_171"><title>test_ref_j2_law (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 258).</title>
+    <rect x="478" y="460" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="497.0" y="482.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_172"><title>test_ref_drag_law_leo (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 269).</title>
+    <rect x="520" y="460" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="539.0" y="482.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_173"><title>test_ref_srp_two_term_and_scaling (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 290).</title>
+    <rect x="562" y="460" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="581.0" y="482.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_174"><title>test_ref_mag_frame_chain (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 318).</title>
+    <rect x="604" y="460" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="623.0" y="482.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_175"><title>test_env_header_contract (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 337).</title>
+    <rect x="646" y="460" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="665.0" y="482.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_176"><title>test_env_slot_layout_math (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 356).</title>
+    <rect x="16" y="502" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="35.0" y="524.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_177"><title>test_module_path_convention (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 368).</title>
+    <rect x="58" y="502" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="77.0" y="524.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_178"><title>test_host_env_layout_par_growth (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 407).</title>
+    <rect x="100" y="502" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="119.0" y="524.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_179"><title>test_host_jit_budget (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 429).</title>
+    <rect x="142" y="502" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="161.0" y="524.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_180"><title>test_host_nbody_matched_dt (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 469).</title>
+    <rect x="184" y="502" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="203.0" y="524.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_181"><title>test_host_drag_leo_fixture (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 476).</title>
+    <rect x="226" y="502" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="245.0" y="524.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_182"><title>test_host_srp_cannonball_and_faceted (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 487).</title>
+    <rect x="268" y="502" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="287.0" y="524.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_183"><title>test_host_mag_mtb_direct_and_crosscheck (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 498).</title>
+    <rect x="310" y="502" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="329.0" y="524.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_184"><title>test_host_erp_field_only (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 509).</title>
+    <rect x="352" y="502" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="371.0" y="524.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_185"><title>test_host_absent_link_truth_table (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 516).</title>
+    <rect x="394" y="502" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="413.0" y="524.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_186"><title>test_c1_reject_or_model_static_pins (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 529).</title>
+    <rect x="436" y="502" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="455.0" y="524.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_187"><title>test_penumbra_eclipse_dt_constraint_recorded (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 555).</title>
+    <rect x="478" y="502" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="497.0" y="524.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_188"><title>test_host_density_correction_setter_validation (verified: 100%)&#10;Automated test case in test_wp5_env.py (line 571).</title>
+    <rect x="520" y="502" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="539.0" y="524.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_189"><title>test_thr_field_set_matches_stock_record (verified: 100%)&#10;Automated test case in test_wp6_telemetry.py (line 98).</title>
+    <rect x="562" y="502" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="581.0" y="524.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_190"><title>test_rw_field_set_23_and_sample_tick_values (verified: 100%)&#10;Automated test case in test_wp6_telemetry.py (line 120).</title>
+    <rect x="604" y="502" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="623.0" y="524.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_191"><title>test_sc_gap_audit_labels_documented (verified: 100%)&#10;Automated test case in test_wp6_telemetry.py (line 158).</title>
+    <rect x="646" y="502" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="665.0" y="524.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_192"><title>test_dv_accumulation_smoke (verified: 100%)&#10;Automated test case in test_wp6_telemetry.py (line 193).</title>
+    <rect x="16" y="544" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="35.0" y="566.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_193"><title>test_fuel_msg_shape_static_and_bookkeeping_uses_achieved (verified: 100%)&#10;Automated test case in test_wp6_telemetry.py (line 212).</title>
+    <rect x="58" y="544" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="77.0" y="566.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_194"><title>test_viz_direct_import_no_sim_no_helper (verified: 100%)&#10;Automated test case in test_wp6_telemetry.py (line 243).</title>
+    <rect x="100" y="544" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="119.0" y="566.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_195"><title>test_viz_smoke_live_gated (verified: 100%)&#10;Automated test case in test_wp6_telemetry.py (line 276).</title>
+    <rect x="142" y="544" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="161.0" y="566.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_196"><title>test_fuel_burn_live_gated (verified: 100%)&#10;Automated test case in test_wp6_telemetry.py (line 300).</title>
+    <rect x="184" y="544" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="203.0" y="566.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_197"><title>test_b2_custom_off_wheel_reports_off (in_progress: 50%)&#10;Automated test case in test_wp6_telemetry.py (line 412).</title>
+    <rect x="226" y="544" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="245.0" y="566.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_198"><title>test_b2_setumax_post_registration_effective (in_progress: 50%)&#10;Automated test case in test_wp6_telemetry.py (line 444).</title>
+    <rect x="268" y="544" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="287.0" y="566.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_199"><title>test_b2_dv_rotated_at_nonidentity_attitude (in_progress: 50%)&#10;Automated test case in test_wp6_telemetry.py (line 478).</title>
+    <rect x="310" y="544" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="329.0" y="566.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_200"><title>test_b2_double_reset_dv_clean (in_progress: 50%)&#10;Automated test case in test_wp6_telemetry.py (line 544).</title>
+    <rect x="352" y="544" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="371.0" y="566.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_201"><title>test_budget_constants_sane (verified: 100%)&#10;Automated test case in test_wp7_dispersion_jit.py (line 156).</title>
+    <rect x="394" y="544" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="413.0" y="566.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_202"><title>test_layout_growth_math (verified: 100%)&#10;Automated test case in test_wp7_dispersion_jit.py (line 166).</title>
+    <rect x="436" y="544" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="455.0" y="566.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_203"><title>test_bundle_env_baseline (verified: 100%)&#10;Automated test case in test_wp7_dispersion_jit.py (line 183).</title>
+    <rect x="478" y="544" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="497.0" y="566.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_204"><title>test_parametric_js_static_contract (verified: 100%)&#10;Automated test case in test_wp7_dispersion_jit.py (line 200).</title>
+    <rect x="520" y="544" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="539.0" y="566.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_205"><title>test_skip_guards_when_wheel_unbuilt (verified: 100%)&#10;Automated test case in test_wp7_dispersion_jit.py (line 224).</title>
+    <rect x="562" y="544" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="581.0" y="566.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_206"><title>test_mc_js_ensemble (verified: 100%)&#10;Automated test case in test_wp7_dispersion_jit.py (line 546).</title>
+    <rect x="604" y="544" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="623.0" y="566.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_207"><title>test_mc_geometry_ensemble (verified: 100%)&#10;Automated test case in test_wp7_dispersion_jit.py (line 577).</title>
+    <rect x="646" y="544" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="665.0" y="566.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_208"><title>test_tilt_w3_plant_sensitivity_stock_vs_stock (verified: 100%)&#10;Automated test case in test_wp7_dispersion_jit.py (line 665).</title>
+    <rect x="16" y="586" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="35.0" y="608.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_209"><title>test_tilt_w3_openloop_isolator (verified: 100%)&#10;Automated test case in test_wp7_dispersion_jit.py (line 695).</title>
+    <rect x="58" y="586" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="77.0" y="608.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_210"><title>test_tilt_w3_openloop_timevarying (verified: 100%)&#10;Automated test case in test_wp7_dispersion_jit.py (line 810).</title>
+    <rect x="100" y="586" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="119.0" y="608.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_211"><title>test_js_flows_per_run (verified: 100%)&#10;Automated test case in test_wp7_dispersion_jit.py (line 1006).</title>
+    <rect x="142" y="586" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="161.0" y="608.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_212"><title>test_jit_budget_table (verified: 100%)&#10;Automated test case in test_wp7_dispersion_jit.py (line 1071).</title>
+    <rect x="184" y="586" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="203.0" y="608.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">TES</text>
+  </g>
+  <g id="u_213"><title>Cell: hub_60s (verified: 100%)&#10;Matched-dt parity cell hub_60s (nStates=12, nPars=7).</title>
+    <rect x="226" y="586" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="245.0" y="608.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_214"><title>Cell: rw3_open_pos (verified: 100%)&#10;Matched-dt parity cell rw3_open_pos (nStates=15, nPars=16).</title>
+    <rect x="268" y="586" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="287.0" y="608.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_215"><title>Cell: rw3_open_neg (verified: 100%)&#10;Matched-dt parity cell rw3_open_neg (nStates=15, nPars=16).</title>
+    <rect x="310" y="586" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="329.0" y="608.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_216"><title>Cell: rw3_pd (verified: 100%)&#10;Matched-dt parity cell rw3_pd (nStates=15, nPars=16).</title>
+    <rect x="352" y="586" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="371.0" y="608.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_217"><title>Cell: rw3_fric (verified: 100%)&#10;Matched-dt parity cell rw3_fric (nStates=15, nPars=16).</title>
+    <rect x="394" y="586" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="413.0" y="608.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_218"><title>Cell: rw1 (verified: 100%)&#10;Matched-dt parity cell rw1 (nStates=13, nPars=10).</title>
+    <rect x="436" y="586" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="455.0" y="608.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_219"><title>Cell: rw2 (verified: 100%)&#10;Matched-dt parity cell rw2 (nStates=14, nPars=13).</title>
+    <rect x="478" y="586" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="497.0" y="608.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_220"><title>Cell: rw1tilt (verified: 100%)&#10;Matched-dt parity cell rw1tilt (nStates=13, nPars=10).</title>
+    <rect x="520" y="586" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="539.0" y="608.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_221"><title>Cell: thr_fresh_05 (verified: 100%)&#10;Matched-dt parity cell thr_fresh_05 (nStates=12, nPars=11).</title>
+    <rect x="562" y="586" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="581.0" y="608.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_222"><title>Cell: thr_fresh_10 (verified: 100%)&#10;Matched-dt parity cell thr_fresh_10 (nStates=12, nPars=11).</title>
+    <rect x="604" y="586" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="623.0" y="608.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_223"><title>Cell: thr_writeonce (verified: 100%)&#10;Matched-dt parity cell thr_writeonce (nStates=12, nPars=11).</title>
+    <rect x="646" y="586" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="665.0" y="608.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_224"><title>Cell: thr_frozen (verified: 100%)&#10;Matched-dt parity cell thr_frozen (nStates=12, nPars=11).</title>
+    <rect x="16" y="628" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="35.0" y="650.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_225"><title>Cell: thr_lag10 (arm_split: 65%)&#10;Matched-dt parity cell thr_lag10 (nStates=12, nPars=11).</title>
+    <rect x="58" y="628" width="38" height="38" rx="4" fill="#d29922" fill-opacity="0.54" stroke="#d29922" stroke-width="1.5" />
+    <text x="77.0" y="650.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_226"><title>Cell: thr_offset (blocked: 40%)&#10;Matched-dt parity cell thr_offset (nStates=12, nPars=11).</title>
+    <rect x="100" y="628" width="38" height="38" rx="4" fill="#f85149" fill-opacity="0.39" stroke="#f85149" stroke-width="1.5" />
+    <text x="119.0" y="650.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_227"><title>Cell: env_drag (verified: 100%)&#10;Matched-dt parity cell env_drag (nStates=0, nPars=0).</title>
+    <rect x="142" y="628" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="161.0" y="650.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_228"><title>Cell: env_drag_still (verified: 100%)&#10;Matched-dt parity cell env_drag_still (nStates=0, nPars=0).</title>
+    <rect x="184" y="628" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="203.0" y="650.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_229"><title>Cell: env_srp (verified: 100%)&#10;Matched-dt parity cell env_srp (nStates=0, nPars=0).</title>
+    <rect x="226" y="628" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="245.0" y="650.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_230"><title>Cell: fuel_centered (verified: 100%)&#10;Matched-dt parity cell fuel_centered (nStates=13, nPars=12).</title>
+    <rect x="268" y="628" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="287.0" y="650.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_231"><title>Cell: fuel_offset (blocked: 40%)&#10;Matched-dt parity cell fuel_offset (nStates=13, nPars=12).</title>
+    <rect x="310" y="628" width="38" height="38" rx="4" fill="#f85149" fill-opacity="0.39" stroke="#f85149" stroke-width="1.5" />
+    <text x="329.0" y="650.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_232"><title>Cell: fuel_drag (verified: 100%)&#10;Matched-dt parity cell fuel_drag (nStates=0, nPars=0).</title>
+    <rect x="352" y="628" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="371.0" y="650.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_233"><title>Cell: fuel_srp (verified: 100%)&#10;Matched-dt parity cell fuel_srp (nStates=0, nPars=0).</title>
+    <rect x="394" y="628" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="413.0" y="650.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">CEL</text>
+  </g>
+  <g id="u_234"><title>C1: B/C Translation Sign (blocked: 25%)&#10;SysModel outputs + instead of − for translation offset (0.2m error under burn).</title>
+    <rect x="436" y="628" width="38" height="38" rx="4" fill="#f85149" fill-opacity="0.30" stroke="#f85149" stroke-width="1.5" />
+    <text x="455.0" y="650.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">C1:</text>
+  </g>
+  <g id="u_235"><title>X1: Thruster CoM-Axis Mask (verified: 100%)&#10;Source masking verified: trailing thruster c-subset correctly registered.</title>
+    <rect x="478" y="628" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="497.0" y="650.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">X1:</text>
+  </g>
+  <g id="u_236"><title>X2: Swap 6/6 Loud Rejects (verified: 100%)&#10;Friction promoted to full parity; all remaining effectors throw loud bskError.</title>
+    <rect x="520" y="628" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="539.0" y="650.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">X2:</text>
+  </g>
+  <g id="u_237"><title>X3: Vec Friction 1e-14 Stock-Exact (verified: 100%)&#10;Vec arm matches stock Basilisk Stribeck friction to machine precision.</title>
+    <rect x="562" y="628" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="581.0" y="650.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">X3:</text>
+  </g>
+  <g id="u_238"><title>X4: Vec Live Fuel Depletion (verified: 100%)&#10;Live mass and dynamic center of mass shifting integrated per tick.</title>
+    <rect x="604" y="628" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="623.0" y="650.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">X4:</text>
+  </g>
+  <g id="u_239"><title>X5: Historical Closures (Rev 0-1) (verified: 100%)&#10;Zero-offset regressions, linear3 Schur complement purity preserved.</title>
+    <rect x="646" y="628" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="665.0" y="650.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">X5:</text>
+  </g>
+  <g id="u_240"><title>H1: SysModel Cutoff Lag Filter (arm_split: 50%)&#10;SysModel lagState diverges 0.63x from inert vec law; scheduled for removal.</title>
+    <rect x="16" y="670" width="38" height="38" rx="4" fill="#d29922" fill-opacity="0.45" stroke="#d29922" stroke-width="1.5" />
+    <text x="35.0" y="692.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">H1:</text>
+  </g>
+  <g id="u_241"><title>H2: Silent Envelope Fatal Traps (in_progress: 30%)&#10;Unmodeled effectors (diffusion, large torques) need fatal runtime raises.</title>
+    <rect x="58" y="670" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.33" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="77.0" y="692.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">H2:</text>
+  </g>
+  <g id="u_242"><title>H3: Telemetry RW Omega Unset Echo (in_progress: 30%)&#10;Custom-OFF wheels echo 6000 RPM defaults rather than unset indicators.</title>
+    <rect x="100" y="670" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.33" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="119.0" y="692.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">H3:</text>
+  </g>
+  <g id="u_243"><title>H4: Wheel Jitter Simple Stream Split (in_progress: 40%)&#10;Deterministic noise seeds need true 2x400 horizon validation.</title>
+    <rect x="142" y="670" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.39" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="161.0" y="692.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">H4:</text>
+  </g>
+  <g id="u_244"><title>H5: SysModel Friction Iter-1 Stub (arm_split: 60%)&#10;SysModel arm uses iter-1 stiction suppression rather than Stribeck curve.</title>
+    <rect x="184" y="670" width="38" height="38" rx="4" fill="#d29922" fill-opacity="0.51" stroke="#d29922" stroke-width="1.5" />
+    <text x="203.0" y="692.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">H5:</text>
+  </g>
+  <g id="u_245"><title>H6: SysModel Static Fuel Publisher (arm_split: 35%)&#10;SysModel publishes full tank telemetry despite burn; port vec law in A3.</title>
+    <rect x="226" y="670" width="38" height="38" rx="4" fill="#d29922" fill-opacity="0.36" stroke="#d29922" stroke-width="1.5" />
+    <text x="245.0" y="692.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">H6:</text>
+  </g>
+  <g id="u_246"><title>H7: Fuel x Env Disturbance Cell (in_progress: 40%)&#10;Combined fuel burn and environmental offset cells require explicit matrix labels.</title>
+    <rect x="268" y="670" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.39" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="287.0" y="692.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">H7:</text>
+  </g>
+  <g id="u_247"><title>H8: Body DV Rotation into Inertial (in_progress: 30%)&#10;Body impulse not rotated by R_BN into DV_CN_N.</title>
+    <rect x="310" y="670" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.33" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="329.0" y="692.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">H8:</text>
+  </g>
+  <g id="u_248"><title>M1: Lag Filter Empty Ramps (in_progress: 50%)&#10;Ramp factor mirror requires explicit gating.</title>
+    <rect x="352" y="670" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="371.0" y="692.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">M1:</text>
+  </g>
+  <g id="u_249"><title>M2: Cutoff 10 vs 1000 Ratio (in_progress: 50%)&#10;Ratio test must assert 0.99 - 1.01 inert response.</title>
+    <rect x="394" y="670" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="413.0" y="692.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">M2:</text>
+  </g>
+  <g id="u_250"><title>M3: Min-Pulse Suppression Gate (in_progress: 60%)&#10;Min-pulse models suppress-only behavior documented.</title>
+    <rect x="436" y="670" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.51" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="455.0" y="692.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">M3:</text>
+  </g>
+  <g id="u_251"><title>M4: Staircase Achieving Duties (verified: 100%)&#10;Duty quantization operates cleanly at time step boundary.</title>
+    <rect x="478" y="670" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="497.0" y="692.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">M4:</text>
+  </g>
+  <g id="u_252"><title>M5: Trailing c-Mask Par Bounds (verified: 100%)&#10;Checked par count bounds heap safely.</title>
+    <rect x="520" y="670" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="539.0" y="692.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">M5:</text>
+  </g>
+  <g id="u_253"><title>M6: Blowdown & Swirl Dynamics (in_progress: 70%)&#10;Tank pressure blowdown factor mirrors stock.</title>
+    <rect x="562" y="670" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.57" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="581.0" y="692.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">M6:</text>
+  </g>
+  <g id="u_254"><title>M8: Friction F-Ledger Null Rows (in_progress: 50%)&#10;F-ledger superseded-pointer to rw3_fric recorded.</title>
+    <rect x="604" y="670" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="623.0" y="692.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">M8:</text>
+  </g>
+  <g id="u_255"><title>M10: Offset Delta Inverted Sign (blocked: 25%)&#10;Direct consequence of C1 sign inversion.</title>
+    <rect x="646" y="670" width="38" height="38" rx="4" fill="#f85149" fill-opacity="0.30" stroke="#f85149" stroke-width="1.5" />
+    <text x="665.0" y="692.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">M10</text>
+  </g>
+  <g id="u_256"><title>M11: Double Reset DV Clearing (in_progress: 40%)&#10;Accumulated DV and nonConsAccelB zeroed on Reset.</title>
+    <rect x="16" y="712" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.39" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="35.0" y="734.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">M11</text>
+  </g>
+  <g id="u_257"><title>M13: Stiction-Band Discrepancy (arm_split: 60%)&#10;Near-zero speed stiction band documented as iter-1 limit.</title>
+    <rect x="58" y="712" width="38" height="38" rx="4" fill="#d29922" fill-opacity="0.51" stroke="#d29922" stroke-width="1.5" />
+    <text x="77.0" y="734.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">M13</text>
+  </g>
+  <g id="u_258"><title>M16: SysModel Lag Filter Elimination (in_progress: 50%)&#10;Filter removal reconciles both integrator arms.</title>
+    <rect x="100" y="712" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="119.0" y="734.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">M16</text>
+  </g>
+  <g id="u_259"><title>L1: Stale Par Count Docs (in_progress: 60%)&#10;Documentation refers to 19 pars instead of derived 13.</title>
+    <rect x="142" y="712" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.51" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="161.0" y="734.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">L1:</text>
+  </g>
+  <g id="u_260"><title>L2: NPOS Parity Formatting (verified: 100%)&#10;NPOS sentinel guards non-coupled thruster axes.</title>
+    <rect x="184" y="712" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="203.0" y="734.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">L2:</text>
+  </g>
+  <g id="u_261"><title>L3: SWIG Top-Level Shim Note (verified: 100%)&#10;Shim required for SWIG %import documented.</title>
+    <rect x="226" y="712" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="245.0" y="734.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">L3:</text>
+  </g>
+  <g id="u_262"><title>L4: CMake Direct Heyoka Link (verified: 100%)&#10;rpath links libheyoka directly for Taylor stepping.</title>
+    <rect x="268" y="712" width="38" height="38" rx="4" fill="#2ea043" fill-opacity="1.00" stroke="#2ea043" stroke-width="1.5" />
+    <text x="287.0" y="734.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">L4:</text>
+  </g>
+  <g id="u_263"><title>L5: thr_offset Ledger Provenance (in_progress: 50%)&#10;Cite exact cell 2.24e-08 in ledger.</title>
+    <rect x="310" y="712" width="38" height="38" rx="4" fill="#3b82f6" fill-opacity="0.45" stroke="#3b82f6" stroke-width="1.5" />
+    <text x="329.0" y="734.0" fill="#e6edf3" font-size="8" font-family="monospace" font-weight="600" text-anchor="middle">L5:</text>
+  </g>
+</svg>

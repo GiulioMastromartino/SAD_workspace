@@ -38,6 +38,13 @@ TRAP_ATTRS = [
 
 # (c) tokens that degrade heyoka Taylor integration; allowed OUTSIDE the EOM
 # (e.g. caller-side saturate_u / reset_mrp) but never inside the graph itself.
+# WP25-C3: NON-GATE MIRROR — this scan is hygiene only (naive token regex over
+# a GRAPH_FUNCS list deliberately wider than the symbolic bodies, and the
+# current_func latch never resets, so hits need human triage; the verdict is
+# vacuous on bare `if (` noise by construction). The AUTHORITATIVE gate is
+# scripts/ci_envelope_checks.sh (scoped awk over exactly the four symbolic
+# bodies updateContributions/computeForceTorque/state_derivatives/field in
+# the six graph headers incl. environment/force_torque/backsub_t/linear3).
 GRAPH_TOKENS = ["min", "max", "abs", "fabs", "sign", "copysign", "tanh", "if ("]
 GRAPH_FUNCS = ["updateContributions", "computeForceTorque", "state_derivatives",
                "computeDynamics", "updateDynamics", "equationOfMotion"]
@@ -151,7 +158,11 @@ def check_silent_traps() -> dict:
 
 
 def check_graph_purity() -> dict:
-    """(c) Scan include/omni/*.hpp text for clamp-ish tokens in EOM functions."""
+    """(c) Scan include/omni/*.hpp text for clamp-ish tokens in EOM functions.
+
+    NON-GATE (WP25-C3): see the GRAPH_TOKENS note above — human-triage mirror
+    only; scripts/ci_envelope_checks.sh binds.
+    """
     out: dict = {}
     inc = REPO_ROOT / "include" / "omni"
     headers = sorted(inc.glob("*.hpp")) if inc.is_dir() else []

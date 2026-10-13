@@ -11,8 +11,10 @@
 // Parameter layout (A2): [inputs in registration order] then [own parameters
 // in registration order]. Hub owns mass + I6 (7); the inverse is derived
 // symbolically from D via inv3(), so no invI6 slots exist (heyoka rejects
-// declared-but-unreferenced pars). E.g. hub + 3 wheels = 3 (u) + 7 + 3 (Js)
-// = 13 pars; hub + 12 thrusters = 12 (q) + 7 = 19 pars.
+// declared-but-unreferenced pars). Wheels add u+tauF inputs (2/wheel, WP2)
+// + Js (1/wheel); thrusters add q+swirlScale inputs + masked cB pars (WP3b/8);
+// env adds its input block (WP5). E.g. hub + 3 wheels = 6 + 7 + 3 = 16 pars;
+// hub + 12 thrusters = 13 + 7 = 20 default, +3 cB = 23 full-mask; hub-only = 7.
 #ifndef OMNI_SYSTEM_HPP
 #define OMNI_SYSTEM_HPP
 

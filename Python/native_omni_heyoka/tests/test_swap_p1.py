@@ -7,8 +7,12 @@ Bounds (pre-registered, margins >= 5x):
     class): r < 2e-3, v < 2e-5, sigma < 2e-4, omega < 1e-5 at dt=0.1.
   write-once/frozen (single firing step): r < 1e-5, v < 1e-7,
     sigma < 1e-6, omega < 1e-7.
-Rejects: fuel / jitter / friction / multi-RW / missing-factory /
-  min-pulse / low-cutoff must ALL raise (ValueError, pre-sim).
+Rejects: jitter / multi-RW-effectors / missing-factory / min-pulse /
+  low-cutoff must ALL raise (ValueError, pre-sim) + the structural
+  fuel_unmirrored_cxx cell names fuelMass (ledger verdict "all loud").
+  Friction is PARITY since Update 8 (rw3_fric cell, 1e-9 wheels), not a
+  reject. (WP25-C3 X2: was "fuel / jitter / friction / multi-RW /
+  missing-factory / min-pulse / low-cutoff ... 7/7" — friction entry struck.)
 """
 from __future__ import annotations
 
@@ -47,9 +51,13 @@ def test_p1_hub_rw_parity():
             assert d[cell][f] < TIGHT, f"{cell}.{f}={d[cell][f]:.3e}"
         if "wheels" in d[cell]:
             assert d[cell]["wheels"] < TIGHT
-    # Build-shape sanity: hub+3RW = 15 states; pars = inputs + hub7 + Js.
+    # Build-shape sanity: hub+3RW = 15 states / 16 pars (6 u+tauF inputs + 7 hub
+    # + 3 Js); hub-only = 12 states / 7 pars. Ledger: swap_p1_parity.json
+    # rw3_open_pos / hub_60s cells, vec arm (pinned WP25-C3 against the in-tree file).
     assert d["rw3_open_pos"]["nStates"] == 15
+    assert d["rw3_open_pos"]["nPars"] == 16
     assert d["hub_60s"]["nStates"] == 12
+    assert d["hub_60s"]["nPars"] == 7
     assert d["hub_60s"]["build_s"] < 5.0  # one-time JIT budget sanity
 
 
@@ -63,8 +71,10 @@ def test_p1_thruster_parity():
         for f, tol in bounds.items():
             assert d[cell][f] < tol, f"{cell}.{f}={d[cell][f]:.3e}"
     assert d["thr_fresh_05"]["nStates"] == 12  # thrusters add no states
+    assert d["thr_fresh_05"]["nPars"] == 11  # 3q + swirl + 7 hub (vec arm, ledger-pinned WP25-C3)
     # Offset cell also checks the C-point outputs stock derives.
     assert d["thr_offset"]["nStates"] == 12
+    assert d["thr_offset"]["nPars"] == 11  # same thruster config as thr_fresh (ledger-pinned WP25-C3)
     for f in ("r_CN_N", "v_CN_N"):
         assert f in d["thr_offset"], f"missing {f} in thr_offset"
     assert d["thr_offset"]["r_CN_N"] < THR["r_BN_N"]
@@ -122,6 +132,10 @@ def test_p1_fuel_parity():
         assert c["fuel_burned"] > 0.1  # effect live, not vacuous
         assert c["fuel_rel_err"] < 1e-9  # depletion law near-bit-exact
     assert d["fuel_centered"]["nStates"] == 13  # hub12 + fuel (no wheels)
+    assert d["fuel_centered"]["nPars"] == 12  # 1 mdot + 3q + swirl + 7 hub (vec arm, ledger-pinned WP25-C3)
+    assert d["fuel_offset"]["nPars"] == 12
+
+
 def test_p1_sysmodel_fuel_publisher_absent():
     """WP25-A3 option B (Decision 4, closes H6): the SysModel path must not
     publish fuel telemetry -- the static-full-tank publish (fuelMass_=m0

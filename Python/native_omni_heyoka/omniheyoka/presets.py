@@ -414,6 +414,13 @@ def rw_demo_heyoka(y0: Sequence[float],
 
     Compare it against :func:`make_rw_integrator` / ``OmniTaylorAdaptive`` for
     A/B parity -- this is the reference the validation workstream needs.
+
+    RESTRICTION FENCE (WP25-C3, WS2 absolute-h): ``heyoka_rw`` encodes the
+    ABSOLUTE momentum form ``h = Js*(W + omega.gs)*gs``, exact for equal-Js
+    orthonormal wheel sets ONLY (see DESIGN.md constraint (1) + BUILD_STATUS
+    Update 7). Any revival of this ground-truth path for tilted/unequal-Js
+    configs must convert to relative-h or restrict to the exact class — never
+    widen silently.
     """
     u = np.zeros(3) if u_motor is None else np.asarray(u_motor, dtype=float)
     I = RW_INERTIA if inertia is None else np.asarray(inertia, dtype=float)

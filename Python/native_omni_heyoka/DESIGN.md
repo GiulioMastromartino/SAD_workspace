@@ -108,8 +108,12 @@ void solve_backsub(const BackSubMatricesT<S>& m,
                    Eigen::Matrix<S,3,1>& omegaDot_BN_B);
 ```
 Explicit 3x3 adjugate/determinant inverse (no `Eigen::Inverse`), identical
-arithmetic for both scalar types. Verified benign conditioning
-(`cond(S) = 1.0007`).
+arithmetic for both scalar types (one templated source, instantiated twice —
+see "written exactly once" below; expression-vs-double evaluation can still
+differ at roundoff). Verified benign conditioning
+(`cond(S) = 1.0007`, dated measurement on the reference config, not a
+per-config contract — degenerate configs drive `cond(S) -> 1`; re-measure
+rather than cite).
 
 ### `contributor.hpp`
 
@@ -136,7 +140,7 @@ instantiated twice: `double` (numeric cross-check) and `heyoka::expression`
 
 | class | notes |
 |---|---|
-| `HubContributorT<S>` | `mHub`, `r_BcB_B`, `IHubPntBc_B`; hub translational + rotational blocks. `r_BcB_B = 0` is the modelled case (nonzero must throw). |
+| `HubContributorT<S>` | `mHub`, `r_BcB_B`, `IHubPntBc_B`; hub translational + rotational blocks. `r_BcB_B = 0` is the modelled case. (ORIGINAL-CONTRACT NOTE, WP25-C3: the "nonzero must throw" guard never landed — `OmniSystem::add_hub` stores nonzero verbatim and WP4 models the aggregate-`c_B` path instead; see A13. Do not re-add a throw without a WP.) |
 | `ReactionWheelContributorT<S>` | N wheels, each `gs` (spin axis), `Js`, `Jt`. Constraint (1) above is mandatory. Position `rWB_B` is *not* modelled (documented envelope, matching `native_rw`). |
 | `CentralGravityContributorT<S>` | point-mass `mu`, fills `g_N`. |
 
@@ -163,15 +167,19 @@ public:
                                       const std::vector<double>& pars) const;
 
     size_t n_states() const;
-    size_t n_pars() const;                 // 19 for hub+3RW (see below)
+    size_t n_pars() const;                 // 16 for hub+3RW live (was 19 pre-tauF/pre-invI6-removal — see A2)
     std::vector<std::string> state_names() const;
     std::vector<double>   default_pars() const;
     std::vector<double>   default_state() const;
 };
 ```
 
-**Parameter layout** — must match `native_rw` / `heyoka_rw.py` exactly so all
-existing consumers keep working:
+**Parameter layout** — (ORIGINAL-CONTRACT BLOCK, WP25-C3: superseded by A2
+below plus the live counts — hub+3RW = 16 = 6 inputs + 7 hub + 3 `Js`
+(`tauF` second input per wheel added WP2, `invI6` removed Update 4);
+hub-only = 7; hub+12thr = 20 default / 23 full-mask. Kept for archaeology;
+`par_names()` is authoritative. The block below must match `native_rw` /
+`heyoka_rw.py` exactly so all existing consumers keep working:)
 
 ```
 par[0..2]   u1,u2,u3        saturated motor torques
@@ -286,13 +294,15 @@ hub states, always first, always in this order:
     r(3), v(3), sigma(3), omega(3)                       -> 12
 then, for each contributor in REGISTRATION ORDER, that contributor's
 contributed states:
-    ReactionWheel -> W_i(3) per wheel, ordered by wheel index
+    ReactionWheel -> W_i(1) per wheel (one speed state each), ordered by wheel index
 ```
 
 So 3 wheels gives 15 states named
 `rx,ry,rz,vx,vy,vz,s1,s2,s3,omx,omy,omz,W1,W2,W3` — identical to
 `heyoka_rw.STATE_NAMES` and to `native_rw`'s `make_vars(...)`. One wheel gives
-14 states (`W1` only). Four wheels gives 18.
+13 states (`W1` only). Four wheels gives 16. (WP25-C3: was `W_i(3)`/14/18 —
+editor-trap class, corrected to the live `HUB_STATES=12 + 1/wheel` math pinned
+by `tests/test_wp7_dispersion_jit.py:expected_layout`.)
 
 `n_states()` is computed, not stored. `state_names()` returns the ordered list
 and everything downstream must use it as the authority.
@@ -306,8 +316,10 @@ generic interface). Resolved as follows.
 
 ```
 [0 .. K-1]   input-port block: one contiguous block per contributor that
-             declares an input port, in registration order.
-             A ReactionWheel contributor declares a 3-vector input (motor torque).
+              declares an input port, in registration order.
+              A ReactionWheel contributor declares a 2-vector input (motor
+              torque `u` + friction torque `tauF`, WP2). (WP25-C3: was
+              "3-vector" — the tauF second slot landed in WP2.)
 par[...]     then each contributor's own parameters, in registration order.
 ```
 
@@ -323,8 +335,16 @@ par[16..18]  Js1,Js2,Js3  (one per wheel, in registration order)
 = 19 total
 ```
 
+(WP25-C3: block above is the ORIGINAL pre-tauF/pre-invI6-removal contract,
+kept for archaeology. LIVE (measured, `audit_bundle/results/swap_p1_parity.json`
+`rw3_open_pos` cell: `nPars=16, nStates=15`, vec arm): inputs are
+`u_i,tauF_i` per wheel (2/wheel, WP2), `invI6` is gone (derived symbolically,
+Update 4), so hub+3RW = 6 + 7 + 3 = **16**. `par_names()` stays authoritative.)
+
 For a hub-only system (no contributor declares an input port) the layout is
-simply `mass, I6, invI6` = 13 parameters, with no leading input block.
+simply `mass, I6` = **7** parameters, with no leading input block. (WP25-C3:
+was `mass, I6, invI6` = 13 — `invI6` removed Update 4; hub-only cell
+`swap_p1_parity.json:hub_60s` records `nPars=7, nStates=12`, vec arm.)
 
 **Required accessor** (add to `OmniSystem`):
 ```cpp
@@ -398,7 +418,10 @@ omniheyoka.sigma_indices() -> slice(6, 9)
 ```
 so callers (and `run_rw_mirror`-style loops) do not each re-implement it. This
 matches `native_rw`'s internal behaviour, moved to Python because heyoka's
-propagator has no per-step callback.
+propagator has no per-step callback. (WP25-C3 LANDED: both are top-level —
+`omniheyoka.reset_mrp` from `driver.py`, `omniheyoka.sigma_indices` from
+`layout.py`; import-graph verified acyclic, `from omniheyoka import reset_mrp`
+resolves. Runtime import untestable on Linux CI — host owns first import.)
 
 ## A8. Contributor interface is sufficient for a wrench/thruster contributor (no change needed now)
 

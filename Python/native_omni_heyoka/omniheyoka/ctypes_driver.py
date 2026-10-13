@@ -67,17 +67,21 @@ class OmniTaylor:
                        self.n_states * 8)
         ctypes.memmove(self.pars, _lib.omni_taylor_pars(self._h), self.n_pars * 8)
         # wheel speeds and ICs are set by the caller through these arrays.
+        # LAYOUT FENCE (WP25-C3): numeric hub-block offsets below are the legacy
+        # RW-only ABI (hub block fixed 12 by A1, wheel i in registration order).
+        # Revive via r_slice()/v_slice()/sigma_slice()/omega_slice()/wheel_slice()
+        # from omniheyoka.layout — do NOT copy these literals into new code.
         if use_rpm and wheel_speeds_rpm is not None:
             for i, w in enumerate(wheel_speeds_rpm):
-                self.state[12 + i] = float(w) * 2.0 * 3.141592653589793 / 60.0
+                self.state[12 + i] = float(w) * 2.0 * 3.141592653589793 / 60.0  # LAYOUT-OK: legacy RW-only ABI, hub block fixed 12 by A1 (see fence above)
         if r0 is not None:
-            self.state[0:3] = [float(v) for v in r0]
+            self.state[0:3] = [float(v) for v in r0]  # LAYOUT-OK: legacy RW-only ABI, hub r-block 0:3 by A1 (see fence above)
         if v0 is not None:
-            self.state[3:6] = [float(v) for v in v0]
+            self.state[3:6] = [float(v) for v in v0]  # LAYOUT-OK: legacy RW-only ABI, hub v-block 3:6 by A1 (see fence above)
         if sigma0 is not None:
-            self.state[6:9] = [float(v) for v in sigma0]
+            self.state[6:9] = [float(v) for v in sigma0]  # LAYOUT-OK: legacy RW-only ABI, hub sigma-block 6:9 by A1 (see fence above)
         if omega0 is not None:
-            self.state[9:12] = [float(v) for v in omega0]
+            self.state[9:12] = [float(v) for v in omega0]  # LAYOUT-OK: legacy RW-only ABI, hub omega-block 9:12 by A1 (see fence above)
 
     def __del__(self):
         if getattr(self, "_h", None):

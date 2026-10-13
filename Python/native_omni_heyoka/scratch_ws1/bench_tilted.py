@@ -180,7 +180,9 @@ def load_omni(path="/tmp/omni_tilted_dump.txt"):
         lhs, rhs = line.split(" = ", 1)
         rows[lhs.strip()] = rhs.strip()
     names = list(rows)
-    sysrows = parse_system([rows[n] for n in names], names, 19)
+    # CI-EXEMPT(bare-19): ad-hoc repro harness — 19 is the historical reference-layout
+    # width for parse_system, not a live count assert (live counts: par_names()).
+    sysrows = parse_system([rows[n] for n in names], names, 19)  # CI-EXEMPT(bare-19)
     return sysrows, names
 
 

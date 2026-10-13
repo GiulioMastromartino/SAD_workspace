@@ -25,11 +25,15 @@ from __future__ import annotations
 
 from ._native import build_hint, load_native, native_available, require_native
 from .shim import ACCEL_LAYOUT, DEFAULT_TOL, OmniTaylorAdaptive
+from .driver import reset_mrp  # A7: caller-side MRP shadow-set reset (imports .layout + numpy only — no cycle)
+from .layout import sigma_indices  # A7: attitude-block slice (stdlib + numpy only — no cycle)
 
 __all__ = [
     "OmniTaylorAdaptive",
     "DEFAULT_TOL",
     "ACCEL_LAYOUT",
+    "reset_mrp",
+    "sigma_indices",
     "build_system",
     "rw_demo_system",
     "cubesat_12u_system",

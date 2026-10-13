@@ -15,6 +15,9 @@ the configuration that ``build_rw_system()`` encodes (750 kg hub with
 gravity).  Asking for anything else raises :class:`NotImplementedError` instead
 of silently returning the wrong equations.  Mass, inertia, wheel inertias and
 motor torques *are* runtime parameters in that reference, so they stay free.
+(WS2 absolute-h fence, WP25-C3: the delegated reference encodes absolute-h,
+exact for this equal-Js orthonormal set only — the `NotImplementedError`
+above is the enforcement; see DESIGN.md constraint (1).)
 
 Known, documented differences from the compiled ``OmniSystem``:
 

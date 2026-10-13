@@ -33,7 +33,11 @@
 Also confirmed: 15 states, 19 parameters, 3 inputs for hub + 3 wheels; `par_names()`
 returns exactly `u1 u2 u3 mass Ixx Iyy Izz Ixy Ixz Iyz invIxx invIyy invIzz
 invIxy invIxz invIyz Js1 Js2 Js3` — i.e. the `native_rw` layout, reproduced
-automatically (A2).
+automatically (A2). (WS1 RECORD, WP25-C3: predates the WP2 `tauF` second input
+and the Update-4 `invI6` removal — live hub+3RW is 15 states / 16 pars =
+6 inputs + 7 hub + 3 `Js`, vec arm, `audit_bundle/results/swap_p1_parity.json:
+rw3_open_pos` cell `nPars=16, nStates=15`. Kept for archaeology; `par_names()`
+is authoritative.)
 
 Graph size: 4033 bytes of RHS text across 15 equations. `build_symbolic()` +
 JIT: 73.7 ms per instance (20-run average).
@@ -434,7 +438,7 @@ from cubesat_12u_sim.backends.heyoka.heyoka_rw import build_rw_system, pack_rw_p
 rows={}
 for line in open('/tmp/omni_symbolic_dump.txt'):
     l,r=line.strip().split(' = ',1); rows[l]=r
-names=list(rows); sysrows=parse_system([rows[n] for n in names], names, 19)
+names=list(rows); sysrows=parse_system([rows[n] for n in names], names, 19)  # CI-EXEMPT(bare-19): historical Gate-G repro — 19 is the pre-tauF/pre-invI6-removal reference-layout width (heyoka_rw.pack_rw_pars), NOT a live count assert; live counts come from par_names().
 P=pack_rw_pars(np.zeros(3),750.,np.diag([900.,800.,600.]),np.full(3,.07957747154594767))
 y0=np.concatenate([[1e7,2e6,-1.5e6],[-700.,5500.,3200.],[.1,-.2,.3],[.01,-.02,.03],[100.,200.,300.]])
 a=hy.taylor_adaptive(sysrows,y0.tolist(),pars=list(map(float,P)),tol=1e-13)
@@ -447,7 +451,8 @@ PY
 ## Update 6 — WP0…WP6 implemented in parallel (unbuilt on Linux; host build pending)
 
 All seven WPs were implemented in one pass by parallel agents against the
-measured bundle ledger (2026-10-12, BSK 2.12.0, 7/7 probes green), then
+measured bundle ledger (2026-10-12, BSK 2.12.0, 7/7 probes green at the time —
+recounted 11/11 WP25-C3, see test_wp7 + PLAN_ENVELOPE bundle row), then
 integrated sequentially into the shared files. Nothing here has compiled yet
 (Linux container, Basilisk macOS-only) — the macOS host owns first build.
 
@@ -465,10 +470,24 @@ integrated sequentially into the shared files. Nothing here has compiled yet
 Cross-WP contracts: WP0 flag names exact; `swirlScale` A2-by-name; env evaluated LAST in two-pass FT loop; `// WP5-arc-hook` placement; new par slots (`tauF`, `swirlScale`, env blocks) are name-derived (19-par counts stale by design).
 
 ### Host build risks (explicit)
+
 - SWIG `%template` vector<Message<…>> lines (THR + RW) may be rejected → drop line, keep member + accessor.
 - Payload field names (`RWModel`, `TotalAccumDVBdy`, `FuelTankMsgPayload.h`, `EarthRadiationMsgPayload.h`, `WindMsgPayload.v_air_N`, `SpicePlanetState.PositionVector`, `MagneticFieldMsg.magField_N`) need header confirmation.
 - `Message<T>` default-constructibility for `resize()` (rwOutMsgs, thrusterOutMsgs lazy-grow covers).
 - RW `n_inputs` 1→2 + thruster +1 slot + env blocks change every par layout (name-based asserts required; count-based benches updated in WP test files).
+
+CLOSED (WP25-C3, 2026-10-13 — builds green for three rounds, no risk materialised):
+all three Update-6 risks are retired by measurement, not by review. (1) The
+host wheel built with the `%template vector<Message<…>>` lines intact — no
+SWIG rejection, no line dropped. (2) `resize()` on both message vectors works
+(the lazy-grow path was never needed as a fallback). (3) Every payload field
+in the list above is confirmed against the built wheel: ledger
+`audit_bundle/results/wp6_telem_viz_fuel.json:T1` records
+`thr_output_missing: []` (9/9 `THROutputMsgPayload` fields) and
+`rw_log_missing: []` (23/23 `RWConfigLogMsgPayload` fields), host arm.
+Rounds cited: Update-6 first host build + WP25 wave-A/B rebuilds + wave-C
+swap rebuild (`swap_p1_parity.json` verdict `parity green`, host arm) — three
+green builds, zero SWIG/resize/field failures.
 
 ### tilt-W3 anomaly closure (2026-10-12, no model change)
 
@@ -529,7 +548,12 @@ anything else). Ledger `audit_bundle/results/swap_p1_parity.json`, gates
 `tests/test_swap_p1.py`: hub/RW 1e-9 class, thruster staircase with
 dt-aware switching bounds (linear-in-dt ladder proven), write-once/frozen
 schedule equality, drag + SRP-cannonball gated (SRP needs the C_R -> r
-convention map `cr = C_R - 1`, measured end-to-end), 7/7 rejects loud.
+convention map `cr = C_R - 1`, measured end-to-end), rejects 6 loud
+(`jitter_wheel`, `two_rw_effectors`, `thruster_no_factory`, `min_pulse`,
+`cutoff_zero`, `fuel_unmirrored_cxx` structural — ledger
+`swap_p1_parity.json:rejects` verdict `all loud`, vec arm; friction is parity
+since Update 8, NOT a reject — `rw3_fric` cell, see below. WP25-C3: was
+"7/7 rejects loud" — the friction entry left when the Stribeck law landed).
 Tumbling + env documents the O(|w|*dt) frozen-projection class with honest
 bounds (rotation-capped subdivision tried: 4x gain at 4x cost, reverted --
 bias is systematic, subdivision cannot remove it; arc-midpoint refresh
@@ -575,7 +599,9 @@ a drift-triggered-rebuild design was tried and reverted: 2 s re-JIT each,
 - Measured (mass-props message): input I/mass are hub-DRY; aggregate ==
   input + mFuel*K_pointmass(r_TB) EXACTLY (all 9 entries); c_B exact.
 - mdot from staircase-ACHIEVED duties (matches stock bit-exactly over
-  600 s: fuel_rel_err 0.0 -- both sides use achieved, not commanded).
+  600 s: fuel_rel_err 0.0 -- both sides use achieved, not commanded; vec arm,
+  ledger `audit_bundle/results/swap_p1_parity.json:fuel_centered/fuel_offset`
+  cells: `fuel_rel_err 0.0`, `fuel_burned 1.12 kg`, `nPars=12, nStates=13`).
 - Inertia about TRUE C: I_C = I_hub + mHub*PA(rBcB-c) + mFuel*PA(rTB-c)
   with LIVE c per tick (using I_B instead costs 0.2 m + 2e-2 rad -- measured).
 - Thruster arms via 3 NEW cBx/cBy/cBz par slots (module-written per tick);
@@ -594,9 +620,13 @@ a drift-triggered-rebuild design was tried and reverted: 2 s re-JIT each,
   (suffix-drop + loud throw on other gaps); all ta constructions truncate
   + all per-tick pushes heap-bounded (4 ta sites: integrator, SysModel,
   t8; t3 RW-only untouched). wp7 `expected_layout` gains the `n_thr_c`
-  mask-popcount term (hub+12thr: 23 = 13+7+3).
+  mask-popcount term (hub+12thr: 23 = 13+7+3 full-mask with all 3 cB axes live;
+  default (no cB axes coupled) is 20 = 13+7 — WP25-C3: the 23 without the
+  default-20 note was the FRESH-low overclaim).
 - Gates: centered + offset tank (10 kg, 5 N, duty 0.5, 600 s, 1.1 kg
-  burned): fuel bit-exact, trajectories in switching class; c_B static
+  burned; vec arm, ledger `audit_bundle/results/swap_p1_parity.json:
+  fuel_centered/fuel_offset` cells `fuel_rel_err 0.0`): fuel bit-exact,
+  trajectories in switching class; c_B static
   initial would cost 0.2 m (measured) -- live-c everywhere instead.
 - Scope: VEC PATH ONLY. SysModel publishes no fuel telemetry by design
   (WP25-A3 option B, Decision 4 — see DESIGN A13; the static-full-tank publish
@@ -606,16 +636,18 @@ a drift-triggered-rebuild design was tried and reverted: 2 s re-JIT each,
   behavior (clamp mdot, thrust unaffected) labeled; fuel+offset+full-FSW
   closed loop is follow-up.
 
-### Friction (Stribeck, stock-exact) + cutoff lag (default-ON)
+### Friction (Stribeck, stock-exact, VEC path) + cutoff accepted, never modeled (inert without ramps, both paths)
 
 - Friction: per-wheel Stribeck law + stribeck-flag/omegaBefore state
   transcribed 1:1 from upstream (module-side tauF slots); helper mirrors
   the live coefficient set (factory-off all-zero = OFF, no records).
-  Gate: spin-up 40 s + free spin-down, 120 s: 1e-14 class all channels.
+  Gate (vec arm, ledger `audit_bundle/results/swap_p1_parity.json:rw3_fric`
+  cell): spin-up 40 s + free spin-down, 120 s — sigma_BN 8.34e-13,
+  omega_BN_B 1.93e-14, wheels 1.42e-14 (1e-14 class all channels).
+  SysModel stays iter-1-suppress-only with friction-ON loud-reject-or-label
+  (WP25-B3 scope — unscoped "stock-exact" claims are banned, Decision 5).
   Jitter stays loud-reject (distributional-or-reject per DESIGN; bit-exact
   impossible across libc++).
-- u_min/P_max/Omega_max need NO work (stock ConfigureRWRequests applies
-  them; we read post-saturation u_current -- timing-identical).
 - Cutoff accepted, never modeled (inert without ramps) -- WP25-A2 closed
   H1/M16: the unconditional SysModel first-order filter is DELETED (it
   DIVERGED from stock, attenuating fresh steps 0.63x at cutoff 10;
@@ -629,6 +661,17 @@ a drift-triggered-rebuild design was tried and reverted: 2 s re-JIT each,
    condition: cutoff composes WITH ramps if those ever land (M2). Gate:
    10-vs-1000 impulse ratio 1.00 +/- 0.01 over fire AND shutoff transients
    (matched dt); `thr_lag10` cell (default cutoff, no pin) retained.
+   (WP25-C3 LEDGER NOTE: the in-tree `audit_bundle/results/wp3_timing.json`
+   (ts 2026-10-12T14:40:35Z) predates the WP25-C2 probe keys — its M2 carries
+   `cutoff_ladder` only, no `inert_1pct`/`shutoff_duty05`, and its M4[0.1]
+   no `half_step_shift`. The host-regenerated ledger with the new keys is the
+   gate source; copy it in-tree before citing M2 numbers from the file.)
+- u_min/P_max/Omega_max need NO work on the VEC path (stock
+  ConfigureRWRequests applies them; we read post-saturation u_current --
+  timing-identical; vec arm, `src/omni_vec_integrator.cpp` readback). SysModel
+  documents the silent gap + telemetry labels until modeled or rejected
+  (WP25-B2 scope, Decision 6 — the unscoped Update-8 sentence is corrected
+  here, not deleted).
 
 ### Swap debugging ledger additions
 
