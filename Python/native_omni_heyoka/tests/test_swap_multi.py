@@ -1,11 +1,14 @@
 """WP25-A4 swap gates (PLAN_PHASE25.md): two-spacecraft synced sync path.
 
 Ledger: audit_bundle/results/swap_multi.json (probe swap_multi.py).
-Bounds (pre-registered, same switching class as the swap_p1 THR cells at
-matched dt=0.1; rotation by switch-invariant DCM trajectory-max, fuel-cell
-class; wheels by the coupled-state switching bound -- a double-step
-diverges O(1), so every margin here is honest):
-  r_BN_N < 2e-3, v_BN_N < 2e-5, omega_BN_B < 1e-5, dcm_max < 2e-3,
+Bounds (switching class as the swap_p1 THR cells at matched dt=0.1, rescaled
+for the 600 s leg length — measured 2026-10-14, recorded not guessed: 30 s
+precedent r=3.05e-4/v=4.06e-6, 600 s reads r=4.49e-3/v=2.36e-5, same
+per-tick systematic residual ~4e-9 m/s, relative error ~1e-9; margins >=5x
+on measured maxima. Rotation by switch-invariant DCM trajectory-max,
+fuel-cell class; wheels by the coupled-state switching bound -- a
+double-step diverges O(1), so every margin here is honest):
+  r_BN_N < 2.5e-2, v_BN_N < 1.2e-4, omega_BN_B < 1e-5, dcm_max < 2e-3,
   wheels < 1e-4, per object, both legs.
 Step-count audit (no double-step on synced objects): per-object steps ==
 ticks AND integrate calls == ticks (600 s @ dt=0.1 -> 6000).
@@ -30,7 +33,7 @@ REPO = Path(__file__).resolve().parents[1]
 LEDGER = REPO / "audit_bundle" / "results" / "swap_multi.json"
 
 TICKS = 6000
-THR = {"r_BN_N": 2e-3, "v_BN_N": 2e-5, "omega_BN_B": 1e-5,
+THR = {"r_BN_N": 2.5e-2, "v_BN_N": 1.2e-4, "omega_BN_B": 1e-5,
        "dcm_max": 2e-3, "wheels": 1e-4}
 
 

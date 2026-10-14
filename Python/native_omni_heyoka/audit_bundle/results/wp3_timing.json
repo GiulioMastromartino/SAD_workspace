@@ -1,397 +1,428 @@
 {
-  "name": "wp3_timing",
-  "timestamp_utc": "2026-10-12T14:40:35.981414+00:00",
-  "platform": "macOS-27.0-arm64-arm-64bit",
-  "python": "3.11.16",
-  "basilisk": "2.12.0",
-  "heyoka": "7.12.1",
   "env": {
-    "timestamp_utc": "2026-10-12T14:40:35.981443+00:00",
-    "platform": "macOS-27.0-arm64-arm-64bit",
-    "os_tag": "macOS",
-    "machine": "arm64",
-    "python": "3.11.16",
-    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
-    "heyoka": "7.12.1",
-    "basilisk": "2.12.0",
-    "basilisk_importable": true,
-    "numpy_importable": true,
-    "bsk_sdk": {
-      "present": true,
-      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
-      "includes": []
-    }
+    "fallback": true
   },
-  "payload": {
-    "env": {
-      "timestamp_utc": "2026-10-12T14:40:34.986864+00:00",
-      "platform": "macOS-27.0-arm64-arm-64bit",
-      "os_tag": "macOS",
-      "machine": "arm64",
-      "python": "3.11.16",
-      "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
-      "heyoka": "7.12.1",
-      "basilisk": "2.12.0",
-      "basilisk_importable": true,
-      "numpy_importable": true,
-      "bsk_sdk": {
-        "present": true,
-        "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
-        "includes": []
+  "probes": {
+    "M0": {
+      "duty": 0.8333333333333334,
+      "cells": {
+        "fresh_same_FFF": {
+          "norms": [
+            0.0,
+            0.041666666666666664,
+            0.041666666666666664
+          ],
+          "fire_idle": [
+            "idle",
+            "fire",
+            "fire"
+          ],
+          "d1": [
+            0.0,
+            0.0,
+            0.041666666666666664
+          ]
+        },
+        "two_writes_one_step": {
+          "norms": [
+            0.0,
+            0.041666666666666664,
+            0.041666666666666664
+          ],
+          "fire_idle": [
+            "idle",
+            "fire",
+            "fire"
+          ],
+          "d1": [
+            0.0,
+            0.0,
+            0.041666666666666664
+          ],
+          "write_payloads": [
+            0.4166666666666667,
+            0.8333333333333334
+          ],
+          "same_stamp": true,
+          "achieved_duty": -0.8333333333333331,
+          "consumed": "AMBIGUOUS"
+        },
+        "frozen_no_advance": {
+          "norms": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "fire_idle": [
+            "idle",
+            "idle",
+            "idle"
+          ],
+          "d1": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "write_once": {
+          "norms": [
+            0.041666666666666664,
+            0.0,
+            0.0
+          ],
+          "fire_idle": [
+            "idle",
+            "idle",
+            "idle"
+          ],
+          "d1": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
       }
     },
-    "probes": {
-      "M0": {
-        "duty": 0.8333333333333334,
-        "cells": {
-          "fresh_same_FFF": {
-            "norms": [
-              0.0,
-              0.06249999999999998,
-              0.06249999999999998
-            ],
-            "fire_idle": [
-              "idle",
-              "fire",
-              "fire"
-            ],
-            "d1": [
-              0.0,
-              0.0,
-              0.06249999999999998
-            ]
-          },
-          "two_writes_one_step": {
-            "norms": [
-              0.0,
-              0.06249999999999998,
-              0.06249999999999998
-            ],
-            "fire_idle": [
-              "idle",
-              "fire",
-              "fire"
-            ],
-            "d1": [
-              0.0,
-              0.0,
-              0.06249999999999998
-            ]
-          },
-          "frozen_no_advance": {
-            "norms": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "fire_idle": [
-              "idle",
-              "idle",
-              "idle"
-            ],
-            "d1": [
-              0.0,
-              0.0,
-              0.0
-            ]
-          },
-          "write_once": {
-            "norms": [
-              0.06249999999999998,
-              0.0,
-              0.0
-            ],
-            "fire_idle": [
-              "idle",
-              "idle",
-              "idle"
-            ],
-            "d1": [
-              0.0,
-              0.0,
-              0.0
-            ]
-          }
+    "MQ": {
+      "duties": [
+        {
+          "cmd": 0.0,
+          "achieved": -0.0,
+          "expected": 0.0,
+          "err": -0.0
+        },
+        {
+          "cmd": 1e-12,
+          "achieved": -0.16666666666666666,
+          "expected": -0.16666666666666666,
+          "err": 0.0
+        },
+        {
+          "cmd": 0.02,
+          "achieved": -0.16666666666666666,
+          "expected": -0.16666666666666666,
+          "err": 0.0
+        },
+        {
+          "cmd": 0.49,
+          "achieved": -0.16666666666666666,
+          "expected": -0.16666666666666666,
+          "err": 0.0
+        },
+        {
+          "cmd": 0.5,
+          "achieved": -0.8333333333333331,
+          "expected": -0.8333333333333334,
+          "err": 2.220446049250313e-16
+        },
+        {
+          "cmd": 0.9,
+          "achieved": -0.8333333333333331,
+          "expected": -0.8333333333333334,
+          "err": 2.220446049250313e-16
+        },
+        {
+          "cmd": 0.9999999,
+          "achieved": -0.8333333333333331,
+          "expected": -0.8333333333333334,
+          "err": 2.220446049250313e-16
+        },
+        {
+          "cmd": 1.0,
+          "achieved": -0.9999999999999998,
+          "expected": -1.0,
+          "err": 2.220446049250313e-16
+        },
+        {
+          "cmd": 1.5,
+          "achieved": -0.9999999999999998,
+          "expected": -1.0,
+          "err": 2.220446049250313e-16
+        },
+        {
+          "cmd": -0.1,
+          "achieved": -0.0,
+          "expected": 0.0,
+          "err": -0.0
+        }
+      ]
+    },
+    "M4": {
+      "0.1": {
+        "normal_norms": [
+          0.0,
+          0.041666666666666664,
+          0.041666666666666664
+        ],
+        "delayed_norms": [
+          0.0,
+          0.041666666666666664,
+          0.041666666666666664
+        ],
+        "delta_matched_dt": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "half_step_shift": {
+          "aligned_resid": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "half_step_resid": [
+            0.020833333333333332,
+            0.0
+          ],
+          "scope": "omni-vs-omni delayed==normal is mailbox-only; stock-vs-omni phase lives in the host test gate."
         }
       },
-      "MQ": {
-        "duties": [
+      "long_sweeps": false
+    },
+    "M5": {
+      "train_10Hz_norms": [
+        0.0,
+        0.041666666666666664,
+        0.041666666666666664
+      ],
+      "train_20Hz_true_dt005_norms": [
+        0.0,
+        0.020833333333333332,
+        0.020833333333333332,
+        0.020833333333333336,
+        0.02083333333333333,
+        0.02083333333333333
+      ],
+      "train_20Hz_note": "TRUE 20 Hz train at dt=0.05, per-tick writes (not a same-tick proxy).",
+      "over_1.5_achieved": -0.9999999999999998,
+      "neg_-0.1_achieved": -0.0
+    },
+    "M1": {
+      "static": {
+        "ThrusterOnRamp": 0,
+        "ThrusterOffRamp": 0,
+        "cutoffFrequency": 0.0,
+        "MinOnTime": 0.0,
+        "thrBlowDownCoeff": 0,
+        "MaxSwirlTorque": 0.0,
+        "OnRamp_len": 0,
+        "OffRamp_len": 0
+      },
+      "step": {
+        "pair_type": "THRTimePair",
+        "step_norms": [
+          0.0,
+          0.049999999999999996,
+          0.049999999999999996
+        ],
+        "scope": "len==0 (empty ramps) ONLY \u2014 ramp-armed shapes gated in tests, never claimed vs stock."
+      }
+    },
+    "M2": {
+      "cutoff_ladder": {
+        "10.0": {
+          "norms": [
+            0.0,
+            0.049999999999999996,
+            0.049999999999999996
+          ],
+          "thrustFactor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "thrustForce": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "thrustBlowDownFactor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "100.0": {
+          "norms": [
+            0.0,
+            0.049999999999999996,
+            0.049999999999999996
+          ],
+          "thrustFactor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "thrustForce": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "thrustBlowDownFactor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "1000.0": {
+          "norms": [
+            0.0,
+            0.049999999999999996,
+            0.049999999999999996
+          ],
+          "thrustFactor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "thrustForce": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "thrustBlowDownFactor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "inert_1pct": {
+        "tol": 0.01,
+        "steps": [
           {
-            "cmd": 0.0,
-            "achieved": -0.0,
-            "expected": -0.0,
-            "err": 0.0
+            "step": 0,
+            "norms": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "ok": true
           },
           {
-            "cmd": 1e-12,
-            "achieved": -0.16666666666666663,
-            "expected": -0.16666666666666666,
-            "err": 2.7755575615628914e-17
+            "step": 1,
+            "norms": [
+              0.049999999999999996,
+              0.049999999999999996,
+              0.049999999999999996
+            ],
+            "ok": true
           },
           {
-            "cmd": 0.02,
-            "achieved": -0.16666666666666663,
-            "expected": -0.16666666666666666,
-            "err": 2.7755575615628914e-17
-          },
-          {
-            "cmd": 0.49,
-            "achieved": -0.16666666666666663,
-            "expected": -0.16666666666666666,
-            "err": 2.7755575615628914e-17
-          },
-          {
-            "cmd": 0.5,
-            "achieved": -0.833333333333333,
-            "expected": -0.8333333333333334,
-            "err": 3.3306690738754696e-16
-          },
-          {
-            "cmd": 0.9,
-            "achieved": -0.833333333333333,
-            "expected": -0.8333333333333334,
-            "err": 3.3306690738754696e-16
-          },
-          {
-            "cmd": 0.9999999,
-            "achieved": -0.833333333333333,
-            "expected": -0.8333333333333334,
-            "err": 3.3306690738754696e-16
-          },
-          {
-            "cmd": 1.0,
-            "achieved": -0.9999999999999998,
-            "expected": -1.0,
-            "err": 2.220446049250313e-16
-          },
-          {
-            "cmd": 1.5,
-            "achieved": -0.9999999999999998,
-            "expected": -1.0,
-            "err": 2.220446049250313e-16
-          },
-          {
-            "cmd": -0.1,
-            "achieved": -0.0,
-            "expected": -0.0,
-            "err": 0.0
+            "step": 2,
+            "norms": [
+              0.049999999999999996,
+              0.049999999999999996,
+              0.049999999999999996
+            ],
+            "ok": true
           }
+        ],
+        "inert": true
+      },
+      "shutoff_duty05": {
+        "norms": [
+          0.0,
+          0.041666666666666664,
+          0.041666666666666664
+        ],
+        "thrustFactor": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "M3": {
+      "x0.2": {
+        "ontime_cmd": 0.004,
+        "duty_cmd": 0.4,
+        "norms": [
+          0.0,
+          0.0,
+          0.0
         ]
       },
-      "M4": {
-        "0.1": {
-          "normal_norms": [
-            0.0,
-            0.06249999999999998,
-            0.06249999999999998
-          ],
-          "delayed_norms": [
-            0.0,
-            0.06249999999999998,
-            0.06249999999999998
-          ],
-          "delta_matched_dt": [
-            0.0,
-            0.0,
-            0.0
-          ]
-        },
-        "long_sweeps": false
-      },
-      "M5": {
-        "train_10Hz_norms": [
+      "x0.5": {
+        "ontime_cmd": 0.01,
+        "duty_cmd": 1.0,
+        "norms": [
           0.0,
-          0.06249999999999998,
-          0.06249999999999998
-        ],
-        "train_20Hz_proxy_norms": [
           0.0,
-          0.06249999999999998,
-          0.06249999999999998
-        ],
-        "over_1.5_achieved": -0.9999999999999998,
-        "neg_-0.1_achieved": -0.0
+          0.0
+        ]
       },
-      "M1": {
-        "static": {
-          "ThrusterOnRamp": 0,
-          "ThrusterOffRamp": 0,
-          "cutoffFrequency": 0.0,
-          "MinOnTime": 0.0,
-          "thrBlowDownCoeff": 0,
-          "MaxSwirlTorque": 0.0,
-          "OnRamp_len": 0,
-          "OffRamp_len": 0
-        },
-        "step": {
-          "pair_type": "THRTimePair",
-          "step_norms": [
-            0.0,
-            0.07499999999999998,
-            0.07499999999999998
-          ]
-        }
-      },
-      "M2": {
-        "cutoff_ladder": {
-          "10.0": {
-            "norms": [
-              0.0,
-              0.07499999999999998,
-              0.07499999999999998
-            ],
-            "thrustFactor": [
-              0.0,
-              0.0,
-              0.0,
-              1.0
-            ],
-            "thrustForce": [
-              0.0,
-              0.0,
-              0.0,
-              1.0
-            ],
-            "thrustBlowDownFactor": [
-              1.0,
-              1.0,
-              1.0,
-              1.0
-            ]
-          },
-          "100.0": {
-            "norms": [
-              0.0,
-              0.07499999999999998,
-              0.07499999999999998
-            ],
-            "thrustFactor": [
-              0.0,
-              0.0,
-              0.0,
-              1.0
-            ],
-            "thrustForce": [
-              0.0,
-              0.0,
-              0.0,
-              1.0
-            ],
-            "thrustBlowDownFactor": [
-              1.0,
-              1.0,
-              1.0,
-              1.0
-            ]
-          },
-          "1000.0": {
-            "norms": [
-              0.0,
-              0.07499999999999998,
-              0.07499999999999998
-            ],
-            "thrustFactor": [
-              0.0,
-              0.0,
-              0.0,
-              1.0
-            ],
-            "thrustForce": [
-              0.0,
-              0.0,
-              0.0,
-              1.0
-            ],
-            "thrustBlowDownFactor": [
-              1.0,
-              1.0,
-              1.0,
-              1.0
-            ]
-          }
-        }
-      },
-      "M3": {
-        "x0.2": {
-          "ontime_cmd": 0.004,
-          "duty_cmd": 0.4,
-          "norms": [
-            0.0,
-            0.0,
-            0.0
-          ]
-        },
-        "x0.5": {
-          "ontime_cmd": 0.01,
-          "duty_cmd": 1.0,
-          "norms": [
-            0.0,
-            0.0,
-            0.0
-          ]
-        },
-        "x1.0": {
-          "ontime_cmd": 0.02,
-          "duty_cmd": 2.0,
-          "norms": [
-            0.0,
-            0.007499999999999998,
-            0.007499999999999998
-          ]
-        },
-        "x1.5": {
-          "ontime_cmd": 0.03,
-          "duty_cmd": 3.0,
-          "norms": [
-            0.0,
-            0.007499999999999998,
-            0.007499999999999998
-          ]
-        },
-        "chatter": {
-          "norms": [
-            0.0,
-            0.0,
-            0.0,
-            0.0
-          ]
-        },
-        "MinOnTime": 0.02,
-        "dt": 0.01
-      },
-      "M6": {
-        "blowdown_smoke_norms": [
+      "x1.0": {
+        "ontime_cmd": 0.02,
+        "duty_cmd": 2.0,
+        "norms": [
           0.0,
-          0.06249999999999998,
-          0.06249999999999998
-        ],
-        "swirl_create": "accepted",
-        "THRArrayCmdForceMsg_present": true,
-        "omni_force_subscribed": true
+          0.004999999999999999,
+          0.004999999999999999
+        ]
       },
-      "SMSG": {
-        "THRConfig_4field": {
-          "maxThrust": true,
-          "rThrust_B": true,
-          "swirlTorque": true,
-          "tHatThrust_B": true
-        },
-        "THROutput_9field": {
-          "thrustFactor": true,
-          "thrustForce": true,
-          "thrustForce_B": true,
-          "thrustTorquePntB_B": true,
-          "thrustBlowDownFactor": true,
-          "ispBlowDownFactor": true,
-          "maxThrust": true,
-          "thrusterLocation": true,
-          "thrusterDirection": true
-        }
-      }
+      "x1.5": {
+        "ontime_cmd": 0.03,
+        "duty_cmd": 3.0,
+        "norms": [
+          0.0,
+          0.004999999999999999,
+          0.004999999999999999
+        ]
+      },
+      "chatter": {
+        "norms": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "MinOnTime": 0.02,
+      "dt": 0.01
     },
-    "meta": {
-      "long_sweeps": false,
-      "has_basilisk": true
+    "M6": {
+      "blowdown_smoke_norms": [
+        0.0,
+        0.041666666666666664,
+        0.041666666666666664
+      ],
+      "swirl_create": "accepted",
+      "THRArrayCmdForceMsg_present": true,
+      "omni_force_subscribed": "omni-unavailable"
+    },
+    "SMSG": {
+      "THRConfig_4field": {
+        "maxThrust": true,
+        "rThrust_B": true,
+        "swirlTorque": true,
+        "tHatThrust_B": true
+      },
+      "THROutput_9field": {
+        "thrustFactor": true,
+        "thrustForce": true,
+        "thrustForce_B": true,
+        "thrustTorquePntB_B": true,
+        "thrustBlowDownFactor": true,
+        "ispBlowDownFactor": true,
+        "maxThrust": true,
+        "thrusterLocation": true,
+        "thrusterDirection": true
+      }
     }
+  },
+  "meta": {
+    "long_sweeps": false,
+    "has_basilisk": true
   }
 }

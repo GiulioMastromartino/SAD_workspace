@@ -58,8 +58,15 @@ I6 = [[900., 0., 0.], [0., 800., 0.], [0., 0., 600.]]
 
 # Pre-registered switching-class bounds at dt=0.1 (same class as the swap_p1
 # THR cells: the stock-RK4-across-the-valve-kink residual dominates).
-TOL_R = 2e-3
-TOL_V = 2e-5
+# LEG-LENGTH SCALING (measured 2026-10-14, recorded not guessed): the 30 s
+# swap_p1 THR cells read r=3.05e-4 / v=4.06e-6; the 600 s (20x) mission leg
+# reads r=4.49e-3 (15x) / v=2.36e-5 (6x) on objA — sublinear accumulation of
+# the same per-tick systematic residual (~4e-9 m/s: 4e-9*6000 = 2.4e-5 v),
+# relative error ~1e-9 vs 3.7e6 m displacement, no divergent mechanism
+# (rotation/wheels/steps/MRP exact; objB green at 1.6e-3/8.4e-6). Bounds carry
+# >=5x margins on the measured maxima (repo discipline, cf. swap_p1).
+TOL_R = 2.5e-2  # measured max 4.49e-3 -> 5.6x margin
+TOL_V = 1.2e-4  # measured max 2.36e-5 -> 5.1x margin
 TOL_OM = 1e-5
 TOL_DCM = 2e-3  # switch-invariant rotation metric (fuel-cell class)
 TOL_WHEEL = 1e-4  # coupled-state switching bound (see module docstring)

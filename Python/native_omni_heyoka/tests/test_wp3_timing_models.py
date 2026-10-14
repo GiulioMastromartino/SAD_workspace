@@ -1107,3 +1107,27 @@ def test_m1_ramp_shape_trace_gate():
     assert float(np_l2(_deltas(om_t)[1])) > 0.0
     ft = np.asarray(thr_t.thrustFactor, float).ravel()
     assert np.all((ft >= 0.0) & (ft <= 1.0 + 1e-9))
+
+
+def test_ledger_m2_inert_1pct_gate():
+    """WP25-A2 inert gate: probes.M2.inert_1pct cutoff ratios ~= 1.00 +- 0.01.
+
+    The host ledger records the {10,100,1000} ladder norms agreeing to 1%
+    over fire AND shutoff transients (Decision 2: NO lag model on either
+    path). Every step must be ok and every live norm within 1% of the step
+    reference (ratio ~= 1.00 +- 0.01); idle steps must idle on all arms.
+    """
+    m2 = _payload(_load(WP3_JSON))["probes"]["M2"]
+    verdict = m2["inert_1pct"]
+    assert verdict["tol"] == pytest.approx(0.01)
+    assert verdict["inert"] is True
+    assert len(verdict["steps"]) > 0
+    for row in verdict["steps"]:
+        assert row["ok"] is True, row
+        vals = [float(v) for v in row["norms"]]
+        ref = max(vals) if vals else 0.0
+        if ref < 1e-12:
+            assert all(v < 1e-12 for v in vals), row
+        else:
+            for v in vals:
+                assert v / ref == pytest.approx(1.00, abs=0.01), row
