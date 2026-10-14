@@ -33,14 +33,17 @@ ZERO evidence. Any env-vs-env comparison must gate on an absolute
 firing/scale proof or it will happily prove the opposite of the truth.
 Telemetry (if ever published for env) stays about-B, unshifted.
 
-MEASURED CONVENTION (2026-10-13, test_host_drag_offset_direct_parity,
-firing-proven BOTH arms): stock drag torque is T = F x comOffset (about
-+z on this fixture); the pre-2026-10-13 omni order (comOffset x F, about
--z) was sign-flipped at equal magnitude (omni [0,0,-1.07812560e-09] vs
-stock [0,0,+1.07812559e-09], 8-digit |.| agreement). The shared helper
-include/omni/environment.hpp::dragWrench now encodes T = F x comOffset
-(one flip fixes BOTH the SysModel and vec paths, which share the helper
-via updateEnvInputs); ledger audit_bundle/results/wp45_combo.json.
+MEASURED RULE (corrected 2026-10-14; supersedes the convention note it
+replaces: the 2026-10-13 reading coincided with truth only at this
+fixture's degenerate rBcB = 2*comOffset). Stock drag torque is
+T = F x (rBcB - comOffset), about +z on this fixture (rBcB=0.1/com=0.05);
+omni matches via the shared helper cross-order F x () PLUS the arm
+(rBcB - comOffset) on both paths (vec: live-c minus comOffset; SysModel:
+rBcB_ record minus comOffset, exact there since fuel is unmodeled). The
+2026-10-13 flip fixed only the cross order (omni [0,0,-1.07812560e-09] vs
+stock [0,0,+1.07812559e-09], 8-digit agreement stands); the arm term is
+pinned by test_stock_drag_arm_rule_rbcb_minus_com. Combo ledger cited for
+the flip only -- its "unshifted" verdict is void (density-scale bug, header).
 Force-vs-torque split (same leg): the FORCE law F = -1/2 rho CdA |v_rel|
 v_rel with v_rel = v - vAir (wind-unlinked -> inertial) matches stock
 with identical inputs (code vs fixture operand order verified), so only
