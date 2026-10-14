@@ -632,7 +632,10 @@ a drift-triggered-rebuild design was tried and reverted: 2 s re-JIT each,
   (WP25-A3 option B, Decision 4 — see DESIGN A13; the static-full-tank publish
   was wrong telemetry under burn, H6). Single tank + all mirrored thrusters
   drain it (multi-tank raises;
-  subset linkage unverifiable -- documented assumption); empty-tank
+  subset linkage unverifiable -- documented assumption, CLOSED as NO-GO
+  2026-10-14: per-tank thruster subsets unobservable from the Python host
+  (opaque SwigPyObject handles, no getter, no tank back-reference;
+  re-open signal in tests/test_fuel_multitank.py); empty-tank
   behavior (clamp mdot, thrust unaffected) labeled; fuel+offset+full-FSW
   closed loop is follow-up.
 
