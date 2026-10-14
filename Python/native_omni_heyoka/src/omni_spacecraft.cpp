@@ -49,7 +49,6 @@ struct OmniSpacecraft::Impl {
         long fireCounter = 0;
     };
     std::vector<MinPulseState> minPulseState_;
-    std::vector<double> lagState_;
     std::vector<double> rampClock_;
     std::vector<double> lastFilt_;
     std::vector<double> lastQ_;
@@ -447,6 +446,7 @@ void OmniSpacecraft::setFuelParams(double m0, double mMax, double isp) {
     if (!(isp > 0.0) || !std::isfinite(isp))
         this->bskLogger.bskError("OmniSpacecraft: fuel isp must be finite positive.");
     this->fuelMass_ = m0; this->fuelMax_ = mMax; this->fuelIsp_ = isp;
+    this->fuelM0_ = m0;  // M18: Reset restores this (partial-tank) record.
     this->bskLogger.bskLog(BSK_WARNING,
                            "OmniSpacecraft: fuel is unmodeled on the SysModel path "
                            "(no depletion/mass-feedback/telemetry, WP25-A3 option B); "
@@ -965,18 +965,19 @@ void OmniSpacecraft::Reset(uint64_t CurrentSimNanos) {
     this->mrpSwitches = 0;
     // WP25-B2.3 (M12 staleness): outer accumulators do NOT survive a fresh
     // Impl -- clear DV, non-conservative accel, and fuel bookkeeping. Fuel
-    // returns to a FULL tank (fuelMax_); restoring the setFuelParams m0 needs
-    // an m0 record owned by S4 (leftover -- fuel blocks untouched here).
+    // returns to the setFuelParams m0 record (M18: partial tanks survive
+    // Reset; fuelMax_ is capacity only, never the restore value).
     this->accumDV_CN_N_[0] = this->accumDV_CN_N_[1] = this->accumDV_CN_N_[2] = 0.0;
     this->accumDV_BN_B_[0] = this->accumDV_BN_B_[1] = this->accumDV_BN_B_[2] = 0.0;
     this->accumDVBdy_[0] = this->accumDVBdy_[1] = this->accumDVBdy_[2] = 0.0;
     this->nonConsAccelB_[0] = this->nonConsAccelB_[1] = this->nonConsAccelB_[2] = 0.0;
-    this->fuelMass_ = this->fuelMax_;
+    this->fuelMass_ = this->fuelM0_;
     this->impl = std::make_unique<Impl>();
-    // Fresh-Impl behavior (documented): lagState_/rampClock_/lastFilt_/
+    // Fresh-Impl behavior (documented): rampClock_/lastFilt_/
     // lastQ_/minPulseState_/thrStepCount_/jitterRng_/fricState_/swirlOff_/
     // blowdownWarned_/lastWDot all restart empty/zero and are lazily
-    // (re)sized in UpdateState.
+    // (re)sized in UpdateState. (L7: lagState_ carcass removed -- it was
+    // sized but never read; shaping uses lastFilt_/lastQ_/rampClock_.)
     this->buildIntegrator();
     if (this->rwOutMsgs.size() != this->wheels.size())  // WP6: size publishers
         this->rwOutMsgs.resize(this->wheels.size());
@@ -1165,7 +1166,6 @@ void OmniSpacecraft::UpdateState(uint64_t CurrentSimNanos) {
         const size_t nt = this->nThrusters();
         auto& im = *(this->impl);
         if (im.minPulseState_.size() != nt) im.minPulseState_.resize(nt);
-        if (im.lagState_.size() != nt) im.lagState_.assign(nt, 0.0);
         if (im.rampClock_.size() != nt) im.rampClock_.assign(nt, 0.0);
         if (im.lastFilt_.size() != nt) im.lastFilt_.assign(nt, 0.0);
         if (im.lastQ_.size() != nt) im.lastQ_.assign(nt, 0.0);

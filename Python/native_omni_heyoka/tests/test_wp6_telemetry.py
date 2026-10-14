@@ -591,3 +591,10 @@ def test_b2_double_reset_dv_clean():
     assert n_post >= 1, "run 2 never re-burned (vacuous gate)"
     assert dv[-1] == pytest.approx(n_post * k1, rel=1e-6), (dv[-1], n_post, k1)
     assert dv[-1] < dv[b - 1], (dv[-1], dv[b - 1])  # fresh, not continued
+
+
+def test_fuel_reset_restores_m0_not_max():
+    """M18: Reset restores the setFuelParams m0, not fuelMax_ (source contract)."""
+    src = (REPO / "src" / "omni_spacecraft.cpp").read_text()
+    assert "this->fuelM0_ = m0" in src
+    assert "this->fuelMass_ = this->fuelM0_" in src

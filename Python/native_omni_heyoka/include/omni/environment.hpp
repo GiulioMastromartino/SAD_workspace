@@ -207,18 +207,22 @@ struct WrenchB {
 };
 
 // Drag TRUE law (stock dragDynamicEffector assembly):
-//   F_B = 1/2 rho CdA |v_rel_B|^2 (-vhat), T = F_B x comOffset_B,
+//   F_B = 1/2 rho CdA |v_rel_B|^2 (-vhat), T = F_B x dragArm_B,
 //   |v| <= 1e-12 -> 0, effective density rho*(1+corr) with (1+corr) >= 0.
 // vRel_B is ALREADY body-frame (module rotates v_BN_N - v_air_N by dcm_BN).
+// dragArm_B is the moment arm about B (callers pass rBcB - comOffset, NOT
+// verbatim comOffset -- L16 rename; the old comOffset_B name invited a
+// verbatim revert). Helper semantics UNCHANGED: T = F x arm.
 // Ledger LEO: |F| = 1.2937e-4 N (rho=2e-12, Cd=2.2, A=1, v=LEO circular).
-// TORQUE SIGN (host-measured 2026-10-13, test_host_drag_offset_direct_parity:
+// TORQUE SIGN (host-measured 2026-10-13, re-measured live by the in-tree
+// host test tests/test_wp45_env_offset.py::test_stock_drag_arm_rule_rbcb_minus_com):
 // omni [0,0,-1.07812560e-09] vs stock [0,0,+1.07812559e-09], |.| equal to
-// 8 digits, sign flipped on the torque-active axis; ledger wp45_combo.json):
-// stock takes T = F x comOffset (== -(comOffset x F)). The old
-// comOffset x F order is kept here as the documented-rejected form;
-// do NOT revert without a firing-proven host leg.
+// 8 digits, sign flipped on the torque-active axis): stock takes
+// T = F x dragArm (== -(dragArm x F)). The old dragArm x F order is kept
+// here as the documented-rejected form; do NOT revert without a
+// firing-proven host leg.
 inline WrenchB dragWrench(double rho, double CdA, const Vec3& vRel_B,
-                          const Vec3& comOffset_B, double densityCorr = 0.0) {
+                          const Vec3& dragArm_B, double densityCorr = 0.0) {
     WrenchB w{};
     double eff = 1.0 + densityCorr;
     if (!(eff >= 0.0)) eff = 0.0;
@@ -229,8 +233,8 @@ inline WrenchB dragWrench(double rho, double CdA, const Vec3& vRel_B,
     // F = 1/2 rho CdA |v|^2 (-vhat) = -1/2 rho CdA |v| v (no division).
     const Vec3 F = vec_scale(vRel_B, -0.5 * rhoEff * CdA * sp);
     w.F = F;
-    // Stock-measured +z convention (see TRUE-law header): T = F x comOffset.
-    w.T = vec_cross(F, comOffset_B);
+    // Stock-measured +z convention (see TRUE-law header): T = F x dragArm.
+    w.T = vec_cross(F, dragArm_B);
     return w;
 }
 

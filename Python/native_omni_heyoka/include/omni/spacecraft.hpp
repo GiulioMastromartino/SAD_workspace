@@ -82,6 +82,9 @@ public:
     std::vector<Message<RWConfigLogMsgPayload>> rwOutMsgs;
     Message<RWConfigLogMsgPayload>* rwLogOutMsg(size_t i) { return i < rwOutMsgs.size() ? &rwOutMsgs[i] : nullptr; }
     // FuelTankMsg-shaped bookkeeping publisher (NON-PARITY label).
+    // UNWRITTEN by design (WP25-A3 option B, L8): this path models NO fuel
+    // depletion, so a static publish would be wrong telemetry under any burn.
+    // The member stays for SWIG/API compat; recorders on it yield zeros.
     Message<FuelTankMsgPayload> fuelTankOutMsg;
     // --- WP5 environment inputs (message-hijack boundary) ---------------------
     ReadFunctor<AtmoPropsMsgPayload> atmoDensInMsg;  //!< neutralDensity; required when drag on
@@ -373,7 +376,9 @@ private:
     double accumDVBdy_[3] = {0.0, 0.0, 0.0};
     double nonConsAccelB_[3] = {0.0, 0.0, 0.0};
     // Fuel bookkeeping (caller-side, NO mass feedback): set via setFuelParams().
-    double fuelMass_ = 10.0, fuelMax_ = 10.0, fuelIsp_ = 250.0;
+    // fuelM0_ records the setFuelParams m0 so Reset restores a PARTIAL tank
+    // (M18); fuelMax_ is the capacity guard surface only.
+    double fuelMass_ = 10.0, fuelMax_ = 10.0, fuelIsp_ = 250.0, fuelM0_ = 10.0;
     static constexpr double WP6_G0 = 9.80665;
 
     void buildIntegrator();  // register contributors + symbolic build
