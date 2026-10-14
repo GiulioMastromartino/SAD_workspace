@@ -1,12 +1,12 @@
 {
   "name": "swap_p1_parity",
-  "timestamp_utc": "2026-10-14T07:09:56.464802+00:00",
+  "timestamp_utc": "2026-10-14T08:52:03.704438+00:00",
   "platform": "macOS-27.0-arm64-arm-64bit",
   "python": "3.11.16",
   "basilisk": "2.12.0",
   "heyoka": "7.12.1",
   "env": {
-    "timestamp_utc": "2026-10-14T07:09:56.485740+00:00",
+    "timestamp_utc": "2026-10-14T08:52:03.727915+00:00",
     "platform": "macOS-27.0-arm64-arm-64bit",
     "os_tag": "macOS",
     "machine": "arm64",
@@ -32,7 +32,7 @@
         "omega_BN_B": 1.951563910473908e-17,
         "nPars": 7,
         "nStates": 12,
-        "build_s": 0.2992
+        "build_s": 0.0078
       },
       "rw3_open_pos": {
         "r_BN_N": 0.0,
@@ -42,7 +42,7 @@
         "wheels": 4.547473508864641e-13,
         "nPars": 16,
         "nStates": 15,
-        "build_s": 0.0101
+        "build_s": 0.0103
       },
       "rw3_open_neg": {
         "r_BN_N": 0.0,
@@ -52,7 +52,7 @@
         "wheels": 2.8421709430404007e-13,
         "nPars": 16,
         "nStates": 15,
-        "build_s": 0.0082
+        "build_s": 0.0084
       },
       "rw3_pd": {
         "r_BN_N": 0.0,
@@ -62,7 +62,7 @@
         "wheels": 2.0038015691170585e-10,
         "nPars": 16,
         "nStates": 15,
-        "build_s": 0.0086
+        "build_s": 0.0088
       },
       "rw3_fric": {
         "r_BN_N": 0.0,
@@ -72,7 +72,7 @@
         "wheels": 1.4210854715202004e-14,
         "nPars": 16,
         "nStates": 15,
-        "build_s": 0.0085
+        "build_s": 0.0086
       },
       "rw1": {
         "r_BN_N": 0.0,
@@ -82,7 +82,7 @@
         "wheels": 0.0,
         "nPars": 10,
         "nStates": 13,
-        "build_s": 0.0087
+        "build_s": 0.0105
       },
       "rw2": {
         "r_BN_N": 0.0,
@@ -92,7 +92,7 @@
         "wheels": 0.0,
         "nPars": 13,
         "nStates": 14,
-        "build_s": 0.0089
+        "build_s": 0.0111
       },
       "rw1tilt": {
         "r_BN_N": 0.0,
@@ -102,7 +102,7 @@
         "wheels": 0.0,
         "nPars": 10,
         "nStates": 13,
-        "build_s": 0.0096
+        "build_s": 0.0114
       },
       "thr_fresh_05": {
         "r_BN_N": 0.0003053266555070877,
@@ -111,7 +111,7 @@
         "omega_BN_B": 5.995587251360346e-07,
         "nPars": 11,
         "nStates": 12,
-        "build_s": 0.0098
+        "build_s": 0.0111
       },
       "thr_fresh_10": {
         "r_BN_N": 9.313225746154785e-10,
@@ -120,7 +120,7 @@
         "omega_BN_B": 5.48172618408671e-16,
         "nPars": 11,
         "nStates": 12,
-        "build_s": 0.0082
+        "build_s": 0.0095
       },
       "thr_writeonce": {
         "r_BN_N": 1.7043203115463257e-07,
@@ -129,7 +129,7 @@
         "omega_BN_B": 5.582275848167728e-10,
         "nPars": 11,
         "nStates": 12,
-        "build_s": 0.0086
+        "build_s": 0.0108
       },
       "thr_frozen": {
         "r_BN_N": 2.0489096641540527e-07,
@@ -138,7 +138,7 @@
         "omega_BN_B": 5.430280756307804e-10,
         "nPars": 11,
         "nStates": 12,
-        "build_s": 0.0082
+        "build_s": 0.0102
       },
       "thr_lag10": {
         "r_BN_N": 0.0003053266555070877,
@@ -147,7 +147,7 @@
         "omega_BN_B": 5.995587251360346e-07,
         "nPars": 11,
         "nStates": 12,
-        "build_s": 0.0085
+        "build_s": 0.0088
       },
       "thr_offset": {
         "r_BN_N": 2.2351741790771484e-08,
@@ -196,7 +196,7 @@
         "fuel_burned": 1.1203805057975416,
         "nPars": 12,
         "nStates": 13,
-        "build_s": 0.0097
+        "build_s": 0.0115
       },
       "fuel_offset": {
         "r_BN_N": 0.005843746475875378,
@@ -209,7 +209,7 @@
         "fuel_burned": 1.1203805057975416,
         "nPars": 12,
         "nStates": 13,
-        "build_s": 0.0086
+        "build_s": 0.0087
       },
       "fuel_drag": {
         "r_BN_N": 0.00550827756524086,
@@ -221,12 +221,12 @@
         "fuel_rel_err": 0.0,
         "fuel_burned": 1.1203805057975416,
         "dc_norm": 0.000532225482766668,
-        "arm": "static",
+        "arm": "live-c-tracking",
         "density_max": 9.118819633615838e-13,
         "shift_sig_dcm": 3.558135210776978e-05,
         "nPars": 27,
         "nStates": 13,
-        "build_s": 0.0117
+        "build_s": 0.0118
       },
       "fuel_srp": {
         "r_BN_N": 0.0059931520372629166,
@@ -238,7 +238,7 @@
         "fuel_rel_err": 0.0,
         "fuel_burned": 1.1203805057975416,
         "dc_norm": 0.000532225482766668,
-        "arm": "static",
+        "arm": "live-c-tracking",
         "shift_sig_dcm": 8.111760890228822e-06,
         "nPars": 27,
         "nStates": 13,

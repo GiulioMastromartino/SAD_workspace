@@ -11,6 +11,14 @@ Bounds (pre-registered from the swap_p1 classes at matched dt=0.1, 600 s leg):
 Step/MRP audit: ticks == 6000 (600 s @ dt=0.1); MRP switch totals within
 +-2 of stock (test_swap_multi mechanism). Vacuity: burned > 0.1 kg and
 both-arm displacement > 1e5 m (effects live, not zeros-vs-zeros).
+Step-count audit (L14): per-leg steps == ticks AND calls == ticks (no
+double-step on the single-spacecraft vec path).
+Scope boundary (M17): the rejected unbalanced-geometry candidate lives in
+the JSON as cells.rejected (status "rejected-non-parity" + divergence
+numbers exceeding the parity bounds below) -- cited here, never gated.
+Build (L9): this config is nPars 21 / nStates 16 with NO JIT tier --
+build_s is recorded with host loadavg (contention-inflated) and explicitly
+NOT gated.
 
 Host-only sims: skipped (no failure) without Basilisk/the built wheel
 (importorskip, sibling-test pattern) or without the probe ledger.
@@ -76,3 +84,33 @@ def test_closed_loop_mrp_and_vacuity():
         f"leg mrp omni={c['mrp_omni']} stock={c['mrp_stock']}")
     assert c["disp_stock"] > 1e5, f"leg stock vacuous disp={c['disp_stock']:.3e}"
     assert c["disp_omni"] > 1e5, f"leg omni vacuous disp={c['disp_omni']:.3e}"
+
+
+def test_rejected_fixture_documented_nonparity():
+    """M17 scope boundary: the rejected unbalanced-geometry candidate is a
+    documented non-parity cell (status marker + divergence numbers that
+    EXCEED the parity bounds above) -- pinning where the green verdict
+    stops applying. Not a parity failure of the vec path."""
+    r = _load()["payload"]["cells"]["rejected"]
+    assert r["status"] == "rejected-non-parity"
+    assert r["fixture"]["r_TB_B"] == [0.3, 0.0, 0.2]
+    assert len(r["exceeds"]) >= 1, "rejected leg must exceed parity bounds"
+    assert r["fuel_burned"] > 0.1, "rejected leg must be firing-proven"
+    assert r["fuel_rel_err"] < 1e-9, "fuel law stays bit-exact even rejected"
+
+
+def test_step_count_audit():
+    """L14: exactly one integrate step and one call per tick (no double-step)."""
+    c = _load()["payload"]["cells"]["leg"]
+    assert c["steps"] == TICKS, f"leg steps={c['steps']}"
+    assert c["calls"] == TICKS, f"leg calls={c['calls']}"
+
+
+def test_build_s_recorded_not_gated():
+    """L9: the nPars-21 config has NO JIT tier -- build_s is recorded with
+    loadavg provenance (contention-inflated) and explicitly NOT gated."""
+    c = _load()["payload"]["cells"]["leg"]
+    assert c["nPars"] == 21
+    assert c["nStates"] == 16
+    assert isinstance(c["build_s"], float)  # recorded, no cap asserted
+    assert isinstance(c["loadavg"], list) and len(c["loadavg"]) == 3

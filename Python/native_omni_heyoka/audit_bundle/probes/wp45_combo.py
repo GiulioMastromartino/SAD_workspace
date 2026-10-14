@@ -896,6 +896,23 @@ def main() -> int:
         payload["magnetic_note"] = ("tau = m x B_B has NO moment arm: hub "
             "offset cannot shift it (WP5); gravity likewise (no arm). Only "
             "drag comOffset and SRP r_Cop arms are in question.")
+        # M21/M22 in-JSON void discipline: the 2026-10-12 stock-direct
+        # verdicts below are VOID (retained for archaeology only -- quote
+        # the marker, never the verdict words at face value).
+        payload["superseded"] = {
+            "status": "superseded",
+            "pointer": ("tests/test_wp45_env_offset.py::"
+                        "test_stock_drag_arm_rule_rbcb_minus_com"),
+            "void_reason": ("combo drag_offset '|dT| ~ 1e-17 => unshifted' "
+                            "used a 100x-wrong density scale (flat rho=2e-12 "
+                            "vs actual falloff rho~=2e-14 at 400 km / "
+                            "scaleHeight 88000); combo drag_zero_com (~0 "
+                            "torque) was an idle leg from an unwired "
+                            "effector, refuted by a live com=0 run"),
+            "applies_to": ["drag_offset", "drag_zero_com"],
+            "rule": ("stock drag torque is T = F x (rBcB - comOffset); "
+                     "see the pointer test for the 5-config firing-proven rows"),
+        }
         save_result(PROBE_ID, payload)
         _log("done wp45_combo")
         return 0

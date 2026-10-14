@@ -181,10 +181,21 @@ def test_zero_offset_shift_identity():
 
 
 def test_combo_ledger_verdict_shape_if_present():
-    """If the host probe ran, its verdicts must be one of the 3 words."""
+    """If the host probe ran, its verdicts must be one of the 3 words.
+
+    M21/M22 void discipline: the 2026-10-12 stock-direct verdicts are VOID
+    (100x density-scale bug + idle zero-com leg) -- the ledger MUST carry
+    the in-JSON `superseded` marker (pointer to the firing-proven rule
+    test + void reason). A ledger with the void word but WITHOUT the
+    marker FAILS (it is citable at face value)."""
     if not COMBO_LEDGER.exists():
         pytest.skip("combo probe not run on this host yet")
     p = json.loads(COMBO_LEDGER.read_text())["payload"]
+    sup = p.get("superseded")
+    assert isinstance(sup, dict), "missing in-JSON superseded marker (M22)"
+    assert sup.get("status") == "superseded"
+    assert "test_stock_drag_arm_rule_rbcb_minus_com" in sup.get("pointer", "")
+    assert "density" in sup.get("void_reason", "").lower()
     for key in ("drag_offset", "srp_offset"):
         if key in p and "verdict" in p[key]:
             assert p[key]["verdict"] in ("shifted", "unshifted", "ambiguous")
@@ -376,7 +387,9 @@ def _run_omni_drag(offset, dt=DT, n_ticks=4):
     try:
         sc.atmoDensInMsg.subscribeTo(dens_msg)
     except Exception as e:
-        pytest.skip(f"omni atmoDensInMsg wiring unknown on host: {e}")
+        # L13/H4: the atmoDensInMsg link is known on host -- a wiring
+        # failure is a real FAILURE, never a skip-as-pass.
+        pytest.fail(f"omni atmoDensInMsg link broken on host: {e}")
     log = sc.scStateOutMsg.recorder()
     sim.AddModelToTask("t", log)
     sim.InitializeSimulation()
@@ -652,9 +665,10 @@ def test_host_mag_no_arm_smoke():
             mp.magField_N = [2.0e-5, 0.5e-5, -1.0e-5]
             magMsg.write(mp)
             sc.magFieldInMsg.subscribeTo(magMsg)
-        except Exception:
-            pytest.skip("omni magFieldInMsg link spelling unknown on host")
-            return None
+        except Exception as e:
+            # L13/H4: the magFieldInMsg link is known on host -- a wiring
+            # failure is a real FAILURE, never a skip-as-pass.
+            pytest.fail(f"omni magFieldInMsg link broken on host: {e}")
         log = sc.scStateOutMsg.recorder()
         sim.AddModelToTask("t", log)
         sim.InitializeSimulation()

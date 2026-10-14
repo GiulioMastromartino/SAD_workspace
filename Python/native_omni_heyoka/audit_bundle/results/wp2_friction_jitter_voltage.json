@@ -1,12 +1,12 @@
 {
   "name": "wp2_friction_jitter_voltage",
-  "timestamp_utc": "2026-10-12T14:40:34.247843+00:00",
+  "timestamp_utc": "2026-10-14T08:10:49.229791+00:00",
   "platform": "macOS-27.0-arm64-arm-64bit",
   "python": "3.11.16",
   "basilisk": "2.12.0",
   "heyoka": "7.12.1",
   "env": {
-    "timestamp_utc": "2026-10-12T14:40:34.247870+00:00",
+    "timestamp_utc": "2026-10-14T08:10:49.229815+00:00",
     "platform": "macOS-27.0-arm64-arm-64bit",
     "os_tag": "macOS",
     "machine": "arm64",
@@ -23,7 +23,7 @@
     }
   },
   "payload": {
-    "plan_rev": 1,
+    "plan_rev": 2,
     "order": "J,F,V",
     "N_JITTER_TICKS": 400,
     "N_FRICTION_TICKS": 40,
@@ -31,7 +31,7 @@
     "has_basilisk": true,
     "has_numpy": true,
     "env": {
-      "timestamp_utc": "2026-10-12T14:40:33.601398+00:00",
+      "timestamp_utc": "2026-10-14T08:10:48.237585+00:00",
       "platform": "macOS-27.0-arm64-arm-64bit",
       "os_tag": "macOS",
       "machine": "arm64",
@@ -56,36 +56,41 @@
           "skipped": null,
           "error": null,
           "notes": [
-            "RWModel=JitterSimple fixed RNGSeed=20260511"
+            "RWModel=JitterSimple fixed RNGSeed=20260511",
+            "TRUE 2x400-tick horizon (WP25-B3: min(n,40) cap removed)",
+            "M19 hub cell: omega_BN_B/sigma_BN same-seed replay deltas (jitter-visible channels per spike section 5; wheelSpeeds alone is jitter-blind, spike check #3)"
           ],
           "run1": {
             "ok": true,
             "skipped": null,
             "error": null,
-            "n_ticks": 40
+            "n_ticks": 400
           },
           "run2": {
             "ok": true,
             "skipped": null,
             "error": null,
-            "n_ticks": 40
+            "n_ticks": 400
           },
           "max_abs_delta_u_cmd": 0.0,
           "max_abs_delta_wheelSpeeds": 0.0,
-          "deterministic": true
+          "deterministic": true,
+          "max_abs_delta_omega_BN_B": 0.0,
+          "max_abs_delta_sigma_BN": 0.0,
+          "deterministic_hub": true
         },
         "J2": {
           "ok": true,
           "skipped": null,
           "error": null,
           "notes": [
-            "jitter-free reference; 1-wheel zero-u + 3-wheel const-u"
+            "jitter-free reference; 1-wheel zero-u (TRUE 400-tick horizon) + 3-wheel const-u at 40 ticks (horizon reference only, no determinism claim)"
           ],
           "zero_u_run": {
             "ok": true,
             "skipped": null,
             "error": null,
-            "n_ticks": 40
+            "n_ticks": 400
           },
           "three_wheel_run": {
             "ok": true,
@@ -99,7 +104,8 @@
           "skipped": null,
           "error": null,
           "notes": [
-            "real per-tick theta logs unavailable headless; synthetic corr documents expected shape"
+            "real per-tick theta logs unavailable headless; synthetic corr documents expected shape",
+            "synthetic series ONLY -- omni publishes no thetas (zeros, labeled above)"
           ],
           "census": {
             "module_dir_hits": [
@@ -118,7 +124,8 @@
             "numRWJitter": "unknown",
             "synthetic_increment_autocorr_lag1": -0.003699487364711364,
             "wheelThetas_active": true
-          }
+          },
+          "omni_wheelThetas": "zeros -- omni SysModel/vec paths register no theta states and never write RWSpeedMsg wheelThetas (WP25-B3 label; JitterFullyCoupled, the only stock model with thetas, is rejected)"
         }
       },
       "verdict": "distrib-or-reject: deterministic-JitterSimple"
@@ -230,7 +237,8 @@
           "skipped": null,
           "error": null,
           "notes": [
-            "friction-only state: wheel drag must back-drive hub opposite sign (reaction); sign recorded qualitatively"
+            "friction-only state: wheel drag must back-drive hub opposite sign (reaction); sign recorded qualitatively",
+            "WP25-B3: QUALITATIVE ONLY -- not law evidence (see section law_evidence pointer to rw3_fric)"
           ],
           "run": {
             "ok": true,
@@ -338,6 +346,7 @@
           }
         }
       },
+      "law_evidence": "SUPERSEDED to vec rw3_fric (swap_p1_parity.json, 1e-14 class); F1-F6 are sim-ran characterization only",
       "F0_readback_defaults": {
         "Js": null,
         "U_s": null,
@@ -429,7 +438,7 @@
           "notes": [],
           "info": {
             "smoke": "failed: AttributeError(\"'SimBaseClass' object has no attribute 'ConfigureSimulation'\")",
-            "traceback": "Traceback (most recent call last):\n  File \"/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/audit_bundle/probes/wp2_friction_jitter_voltage.py\", line 630, in _section_voltage\n    sim.ConfigureSimulation()\n    ^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'SimBaseClass' object has no attribute 'ConfigureSimulation'\n"
+            "traceback": "Traceback (most recent call last):\n  File \"/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/audit_bundle/probes/wp2_friction_jitter_voltage.py\", line 708, in _section_voltage\n    sim.ConfigureSimulation()\n    ^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'SimBaseClass' object has no attribute 'ConfigureSimulation'\n"
           }
         },
         "V4": {
@@ -447,6 +456,6 @@
         }
       }
     },
-    "elapsed_s": 0.6464331150054932
+    "elapsed_s": 0.9921920299530029
   }
 }

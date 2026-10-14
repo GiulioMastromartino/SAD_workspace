@@ -1,12 +1,12 @@
 {
   "name": "wp45_combo",
-  "timestamp_utc": "2026-10-12T15:45:50.839397+00:00",
+  "timestamp_utc": "2026-10-14T08:10:57.299715+00:00",
   "platform": "macOS-27.0-arm64-arm-64bit",
   "python": "3.11.16",
   "basilisk": "2.12.0",
   "heyoka": "7.12.1",
   "env": {
-    "timestamp_utc": "2026-10-12T15:45:50.839407+00:00",
+    "timestamp_utc": "2026-10-14T08:10:57.299724+00:00",
     "platform": "macOS-27.0-arm64-arm-64bit",
     "os_tag": "macOS",
     "machine": "arm64",
@@ -24,7 +24,7 @@
   },
   "payload": {
     "env": {
-      "timestamp_utc": "2026-10-12T15:45:47.796890+00:00",
+      "timestamp_utc": "2026-10-14T08:10:54.921496+00:00",
       "platform": "macOS-27.0-arm64-arm-64bit",
       "os_tag": "macOS",
       "machine": "arm64",
@@ -431,6 +431,16 @@
       "verdict": "untestable (effector idle)",
       "status": "ok"
     },
-    "magnetic_note": "tau = m x B_B has NO moment arm: hub offset cannot shift it (WP5); gravity likewise (no arm). Only drag comOffset and SRP r_Cop arms are in question."
+    "magnetic_note": "tau = m x B_B has NO moment arm: hub offset cannot shift it (WP5); gravity likewise (no arm). Only drag comOffset and SRP r_Cop arms are in question.",
+    "superseded": {
+      "status": "superseded",
+      "pointer": "tests/test_wp45_env_offset.py::test_stock_drag_arm_rule_rbcb_minus_com",
+      "void_reason": "combo drag_offset '|dT| ~ 1e-17 => unshifted' used a 100x-wrong density scale (flat rho=2e-12 vs actual falloff rho~=2e-14 at 400 km / scaleHeight 88000); combo drag_zero_com (~0 torque) was an idle leg from an unwired effector, refuted by a live com=0 run",
+      "applies_to": [
+        "drag_offset",
+        "drag_zero_com"
+      ],
+      "rule": "stock drag torque is T = F x (rBcB - comOffset); see the pointer test for the 5-config firing-proven rows"
+    }
   }
 }

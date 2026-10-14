@@ -269,6 +269,14 @@ def _rw_sim(friction_kwargs, u_profile, dt=DT_DEFAULT, n_ticks=N_FRICTION_TICKS,
             res["driver"] = "driver-wire-fail: %r" % (e,)
         _spd = rw_eff.rwSpeedOutMsg.recorder()
         sim.AddModelToTask(task_name, _spd)
+        # M19 hub-channel recorder: wheelSpeeds is jitter-blind in this
+        # config (spike check #3: JitterSimple vs BalancedWheels max|d|
+        # exactly 0.0 on wheelSpeeds), so J1 determinism additionally
+        # records the jitter-visible hub channels (spike checks #1/#4:
+        # same-seed replay max|d| 0.0 on sigma/omega; cross-model hub
+        # deltas 3.02e-09/2.02e-08 prove the channel sees jitter).
+        _sc_state = sc.scStateOutMsg.recorder()
+        sim.AddModelToTask(task_name, _sc_state)
         _outs = []
         try:
             for m in list(rw_eff.rwOutMsgs):
@@ -287,6 +295,15 @@ def _rw_sim(friction_kwargs, u_profile, dt=DT_DEFAULT, n_ticks=N_FRICTION_TICKS,
             res["wheelSpeeds_trace"] = np.asarray(_spd.wheelSpeeds, dtype=float).tolist() if HAS_NUMPY else "no-numpy"
         except Exception as e:
             res["wheelSpeeds_trace"] = "unreadable: %r" % (e,)
+        try:
+            # M19: hub-channel traces for the J1 hub determinism cell.
+            res["omega_BN_B_trace"] = np.asarray(_sc_state.omega_BN_B, dtype=float).tolist() if HAS_NUMPY else "no-numpy"
+        except Exception as e:
+            res["omega_BN_B_trace"] = "unreadable: %r" % (e,)
+        try:
+            res["sigma_BN_trace"] = np.asarray(_sc_state.sigma_BN, dtype=float).tolist() if HAS_NUMPY else "no-numpy"
+        except Exception as e:
+            res["sigma_BN_trace"] = "unreadable: %r" % (e,)
         try:
             res["u_current_w0"] = np.asarray(_outs[0].u_current, dtype=float).tolist() if (_outs and HAS_NUMPY) else "unavailable"
         except Exception as e:
@@ -334,15 +351,42 @@ def _section_jitter():
                 else:
                     j1["max_abs_delta_wheelSpeeds"] = "shape-mismatch-or-empty"
                     j1["deterministic"] = False
+                # M19 hub-channel determinism cell (spike section 5): the
+                # jitter-visible hub channels, same-seed replay must be
+                # bit-identical (spike check #1: max|d| 0.0 everywhere).
+                oa = np.asarray(r1.get("omega_BN_B_trace", []), dtype=float)
+                ob = np.asarray(r2.get("omega_BN_B_trace", []), dtype=float)
+                sa = np.asarray(r1.get("sigma_BN_trace", []), dtype=float)
+                sb = np.asarray(r2.get("sigma_BN_trace", []), dtype=float)
+                if oa.size and oa.shape == ob.shape:
+                    j1["max_abs_delta_omega_BN_B"] = float(np.max(np.abs(oa - ob)))
+                else:
+                    j1["max_abs_delta_omega_BN_B"] = "shape-mismatch-or-empty"
+                if sa.size and sa.shape == sb.shape:
+                    j1["max_abs_delta_sigma_BN"] = float(np.max(np.abs(sa - sb)))
+                else:
+                    j1["max_abs_delta_sigma_BN"] = "shape-mismatch-or-empty"
+                j1["deterministic_hub"] = (
+                    j1.get("max_abs_delta_omega_BN_B") == 0.0
+                    and j1.get("max_abs_delta_sigma_BN") == 0.0)
             else:
                 j1["max_abs_delta_u_cmd"] = 0.0 if r1.get("u_cmd") == r2.get("u_cmd") else None
                 j1["deterministic"] = (r1.get("wheelSpeeds_trace") == r2.get("wheelSpeeds_trace"))
+                # M19 no-numpy fallback: hub-channel equality alongside.
+                j1["max_abs_delta_omega_BN_B"] = 0.0 if r1.get("omega_BN_B_trace") == r2.get("omega_BN_B_trace") else None
+                j1["max_abs_delta_sigma_BN"] = 0.0 if r1.get("sigma_BN_trace") == r2.get("sigma_BN_trace") else None
+                j1["deterministic_hub"] = (
+                    j1["max_abs_delta_omega_BN_B"] == 0.0
+                    and j1["max_abs_delta_sigma_BN"] == 0.0)
         except Exception as e:
             j1["max_abs_delta_u_cmd"] = "unavailable: %r" % (e,)
             j1["deterministic"] = False
         j1["notes"].append("RWModel=JitterSimple fixed RNGSeed=20260511")
         j1["notes"].append("TRUE 2x%d-tick horizon (WP25-B3: min(n,40) cap removed)"
                            % N_JITTER_TICKS)
+        j1["notes"].append("M19 hub cell: omega_BN_B/sigma_BN same-seed replay "
+                           "deltas (jitter-visible channels per spike section 5; "
+                           "wheelSpeeds alone is jitter-blind, spike check #3)")
         j1["ok"] = bool(r1.get("ok") and r2.get("ok"))
     except Exception as e:
         j1["error"] = repr(e)

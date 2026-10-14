@@ -153,12 +153,14 @@ def test_p1_fuel_env_scope():
     cells are measured at matched dt (probe _env_fuel_drag_cell /
     _env_fuel_srp_cell) and gated in the switching class (pre-registered in
     the _env_fuel_cell docstring: r < 2e-2, v < 1e-4, omega < 1e-4,
-    dcm_max < 2e-3, fuel_rel_err < 1e-9, burned > 0.1). Arm verdict: static
-    drag arm stands (ledger fuel_drag arm == "static"); the ledger carries
-    the sensitivity bound explicitly -- stock-measured |dc| (dc_norm) with
-    the 1:1-shift signature estimate (shift_sig_dcm) BELOW the dcm residual
-    (sensitivity-limited consistency: a tracking gain >= ~25 would have
-    tripped the dcm gate; G = 1 is not excluded -- recorded, not guessed).
+    dcm_max < 2e-3, fuel_rel_err < 1e-9, burned > 0.1). Arm record
+    (H10-corrected): the vec drag arm tracks live-c (ledger fuel_drag arm
+    == "live-c-tracking", never the tautological "static"); the ledger
+    carries the sensitivity bound explicitly -- stock-measured |dc|
+    (dc_norm) with the 1:1-shift signature estimate (shift_sig_dcm) BELOW
+    the dcm residual (sensitivity-limited consistency: a tracking gain
+    >= ~25 would have tripped the dcm gate; G = 1 is not excluded --
+    open-recorded, not a verdict for the arm).
     fuel_srp is force-level parity only (cannonball torque identically zero
     both arms) and cannot discriminate by construction."""
     d = _load()["payload"]["cells"]
@@ -166,7 +168,7 @@ def test_p1_fuel_env_scope():
         assert cell in d, f"missing cell {cell}"
         c = d[cell]
         assert c.get("status", "ok") != "H7-OUT", f"{cell} unmeasured"
-        assert c["arm"] == "static", f"{cell}.arm={c.get('arm')}"
+        assert c["arm"] == "live-c-tracking", f"{cell}.arm={c.get('arm')}"
         assert c["r_BN_N"] < 2e-2, f"{cell}.r={c['r_BN_N']:.3e}"
         assert c["v_BN_N"] < 1e-4, f"{cell}.v={c['v_BN_N']:.3e}"
         assert c["omega_BN_B"] < 1e-4, f"{cell}.om={c['omega_BN_B']:.3e}"

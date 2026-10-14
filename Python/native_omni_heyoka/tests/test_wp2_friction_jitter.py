@@ -313,6 +313,18 @@ def test_ledger_j1_deterministic():
     assert j1["max_abs_delta_wheelSpeeds"] == 0.0  # fixed RNGSeed; horizon labeled below
 
 
+def test_ledger_j1_hub_channel_deterministic():
+    # M19 (spike section 5): wheelSpeeds is jitter-blind in this config
+    # (JitterSimple vs BalancedWheels max|d| exactly 0.0 even across
+    # models), so determinism is additionally gated on the jitter-visible
+    # hub channels (same-seed replay must be bit-identical).
+    j1 = _ledger()["payload"]["jitter"]["probes"]["J1"]
+    assert j1["ok"] is True
+    assert j1["deterministic_hub"] is True
+    assert j1["max_abs_delta_omega_BN_B"] == 0.0
+    assert j1["max_abs_delta_sigma_BN"] == 0.0
+
+
 def test_ledger_j1_horizon_matches_plan_rev():
     # WP25-B3: J1 determinism must hold at the CLAIMED horizon. Probe rev 1
     # recorded 2x40 (min(n,40) cap); probe rev >= 2 runs TRUE 2x400.

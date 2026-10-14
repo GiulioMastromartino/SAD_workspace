@@ -1,12 +1,12 @@
 {
   "name": "closed_loop_fuel",
-  "timestamp_utc": "2026-10-14T07:42:49.601845+00:00",
+  "timestamp_utc": "2026-10-14T08:11:36.182888+00:00",
   "platform": "macOS-27.0-arm64-arm-64bit",
   "python": "3.11.16",
   "basilisk": "2.12.0",
   "heyoka": "7.12.1",
   "env": {
-    "timestamp_utc": "2026-10-14T07:42:49.620906+00:00",
+    "timestamp_utc": "2026-10-14T08:11:36.217244+00:00",
     "platform": "macOS-27.0-arm64-arm-64bit",
     "os_tag": "macOS",
     "machine": "arm64",
@@ -72,12 +72,95 @@
         "disp_omni": 3761828.873853901,
         "nPars": 21,
         "nStates": 16,
-        "build_s": 7.0517
+        "build_s": 18.409,
+        "steps": 6000,
+        "calls": 6000,
+        "loadavg": [
+          3.51171875,
+          4.22998046875,
+          3.99072265625
+        ]
+      },
+      "rejected": {
+        "status": "rejected-non-parity",
+        "scope": "documented divergence, NOT a parity cell: the 2.5 N.m-class burn torque saturates the 0.2 N.m wheels and the offset tank adds a stock-only c-drift torque -- exceeds the fuel-cell switching bounds by construction; open-loop fuel_offset with the same geometry is green",
+        "ticks": 6000,
+        "t_leg": 600.0,
+        "fixture": {
+          "mHub_dry": 740.0,
+          "prop0": 10.0,
+          "r_TB_B": [
+            0.3,
+            0.0,
+            0.2
+          ],
+          "thrust": 5.0,
+          "thr_loc": [
+            0.5,
+            0.0,
+            1.0
+          ],
+          "thr_dir": [
+            0.0,
+            0.0,
+            -1.0
+          ],
+          "duty": 0.5,
+          "pd": {
+            "K": 3.5,
+            "P": 30.0,
+            "u_max": 0.2
+          },
+          "wheels": 3,
+          "ic": "tumbling-SIG0/OM0"
+        },
+        "r_BN_N": 1.117420638911426,
+        "v_BN_N": 0.006114867697760928,
+        "sigma_BN": 0.0226632742483151,
+        "omega_BN_B": 0.0015242391704074001,
+        "dcm_max": 0.11585334951052326,
+        "wheels": 0.23814014399658845,
+        "fuel_stock": 8.879619494202458,
+        "fuel_omni": 8.879619494202458,
+        "fuel_rel_err": 0.0,
+        "fuel_burned": 1.1203805057975416,
+        "mrp_stock": 27,
+        "mrp_omni": 27,
+        "disp_stock": 3761291.6214279407,
+        "disp_omni": 3761290.6603819965,
+        "nPars": 21,
+        "nStates": 16,
+        "build_s": 0.0181,
+        "steps": 6000,
+        "calls": 6000,
+        "loadavg": [
+          3.51171875,
+          4.22998046875,
+          3.99072265625
+        ],
+        "exceeds": [
+          "r_BN_N=1.117e+00 >= 2.0e-02",
+          "v_BN_N=6.115e-03 >= 1.0e-04",
+          "sigma_BN=2.266e-02 >= 2.0e-04",
+          "omega_BN_B=1.524e-03 >= 1.0e-04",
+          "dcm_max=1.159e-01 >= 2.0e-03",
+          "wheels=2.381e-01 >= 1.0e-04"
+        ]
       }
     },
     "dt": 0.1,
     "t_leg": 600.0,
     "ticks": 6000,
+    "loadavg": [
+      4.0,
+      4.36767578125,
+      4.033203125
+    ],
+    "loadavg_end": [
+      3.51171875,
+      4.22998046875,
+      3.99072265625
+    ],
     "verdict": "parity green"
   }
 }

@@ -356,6 +356,14 @@ def main() -> int:
         save_result("swap_multi",
                     {"status": "skipped", "reason": "Basilisk not importable"})
         return 0
+    # L15 log hygiene: truncate the run log at probe start so it keeps the
+    # last run only (log_text appends; without this every run piles onto
+    # the previous ones while the JSON keeps just the latest).
+    try:
+        _log_path = Path(__file__).resolve().parent.parent / "results" / "swap_multi.log"
+        _log_path.write_text("", encoding="utf-8")
+    except Exception:
+        pass
     try:
         payload: dict = {"status": "ok", "cells": {}, "dt": DT,
                          "t_leg": T_LEG, "ticks": TICKS}

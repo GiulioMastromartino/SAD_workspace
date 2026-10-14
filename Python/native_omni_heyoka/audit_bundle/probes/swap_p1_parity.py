@@ -12,7 +12,7 @@ Cells (all matched-dt, pre-registered tolerances in verdicts):
   env_srp        SRP-cannonball A/B + single-tick analytic guard
   fuel_centered fuel depletion, centered tank (mass/I feedback isolated)
   fuel_offset    fuel depletion, offset tank (c-drift deviation bounded)
-  fuel_drag      WP-C measured: burn (offset tank) + LEO drag, static arm
+  fuel_drag      WP-C measured: burn (offset tank) + LEO drag, live-c-tracking arm
   fuel_srp       WP-C measured: burn (offset tank) + SRP cannonball
   reject_*       fuel tank / jitter thetas / drag effector / min-pulse /
                  low-cutoff / multi-RW-effector must all raise LOUDLY
@@ -587,23 +587,23 @@ def _env_fuel_cell(r_tb):
     fuel+SRP combined cells (burn + env on, matched dt) are measured below
     (_env_fuel_drag_cell / _env_fuel_srp_cell) in the switching class
     (r < 2e-2, v < 1e-4, omega < 1e-4, dcm_max < 2e-3,
-    fuel_rel_err < 1e-9, burned > 0.1). Arm verdict (stock-only burn +
-    combined parity, numbers in the fuel_drag ledger cell): stock aggregate
-    c_B DOES drift with depletion (offset tank [0.3,0,0.2]: c [4.00e-3, 0,
-    2.67e-3] -> [3.56e-3, 0, 2.37e-3], |dc| = 5.32e-4 m, 1.1204 kg burned)
-    but the vec drag arm stays STATIC (envComOff verbatim, C1-measured for
-    static-rBcB): combined parity is green with the static arm
-    (r 1.46e-2, v 6.2e-5, om 2.4e-5, dcm 9.2e-4). Sensitivity bound
-    (explicit, keeps H7 honest where not excluded): at 350 km rho ~ 9e-13
-    gives F_drag ~ 3e-4 N, so a 1:1 depletion-tracking arm would imprint
-    only |dc x F_drag| ~ 1.6e-7 N.m -> dcm ~ 3.6e-5, ~25x BELOW the
-    9.2e-4 residual floor (thruster-coupling-amplified projection class).
-    Verdict: static arm STANDS (no evidence of shift); a tracking gain
-    G >= ~25 would have tripped the dcm gate; G = 1 is NOT excluded by
-    this cell -- recorded, not guessed. Fixture notes: tumbling ICs
-    (stabilized ICs DIVERGE to dcm ~ 2.0 under this thruster geometry --
-    measured WP-C, coherent spin-up amplifies micro-seeds via the 2.5 N.m
-    body torque; same reason 250 km breaks the dcm gate at 4.3e-3).
+    fuel_rel_err < 1e-9, burned > 0.1). Arm record (H10-corrected: the vec
+    drag arm tracks live-c -- vec:dragArm{cLive-envComOff} -- NOT a static
+    arm; the ledger `arm` field records "live-c-tracking", never "static"):
+    stock aggregate c_B DOES drift with depletion (offset tank [0.3,0,0.2]:
+    c [4.00e-3, 0, 2.67e-3] -> [3.56e-3, 0, 2.37e-3], |dc| = 5.32e-4 m,
+    1.1204 kg burned) and the vec arm follows it live. This fixture is
+    INSENSITIVE to the arm model by its own bound: at 350 km rho ~ 9e-13
+    gives F_drag ~ 3e-4 N, so a 1:1 depletion-tracking arm imprints only
+    |dc x F_drag| ~ 1.6e-7 N.m -> dcm ~ 3.6e-5, ~25x BELOW the 9.2e-4
+    residual floor (thruster-coupling-amplified projection class). Honest
+    gate: shift_sig_dcm < dcm_max (sensitivity-limited consistency -- a
+    tracking gain G >= ~25 would have tripped the dcm gate); G = 1 is NOT
+    excluded by this cell -- open-recorded, not a verdict for the arm.
+    Fixture notes: tumbling ICs (stabilized ICs DIVERGE to dcm ~ 2.0 under
+    this thruster geometry -- measured WP-C, coherent spin-up amplifies
+    micro-seeds via the 2.5 N.m body torque; same reason 250 km breaks the
+    dcm gate at 4.3e-3).
     SRP cannonball torque is identically zero on BOTH arms (acts at CoM),
     so fuel_srp is force-level parity only (r 6.0e-3, dcm 4.5e-4) and
     cannot discriminate live-c vs static-c by construction -- labeled.
@@ -696,12 +696,13 @@ def _env_fuel_drag_cell():
     Fixture: offset tank [0.3, 0, 0.2] (max dc in the fuel-cell set),
     5 N thruster duty 0.5 fresh, 600 s, LEO 350 km circular, tumbling ICs,
     drag CdA = 11 comOffset = [0.05, 0, 0] (env_drag numbers). Omni arm
-    uses the STATIC drag arm (envComOff verbatim). Extra ledger fields:
+    uses the LIVE-C-TRACKING drag arm (cLive minus comOffset on the vec
+    path; H10: never labeled "static"). Extra ledger fields:
     dc_norm (stock-measured |c(t1)-c(t0)| via scMassOutMsg), density_max
     (drag-live guard), shift_sig_dcm (1:1 depletion-tracking attitude
     signature estimate = |dc|*F*T^2/2I, I_rep = 800; the sensitivity
     floor -- must stay below the dcm residual for the verdict to read
-    "consistent, sensitivity-limited"), arm = "static".
+    "consistent, sensitivity-limited"), arm = "live-c-tracking".
     """
     return _env_fuel_env_cell("drag")
 
@@ -847,7 +848,7 @@ def _env_fuel_env_cell(env):
     # Stock-measured depletion drift of the aggregate CoM (arm verdict).
     c = np.asarray(mloga.c_B, float)
     d["dc_norm"] = float(np.linalg.norm(c[-1] - c[0]))
-    d["arm"] = "static"
+    d["arm"] = "live-c-tracking"
     if env == "drag":
         rho = float(np.asarray(dlogb.neutralDensity).max())
         d["density_max"] = rho
@@ -883,6 +884,16 @@ def main() -> int:
         return 0
     payload: dict = {"status": "ok", "cells": {}, "dt": DT}
     fields0 = ["r_BN_N", "v_BN_N", "sigma_BN", "omega_BN_B"]
+
+    # JIT WARM-UP (metrology, not physics): the first heyoka build in a
+    # fresh process pays one-time LLVM cold-start (~18 s, load-independent:
+    # measured 18.42 s cold -> 0.007 s warm in the same process), which
+    # would otherwise land on whichever cell runs first and swamp the
+    # Ground-8 build tiers. Those tiers gate GRAPH-size scaling (catching
+    # 10x+ pathological growth), so every cell below must measure a warm
+    # steady-state build. This throwaway 2-tick build is UNRECORDED.
+    _warm, _, _, _, _ = _arm(True, "hub", **{})
+    _run(_warm, 0.2)
 
     def ab(kind, T, **kw):
         sima, _, loga, spda, _ = _arm(False, kind, **kw)
@@ -926,7 +937,7 @@ def main() -> int:
     payload["cells"]["fuel_centered"] = _env_fuel_cell([0.0, 0.0, 0.0])
     payload["cells"]["fuel_offset"] = _env_fuel_cell([0.3, 0.0, 0.2])
     # WP-C MEASURED (H7-LIFTED, see _env_fuel_cell docstring): combined
-    # fuel+env cells at matched dt, static drag arm. Switching-class gates
+    # fuel+env cells at matched dt, live-c-tracking drag arm. Switching-class gates
     # apply via the fuel_ bounds branch + vacuity loop below.
     payload["cells"]["fuel_drag"] = _env_fuel_drag_cell()
     payload["cells"]["fuel_srp"] = _env_fuel_srp_cell()
