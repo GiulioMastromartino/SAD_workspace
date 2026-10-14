@@ -593,11 +593,19 @@ change). `JitterFullyCoupled` raises at its setter (theta states +
 aOmega/bOmega/cOmega are not registrable; setter-gated — no `RWModel`
 member exists on the SysModel surface for setup-time detection).
 
-**Jitter policy.** Bit-exact is prohibited: stock's RNG is an opaque macOS
-dylib and `normal_distribution` differs across libc++/libstdc++ hosts.
-`JitterSimple` gets distributional parity with a measured determinism
-ledger (identical seed replays exactly: max|delta wheelSpeeds| = 0.0 over
-2x400 ticks). Omni's own streams are `mt19937_64` split per wheel by
+**Jitter policy.** Bit-exact is prohibited: stock `JitterSimple` is a
+deterministic theta-state imbalance model (no RNG anywhere in the stock
+jitter path — `RNGSeed` unobserved, diff-seed replays bit-identical; the
+earlier-cited dylib-RNG/libc++-`normal_distribution` mechanism was
+inaccurate, see ledger `audit_bundle/results/jitter_spike.md`), while the
+port injects additive white Gaussian torque noise — a different model
+family with no parameter map (`U_s`/`U_d` imbalance coefficients ⇄ noise
+sigma is meaningless) — and cross-integrator (heyoka-Taylor vs
+Basilisk-RK) plus missing-theta-state bars make bit-identity
+unachievable. `JitterSimple` gets distributional parity with a measured
+determinism ledger (identical seed replays exactly: max|delta wheelSpeeds|
+= 0.0 over 2x400 ticks; hub-channel evidence in the spike report).
+Omni's own streams are `mt19937_64` split per wheel by
 seed ^ splitmix64(index+1) — a documented replica, never a stock clone.
 
 **Layout discipline.** No numeric state indices in `src/`: the module
