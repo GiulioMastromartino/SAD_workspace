@@ -579,6 +579,9 @@ depletion (`fuel_rel_err 0.0`) lives on the vec path only
 tracking arm (vec drag arm now follows live-c like the thruster/SRP arms;
 whether stock tracks depletion with `comOffset` is UNPROBED on this host
 -- recorded, not guessed; the 25x-insensitive fixture cannot see G=1).
+Cross-path (vec-vs-SysModel) fuel+drag comparison is out-of-envelope BY
+CONSTRUCTION (SysModel option-B has no depletion to compare; compare each
+path to stock instead).
 
 ## A14. Loud-rejection + layout hygiene (WP0/WP7)
 

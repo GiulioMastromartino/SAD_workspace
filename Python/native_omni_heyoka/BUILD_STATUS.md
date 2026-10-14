@@ -407,7 +407,9 @@ for archaeology, struck where landed)
   written against `OmniSystem` + 19-par layout, needs name-based par
   translation if revived. NOTE (Update 7): `heyoka_rw.py` encodes absolute-h
   (exact for equal-Js orthonormal sets only); any revival must convert or
-  restrict. Top-level `reset_mrp`/`sigma_indices` (A7) still unexported.
+  restrict. ~~Top-level `reset_mrp`/`sigma_indices` (A7) still unexported.~~
+ STRUCK 2026-10-14: landed -- both exported (`omniheyoka/__init__.py:28-29`
+ imports, `:35-36` `__all__`).
 - Validation suite in `tests/` — DONE for the envelope + swap (149 + 4 + 6
   tests green, CI 3/3). Tilted case now checks against the corrected
   relative-h reference AND live stock sims.
@@ -664,11 +666,14 @@ a drift-triggered-rebuild design was tried and reverted: 2 s re-JIT each,
    condition: cutoff composes WITH ramps if those ever land (M2). Gate:
    10-vs-1000 impulse ratio 1.00 +/- 0.01 over fire AND shutoff transients
    (matched dt); `thr_lag10` cell (default cutoff, no pin) retained.
-   (WP25-C3 LEDGER NOTE: the in-tree `audit_bundle/results/wp3_timing.json`
+   ~~(WP25-C3 LEDGER NOTE: the in-tree `audit_bundle/results/wp3_timing.json`
    (ts 2026-10-12T14:40:35Z) predates the WP25-C2 probe keys — its M2 carries
    `cutoff_ladder` only, no `inert_1pct`/`shutoff_duty05`, and its M4[0.1]
    no `half_step_shift`. The host-regenerated ledger with the new keys is the
-   gate source; copy it in-tree before citing M2 numbers from the file.)
+   gate source; copy it in-tree before citing M2 numbers from the file.)~~
+   STRUCK 2026-10-14: false -- the in-tree ledger now carries the new keys
+   (`/probes/M2/inert_1pct`, `/probes/M2/shutoff_duty05`,
+   `/probes/M4/0.1/half_step_shift` all present).
 - u_min/P_max/Omega_max need NO work on the VEC path (stock
   ConfigureRWRequests applies them; we read post-saturation u_current --
   timing-identical; vec arm, `src/omni_vec_integrator.cpp` readback). SysModel

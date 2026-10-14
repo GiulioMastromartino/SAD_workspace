@@ -1,0 +1,49 @@
+{
+  "artifact": "arm_rule_discrimination",
+  "role": "CITATION ARTIFACT ONLY -- this JSON replays no simulation and proves nothing by itself. The live gates that RE-MEASURE (not replay) these numbers are tests/test_wp45_env_offset.py::test_stock_drag_arm_rule_rbcb_minus_com (stock drag arm sweep) and tests/test_wp45_env_offset.py::test_host_srp_tilted_arm_discriminates (tilted-facet SRP arm).",
+  "provenance": {
+    "measured": "2026-10-14",
+    "host": "macOS arm64",
+    "basilisk": "2.12.0",
+    "scope": "stock-only sims, EXCEPT the tilted-facet rows which compare stock vs omni-SysModel vs omni-vec",
+    "recorded_in": "tests/test_wp45_env_offset.py module notes (corrected 2026-10-14)"
+  },
+  "stock_drag_arm_sweep": {
+    "fixture": "C1 LEO fixture, stabilized, live density rho==2e-12, 4 ticks dt=0.1, env step = om[2]-om[1] z",
+    "rule": "T = F x (rBcB - comOffset); linear in (h-c), zero at h==c",
+    "points_h_com__to__step_z": {
+      "(0.0, 0.05)": -1.078e-09,
+      "(0.05, 0.05)": 0.0,
+      "(0.05, 0.05)_note": "~0 (1e-22 noise)",
+      "(0.1, 0.05)": 1.078e-09,
+      "(0.2, 0.05)": 3.234e-09,
+      "(0.1, 0.0)": 2.156e-09
+    },
+    "ratios": {
+      "z(0.2,0.05)/z(0.1,0.05)": "3.0 (rtol 0.05)",
+      "z(0.1,0.0)/z(0.1,0.05)": "2.0 (rtol 0.05)",
+      "z(0.0,0.05)/z(0.1,0.05)": "-1.0 (rtol 0.05)"
+    }
+  },
+  "tilted_facet_srp": {
+    "fixture": "45-deg facet normal (sun +x), rBcB=[0.1,0,0], cop=[0,0.5,0]; stock vs omni-SysModel vs omni-vec",
+    "steps_z": 3.155e-10,
+    "omni_stock_diffs": 1.6e-12,
+    "omni_stock_agreement": "0.5%",
+    "unshifted_rule_rCop_x_F": "excluded at ~9.5% gap (misses T_z by ~0.1*Fy)"
+  },
+  "torque_sign_flip_8digit": {
+    "omni": [0, 0, -1.0781256e-09],
+    "stock": [0, 0, 1.07812559e-09],
+    "note": "2026-10-13 cross-order flip; 8-digit agreement stands; arm term pinned by the sweep gate, not this comparison"
+  },
+  "combo_reinterpretation": {
+    "void_reading": "combo drag-offset |dT| ~ 1e-17 => unshifted (100x-wrong density scale)",
+    "measured": "combo dT=1.373e-7 N.m EQUALS F x 0.1 m at combo density to ~0.1%",
+    "combo_drag_zero_com": "idle leg (~0 torque), refuted by live com=0 run at +2.156e-9 = F x 0.1"
+  },
+  "live_gates": [
+    "tests/test_wp45_env_offset.py::test_stock_drag_arm_rule_rbcb_minus_com",
+    "tests/test_wp45_env_offset.py::test_host_srp_tilted_arm_discriminates"
+  ]
+}

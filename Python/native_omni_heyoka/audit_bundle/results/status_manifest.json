@@ -1,20 +1,176 @@
 {
   "project": "native_omni_heyoka",
-  "total_units": 267,
+  "total_units": 281,
   "breakdown": {
-    "automated_test_units": 216,
+    "automated_test_units": 230,
     "simulation_parity_cells": 21,
     "audit_ledger_items": 30
   },
   "summary": {
-    "verified": 212,
+    "verified": 225,
     "arm_split": 10,
     "blocked": 4,
     "in_progress": 33,
-    "unstarted": 8,
-    "overall_progress_pct": 88.2
+    "unstarted": 9,
+    "overall_progress_pct": 88.5
   },
   "units": [
+    {
+      "id": "test_closed_loop_fuel::test_leg_ledger_green",
+      "name": "test_leg_ledger_green",
+      "type": "test_case",
+      "module": "test_closed_loop_fuel",
+      "subsystem": "test_closed_loop_fuel",
+      "category": "Unit Tests",
+      "file": "tests/test_closed_loop_fuel.py:49",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest pass (bit-exact / tolerance)",
+      "desc": "Automated test case in test_closed_loop_fuel.py (line 49)."
+    },
+    {
+      "id": "test_closed_loop_fuel::test_closed_loop_att_rate_parity",
+      "name": "test_closed_loop_att_rate_parity",
+      "type": "test_case",
+      "module": "test_closed_loop_fuel",
+      "subsystem": "test_closed_loop_fuel",
+      "category": "Unit Tests",
+      "file": "tests/test_closed_loop_fuel.py:59",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest pass (bit-exact / tolerance)",
+      "desc": "Automated test case in test_closed_loop_fuel.py (line 59)."
+    },
+    {
+      "id": "test_closed_loop_fuel::test_closed_loop_wheels_coupled_bound",
+      "name": "test_closed_loop_wheels_coupled_bound",
+      "type": "test_case",
+      "module": "test_closed_loop_fuel",
+      "subsystem": "test_closed_loop_fuel",
+      "category": "Unit Tests",
+      "file": "tests/test_closed_loop_fuel.py:66",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest pass (bit-exact / tolerance)",
+      "desc": "Automated test case in test_closed_loop_fuel.py (line 66)."
+    },
+    {
+      "id": "test_closed_loop_fuel::test_closed_loop_fuel_bit_exact",
+      "name": "test_closed_loop_fuel_bit_exact",
+      "type": "test_case",
+      "module": "test_closed_loop_fuel",
+      "subsystem": "test_closed_loop_fuel",
+      "category": "Unit Tests",
+      "file": "tests/test_closed_loop_fuel.py:72",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest pass (bit-exact / tolerance)",
+      "desc": "Automated test case in test_closed_loop_fuel.py (line 72)."
+    },
+    {
+      "id": "test_closed_loop_fuel::test_closed_loop_mrp_and_vacuity",
+      "name": "test_closed_loop_mrp_and_vacuity",
+      "type": "test_case",
+      "module": "test_closed_loop_fuel",
+      "subsystem": "test_closed_loop_fuel",
+      "category": "Unit Tests",
+      "file": "tests/test_closed_loop_fuel.py:80",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest pass (bit-exact / tolerance)",
+      "desc": "Automated test case in test_closed_loop_fuel.py (line 80)."
+    },
+    {
+      "id": "test_closed_loop_fuel::test_rejected_fixture_documented_nonparity",
+      "name": "test_rejected_fixture_documented_nonparity",
+      "type": "test_case",
+      "module": "test_closed_loop_fuel",
+      "subsystem": "test_closed_loop_fuel",
+      "category": "Unit Tests",
+      "file": "tests/test_closed_loop_fuel.py:89",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest pass (bit-exact / tolerance)",
+      "desc": "Automated test case in test_closed_loop_fuel.py (line 89)."
+    },
+    {
+      "id": "test_closed_loop_fuel::test_step_count_audit",
+      "name": "test_step_count_audit",
+      "type": "test_case",
+      "module": "test_closed_loop_fuel",
+      "subsystem": "test_closed_loop_fuel",
+      "category": "Unit Tests",
+      "file": "tests/test_closed_loop_fuel.py:102",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest pass (bit-exact / tolerance)",
+      "desc": "Automated test case in test_closed_loop_fuel.py (line 102)."
+    },
+    {
+      "id": "test_closed_loop_fuel::test_build_s_recorded_not_gated",
+      "name": "test_build_s_recorded_not_gated",
+      "type": "test_case",
+      "module": "test_closed_loop_fuel",
+      "subsystem": "test_closed_loop_fuel",
+      "category": "Unit Tests",
+      "file": "tests/test_closed_loop_fuel.py:109",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest pass (bit-exact / tolerance)",
+      "desc": "Automated test case in test_closed_loop_fuel.py (line 109)."
+    },
+    {
+      "id": "test_fuel_multitank::test_multitank_mirror_raises",
+      "name": "test_multitank_mirror_raises",
+      "type": "test_case",
+      "module": "test_fuel_multitank",
+      "subsystem": "test_fuel_multitank",
+      "category": "Unit Tests",
+      "file": "tests/test_fuel_multitank.py:51",
+      "status": "unstarted",
+      "progress": 0.1,
+      "target": "pytest pass (bit-exact / tolerance)",
+      "desc": "Automated test case in test_fuel_multitank.py (line 51)."
+    },
+    {
+      "id": "test_fuel_multitank::test_subset_links_unobservable",
+      "name": "test_subset_links_unobservable",
+      "type": "test_case",
+      "module": "test_fuel_multitank",
+      "subsystem": "test_fuel_multitank",
+      "category": "Unit Tests",
+      "file": "tests/test_fuel_multitank.py:59",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest pass (bit-exact / tolerance)",
+      "desc": "Automated test case in test_fuel_multitank.py (line 59)."
+    },
+    {
+      "id": "test_fuel_multitank::test_per_tank_getters_independent",
+      "name": "test_per_tank_getters_independent",
+      "type": "test_case",
+      "module": "test_fuel_multitank",
+      "subsystem": "test_fuel_multitank",
+      "category": "Unit Tests",
+      "file": "tests/test_fuel_multitank.py:73",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest pass (bit-exact / tolerance)",
+      "desc": "Automated test case in test_fuel_multitank.py (line 73)."
+    },
+    {
+      "id": "test_fuel_multitank::test_single_tank_guard_unchanged",
+      "name": "test_single_tank_guard_unchanged",
+      "type": "test_case",
+      "module": "test_fuel_multitank",
+      "subsystem": "test_fuel_multitank",
+      "category": "Unit Tests",
+      "file": "tests/test_fuel_multitank.py:84",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest pass (bit-exact / tolerance)",
+      "desc": "Automated test case in test_fuel_multitank.py (line 84)."
+    },
     {
       "id": "test_swap_multi::test_multi_ledger_green",
       "name": "test_multi_ledger_green",
@@ -978,8 +1134,8 @@
       "desc": "Automated test case in test_wp2_friction_jitter.py (line 308)."
     },
     {
-      "id": "test_wp2_friction_jitter::test_ledger_j1_horizon_matches_plan_rev",
-      "name": "test_ledger_j1_horizon_matches_plan_rev",
+      "id": "test_wp2_friction_jitter::test_ledger_j1_hub_channel_deterministic",
+      "name": "test_ledger_j1_hub_channel_deterministic",
       "type": "test_case",
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
@@ -991,17 +1147,30 @@
       "desc": "Automated test case in test_wp2_friction_jitter.py (line 316)."
     },
     {
+      "id": "test_wp2_friction_jitter::test_ledger_j1_horizon_matches_plan_rev",
+      "name": "test_ledger_j1_horizon_matches_plan_rev",
+      "type": "test_case",
+      "module": "test_wp2_friction_jitter",
+      "subsystem": "Stribeck Friction & Jitter",
+      "category": "Reaction Wheels",
+      "file": "tests/test_wp2_friction_jitter.py:328",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest pass (bit-exact / tolerance)",
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 328)."
+    },
+    {
       "id": "test_wp2_friction_jitter::test_ledger_friction_probes_ok",
       "name": "test_ledger_friction_probes_ok",
       "type": "test_case",
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:332",
+      "file": "tests/test_wp2_friction_jitter.py:344",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 332)."
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 344)."
     },
     {
       "id": "test_wp2_friction_jitter::test_ledger_friction_law_evidence_superseded",
@@ -1010,28 +1179,15 @@
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:339",
+      "file": "tests/test_wp2_friction_jitter.py:351",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 339)."
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 351)."
     },
     {
       "id": "test_wp2_friction_jitter::test_ledger_friction_baseline_param_set",
       "name": "test_ledger_friction_baseline_param_set",
-      "type": "test_case",
-      "module": "test_wp2_friction_jitter",
-      "subsystem": "Stribeck Friction & Jitter",
-      "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:353",
-      "status": "verified",
-      "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 353)."
-    },
-    {
-      "id": "test_wp2_friction_jitter::test_ledger_f4_hub_reaction_sign",
-      "name": "test_ledger_f4_hub_reaction_sign",
       "type": "test_case",
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
@@ -1043,8 +1199,8 @@
       "desc": "Automated test case in test_wp2_friction_jitter.py (line 365)."
     },
     {
-      "id": "test_wp2_friction_jitter::test_ledger_voltage_probes_ok",
-      "name": "test_ledger_voltage_probes_ok",
+      "id": "test_wp2_friction_jitter::test_ledger_f4_hub_reaction_sign",
+      "name": "test_ledger_f4_hub_reaction_sign",
       "type": "test_case",
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
@@ -1056,17 +1212,30 @@
       "desc": "Automated test case in test_wp2_friction_jitter.py (line 377)."
     },
     {
+      "id": "test_wp2_friction_jitter::test_ledger_voltage_probes_ok",
+      "name": "test_ledger_voltage_probes_ok",
+      "type": "test_case",
+      "module": "test_wp2_friction_jitter",
+      "subsystem": "Stribeck Friction & Jitter",
+      "category": "Reaction Wheels",
+      "file": "tests/test_wp2_friction_jitter.py:389",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest pass (bit-exact / tolerance)",
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 389)."
+    },
+    {
       "id": "test_wp2_friction_jitter::test_ledger_voltage_reuse_address",
       "name": "test_ledger_voltage_reuse_address",
       "type": "test_case",
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:383",
+      "file": "tests/test_wp2_friction_jitter.py:395",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 383)."
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 395)."
     },
     {
       "id": "test_wp2_friction_jitter::test_jitter_streams_split_per_wheel",
@@ -1075,11 +1244,11 @@
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:394",
+      "file": "tests/test_wp2_friction_jitter.py:406",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 394)."
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 406)."
     },
     {
       "id": "test_wp2_friction_jitter::test_jitter_seed_reproducible_distributionally",
@@ -1088,11 +1257,11 @@
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:400",
+      "file": "tests/test_wp2_friction_jitter.py:412",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 400)."
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 412)."
     },
     {
       "id": "test_wp2_friction_jitter::test_jitter_envelope_mean_var",
@@ -1101,11 +1270,11 @@
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:415",
+      "file": "tests/test_wp2_friction_jitter.py:427",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 415)."
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 427)."
     },
     {
       "id": "test_wp2_friction_jitter::test_jitter_zero_sigma_is_silent",
@@ -1114,11 +1283,11 @@
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:425",
+      "file": "tests/test_wp2_friction_jitter.py:437",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 425)."
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 437)."
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_rw_second_slot",
@@ -1127,11 +1296,11 @@
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:442",
+      "file": "tests/test_wp2_friction_jitter.py:454",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 442)."
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 454)."
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_no_tanh_in_graph",
@@ -1140,11 +1309,11 @@
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:448",
+      "file": "tests/test_wp2_friction_jitter.py:460",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 448)."
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 460)."
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_friction_offsets_helper",
@@ -1153,11 +1322,11 @@
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:465",
+      "file": "tests/test_wp2_friction_jitter.py:477",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 465)."
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 477)."
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_spacecraft_flags",
@@ -1166,11 +1335,11 @@
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:470",
+      "file": "tests/test_wp2_friction_jitter.py:482",
       "status": "arm_split",
       "progress": 0.55,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 470)."
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 482)."
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_module_friction_block",
@@ -1179,11 +1348,11 @@
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:479",
+      "file": "tests/test_wp2_friction_jitter.py:491",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 479)."
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 491)."
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_sysmodel_stribeck_port",
@@ -1192,11 +1361,11 @@
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:484",
+      "file": "tests/test_wp2_friction_jitter.py:496",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 484)."
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 496)."
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_no_thetas_written",
@@ -1205,11 +1374,11 @@
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:494",
+      "file": "tests/test_wp2_friction_jitter.py:506",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 494)."
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 506)."
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_fully_coupled_setter_gated_only",
@@ -1218,11 +1387,11 @@
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:503",
+      "file": "tests/test_wp2_friction_jitter.py:515",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 503)."
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 515)."
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_min_pulse_dead_memory",
@@ -1231,11 +1400,11 @@
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:522",
+      "file": "tests/test_wp2_friction_jitter.py:534",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 522)."
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 534)."
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_fully_coupled_rejects",
@@ -1244,11 +1413,11 @@
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:540",
+      "file": "tests/test_wp2_friction_jitter.py:552",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 540)."
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 552)."
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_no_voltage_port",
@@ -1257,11 +1426,11 @@
       "module": "test_wp2_friction_jitter",
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
-      "file": "tests/test_wp2_friction_jitter.py:550",
+      "file": "tests/test_wp2_friction_jitter.py:562",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 550)."
+      "desc": "Automated test case in test_wp2_friction_jitter.py (line 562)."
     },
     {
       "id": "test_wp3_timing_models::test_staircase_mirror_edges",
@@ -1777,11 +1946,11 @@
       "module": "test_wp45_env_offset",
       "subsystem": "Combined Offset & Env",
       "category": "Disturbances",
-      "file": "tests/test_wp45_env_offset.py:119",
+      "file": "tests/test_wp45_env_offset.py:122",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 119)."
+      "desc": "Automated test case in test_wp45_env_offset.py (line 122)."
     },
     {
       "id": "test_wp45_env_offset::test_shifted_minus_unshifted_is_minus_cxF",
@@ -1790,11 +1959,11 @@
       "module": "test_wp45_env_offset",
       "subsystem": "Combined Offset & Env",
       "category": "Disturbances",
-      "file": "tests/test_wp45_env_offset.py:131",
+      "file": "tests/test_wp45_env_offset.py:134",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 131)."
+      "desc": "Automated test case in test_wp45_env_offset.py (line 134)."
     },
     {
       "id": "test_wp45_env_offset::test_magnetic_gravity_have_no_arm",
@@ -1803,11 +1972,11 @@
       "module": "test_wp45_env_offset",
       "subsystem": "Combined Offset & Env",
       "category": "Disturbances",
-      "file": "tests/test_wp45_env_offset.py:158",
+      "file": "tests/test_wp45_env_offset.py:161",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 158)."
+      "desc": "Automated test case in test_wp45_env_offset.py (line 161)."
     },
     {
       "id": "test_wp45_env_offset::test_zero_offset_shift_identity",
@@ -1816,11 +1985,11 @@
       "module": "test_wp45_env_offset",
       "subsystem": "Combined Offset & Env",
       "category": "Disturbances",
-      "file": "tests/test_wp45_env_offset.py:171",
+      "file": "tests/test_wp45_env_offset.py:174",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 171)."
+      "desc": "Automated test case in test_wp45_env_offset.py (line 174)."
     },
     {
       "id": "test_wp45_env_offset::test_combo_ledger_verdict_shape_if_present",
@@ -1829,11 +1998,11 @@
       "module": "test_wp45_env_offset",
       "subsystem": "Combined Offset & Env",
       "category": "Disturbances",
-      "file": "tests/test_wp45_env_offset.py:180",
+      "file": "tests/test_wp45_env_offset.py:183",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 180)."
+      "desc": "Automated test case in test_wp45_env_offset.py (line 183)."
     },
     {
       "id": "test_wp45_env_offset::test_host_drag_offset_direct_parity",
@@ -1842,11 +2011,11 @@
       "module": "test_wp45_env_offset",
       "subsystem": "Combined Offset & Env",
       "category": "Disturbances",
-      "file": "tests/test_wp45_env_offset.py:385",
+      "file": "tests/test_wp45_env_offset.py:401",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 385)."
+      "desc": "Automated test case in test_wp45_env_offset.py (line 401)."
     },
     {
       "id": "test_wp45_env_offset::test_host_srp_offset_direct_parity",
@@ -1855,11 +2024,11 @@
       "module": "test_wp45_env_offset",
       "subsystem": "Combined Offset & Env",
       "category": "Disturbances",
-      "file": "tests/test_wp45_env_offset.py:572",
+      "file": "tests/test_wp45_env_offset.py:588",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 572)."
+      "desc": "Automated test case in test_wp45_env_offset.py (line 588)."
     },
     {
       "id": "test_wp45_env_offset::test_host_mag_no_arm_smoke",
@@ -1868,11 +2037,11 @@
       "module": "test_wp45_env_offset",
       "subsystem": "Combined Offset & Env",
       "category": "Disturbances",
-      "file": "tests/test_wp45_env_offset.py:619",
+      "file": "tests/test_wp45_env_offset.py:635",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 619)."
+      "desc": "Automated test case in test_wp45_env_offset.py (line 635)."
     },
     {
       "id": "test_wp45_env_offset::test_stock_drag_arm_rule_rbcb_minus_com",
@@ -1881,11 +2050,11 @@
       "module": "test_wp45_env_offset",
       "subsystem": "Combined Offset & Env",
       "category": "Disturbances",
-      "file": "tests/test_wp45_env_offset.py:679",
+      "file": "tests/test_wp45_env_offset.py:696",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 679)."
+      "desc": "Automated test case in test_wp45_env_offset.py (line 696)."
     },
     {
       "id": "test_wp45_env_offset::test_host_srp_tilted_arm_discriminates",
@@ -1894,11 +2063,11 @@
       "module": "test_wp45_env_offset",
       "subsystem": "Combined Offset & Env",
       "category": "Disturbances",
-      "file": "tests/test_wp45_env_offset.py:840",
+      "file": "tests/test_wp45_env_offset.py:857",
       "status": "verified",
       "progress": 1.0,
       "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 840)."
+      "desc": "Automated test case in test_wp45_env_offset.py (line 857)."
     },
     {
       "id": "test_wp4_offset::test_ledger_present_and_ids",
@@ -2666,6 +2835,19 @@
       "progress": 0.5,
       "target": "pytest pass (bit-exact / tolerance)",
       "desc": "Automated test case in test_wp6_telemetry.py (line 544)."
+    },
+    {
+      "id": "test_wp6_telemetry::test_fuel_reset_restores_m0_not_max",
+      "name": "test_fuel_reset_restores_m0_not_max",
+      "type": "test_case",
+      "module": "test_wp6_telemetry",
+      "subsystem": "Telemetry & Live Fuel",
+      "category": "Telemetry",
+      "file": "tests/test_wp6_telemetry.py:596",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest pass (bit-exact / tolerance)",
+      "desc": "Automated test case in test_wp6_telemetry.py (line 596)."
     },
     {
       "id": "test_wp7_dispersion_jit::test_budget_constants_sane",
@@ -3448,7 +3630,7 @@
       "status": "verified",
       "progress": 1.0,
       "target": "WP26-C",
-      "desc": "fuel_drag/fuel_srp measured in switching class, fuel bit-exact; static drag arm stands with 25x sensitivity bound (G=1 open, recorded not guessed)."
+      "desc": "fuel_drag/fuel_srp parity-in-switching-class, fuel bit-exact; drag arm sensitivity-limited (25x-insensitive fixture, G=1 open pointer, recorded not guessed) -- arm rule cited via arm_rule_discrimination.json, not proven by this badge."
     },
     {
       "id": "audit::H8",

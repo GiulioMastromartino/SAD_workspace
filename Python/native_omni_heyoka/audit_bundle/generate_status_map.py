@@ -4,13 +4,13 @@ generate_status_map.py - High-granularity status manifest & visual progress gene
 for native_omni_heyoka astrodynamics porting pipeline.
 
 Extracts hundreds of discrete units:
-  - 184+ granular automated test cases (via AST across tests/test_*.py)
-  - 19 numerical simulation parity cells (from audit_bundle/results/swap_p1_parity.json)
+  - 225 granular automated test cases (via AST across tests/test_*.py)
+  - 21 numerical simulation parity cells (from audit_bundle/results/swap_p1_parity.json)
   - 30 adversarial audit items (C1, H1-H8, M1-M16, L1-L5, X1-X5 from Audit_0-2.md)
-Total: 233 granular verification units.
+Total: 276 granular verification units.
 
 Outputs (under audit_bundle/results/):
-  - status_manifest.json (complete 230+ unit machine-readable registry)
+  - status_manifest.json (complete 276-unit machine-readable registry)
   - status_map.svg (high-density 16-column vector matrix)
   - status_dashboard.html (interactive high-density matrix with live tooltips & filtering)
 
@@ -60,7 +60,7 @@ AUDIT_ITEMS_DATA = [
     {"id": "H4", "name": "Wheel Jitter Simple Stream Split", "cat": "Reaction Wheels", "sev": "High", "st": "in_progress", "p": 0.40, "ref": "WP25-B3", "file": "src/omni_spacecraft.cpp:841", "desc": "Deterministic noise seeds need true 2x400 horizon validation."},
     {"id": "H5", "name": "SysModel Friction Iter-1 Stub", "cat": "Reaction Wheels", "sev": "High", "st": "arm_split", "p": 0.60, "ref": "WP25-B3", "file": "src/omni_spacecraft.cpp:346", "desc": "SysModel arm uses iter-1 stiction suppression rather than Stribeck curve."},
     {"id": "H6", "name": "SysModel Static Fuel Publisher", "cat": "Telemetry", "sev": "High", "st": "arm_split", "p": 0.35, "ref": "WP25-A3", "file": "src/omni_spacecraft.cpp:402", "desc": "SysModel publishes full tank telemetry despite burn; port vec law in A3."},
-    {"id": "H7", "name": "Fuel x Env Disturbance Cell", "cat": "Disturbances", "sev": "High", "st": "verified", "p": 1.0, "ref": "WP26-C", "file": "test_swap_p1.py:test_p1_fuel_env_scope", "desc": "fuel_drag/fuel_srp measured in switching class, fuel bit-exact; static drag arm stands with 25x sensitivity bound (G=1 open, recorded not guessed)."},
+    {"id": "H7", "name": "Fuel x Env Disturbance Cell", "cat": "Disturbances", "sev": "High", "st": "verified", "p": 1.0, "ref": "WP26-C", "file": "test_swap_p1.py:test_p1_fuel_env_scope", "desc": "fuel_drag/fuel_srp parity-in-switching-class, fuel bit-exact; drag arm sensitivity-limited (25x-insensitive fixture, G=1 open pointer, recorded not guessed) -- arm rule cited via arm_rule_discrimination.json, not proven by this badge."},
     {"id": "H8", "name": "Body DV Rotation into Inertial", "cat": "Telemetry", "sev": "High", "st": "in_progress", "p": 0.30, "ref": "WP25-B2", "file": "src/omni_spacecraft.cpp:646", "desc": "Body impulse not rotated by R_BN into DV_CN_N."},
     # Key Medium findings
     {"id": "M1", "name": "Lag Filter Empty Ramps", "cat": "Thrusters", "sev": "Medium", "st": "in_progress", "p": 0.50, "ref": "WP25-A2", "file": "test_wp3_timing_models.py", "desc": "Ramp factor mirror requires explicit gating."},
@@ -235,7 +235,7 @@ def build_comprehensive_manifest(base_dir: Path, results_dir: Path) -> dict:
 
 
 def generate_high_density_svg(manifest: dict, out_path: Path):
-    """Emit a high-density 16-column vector grid showing all 230+ units."""
+    """Emit a high-density 16-column vector grid showing all 276 units."""
     units = manifest["units"]
     cols = 16
     size = 38
@@ -281,13 +281,17 @@ def generate_high_density_svg(manifest: dict, out_path: Path):
 
 
 def generate_interactive_dashboard_html(manifest: dict, out_path: Path):
-    """Emit a high-density, interactive HTML dashboard displaying all 230+ units."""
+    """Emit a high-density, interactive HTML dashboard displaying all units."""
     manifest_json = json.dumps(manifest, indent=2)
+    n_total = manifest["total_units"]
+    n_test = manifest["breakdown"]["automated_test_units"]
+    n_cell = manifest["breakdown"]["simulation_parity_cells"]
+    n_audit = manifest["breakdown"]["audit_ledger_items"]
     html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>native_omni_heyoka Granular Verification Matrix (230+ Units)</title>
+<title>native_omni_heyoka Granular Verification Matrix ({n_total} Units)</title>
 <style>
   :root {{
     --bg: #0d1117;
@@ -419,7 +423,7 @@ def generate_interactive_dashboard_html(manifest: dict, out_path: Path):
 <div class="container">
   <div class="header">
     <div class="title-group">
-      <h1>native_omni_heyoka <span class="tag">High-Density Matrix (233 Units)</span></h1>
+      <h1>native_omni_heyoka <span class="tag">High-Density Matrix ({n_total} Units)</span></h1>
     </div>
   </div>
 
@@ -448,10 +452,10 @@ def generate_interactive_dashboard_html(manifest: dict, out_path: Path):
 
   <div class="controls">
     <div class="filter-tabs">
-      <button class="btn active" onclick="filterType('all')">All (233)</button>
-      <button class="btn" onclick="filterType('test_case')">Test Cases (184)</button>
-      <button class="btn" onclick="filterType('parity_cell')">Simulation Cells (19)</button>
-      <button class="btn" onclick="filterType('audit_finding')">Audit Findings (30)</button>
+      <button class="btn active" onclick="filterType('all')">All ({n_total})</button>
+      <button class="btn" onclick="filterType('test_case')">Test Cases ({n_test})</button>
+      <button class="btn" onclick="filterType('parity_cell')">Simulation Cells ({n_cell})</button>
+      <button class="btn" onclick="filterType('audit_finding')">Audit Findings ({n_audit})</button>
     </div>
     <input type="text" id="search-box" class="search-box" placeholder="Filter by name / file / ID..." oninput="handleSearch()">
   </div>
