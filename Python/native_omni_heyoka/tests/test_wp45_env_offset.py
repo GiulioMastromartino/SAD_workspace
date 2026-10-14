@@ -11,8 +11,10 @@ Evidence (audit_bundle/results/wp45_combo.json, firing-proven legs):
     ratio 2e-12. drag-zero-com corroborates: comOffset=0 => ~0 torque
     with c_B != 0 (no implicit -c_B shift). N=3 samples x 10 ticks,
     both runs firing (drag_abs_max > 1e-9), LEO fixture 400 km.
-  srp-offset: verdict recorded only AFTER the facet+sizing link lands
-    (earlier verdicts were vacuous zeros-vs-zeros -- see below).
+  srp-offset: facet+sizing link LANDED 2026-10-13
+    (FacetSRPDynamicEffector setNumFacets+addFacet pin, firing-proven
+    both arms, 0.5% parity -- see test_host_srp_offset_direct_parity;
+    earlier verdicts were vacuous zeros-vs-zeros -- see below).
 FLAKINESS GUARD (why these gates exist): the pre-fix probe showed how a
 mis-wired effector fooled its own verdict -- facet never attached
 ("ValueError ... numFacets"), both arms idled at exactly 0.0, the empty
@@ -440,9 +442,9 @@ def test_host_drag_offset_direct_parity():
 
 def _run_stock_srp_facet(offset, dt=DT, n_ticks=4):
     pytest.importorskip("Basilisk.simulation.spacecraft")
-    pytest.importorskip("Basilisk.simulation.facetedSRPEffector")
+    pytest.importorskip("Basilisk.simulation.facetSRPDynamicEffector")
     from Basilisk.simulation import spacecraft
-    from Basilisk.simulation import facetedSRPEffector as _srp
+    from Basilisk.simulation import facetSRPDynamicEffector as _srp
     from Basilisk.architecture import messaging
     from Basilisk.utilities import SimulationBaseClass, macros
     sim = SimulationBaseClass.SimBaseClass()
@@ -459,26 +461,44 @@ def _run_stock_srp_facet(offset, dt=DT, n_ticks=4):
     sc.hub.sigma_BNInit = [0.0, 0.0, 0.0]
     sc.hub.omega_BN_BInit = [0.0, 0.0, 0.0]
     sim.AddModelToTask("t", sc, 1)
-    srp = _srp.FacetedSRPEffector()
-    try:
-        srp.addFacet(1.0, [0.0, 0.5, 0.0], [1.0, 0.0, 0.0], 0.2, 0.3)
-    except Exception:
-        try:
-            srp.addFacet(1.0, [1.0, 0.0, 0.0], [0.0, 0.5, 0.0], 0.2, 0.3)
-        except Exception as e:
-            pytest.skip(f"stock addFacet spelling unknown on host: {e}")
-            return None
+    # Pinned link (2026-10-13, BSK 2.12.0, firing-proven): the stock
+    # faceted-SRP path is facetSRPDynamicEffector.FacetSRPDynamicEffector
+    # (NOT facetedSRPEffector.FacetedSRPEffector, which feeds facets
+    # through the facetElementBodyInMsgs vector and has NO addFacet).
+    # Pinned spelling: setNumFacets(1) BEFORE addFacet (reversed order
+    # raises BasiliskError on count mismatch), then
+    #   addFacet(area, dcm_F0B, nHat_F, rotHat_F, r_CopB_B, c_diffuse,
+    #     c_specular).
+    # Sizing: `area` is the FULL facet area (1.0 m^2 here); projected area
+    # is computed internally from cos-incidence (no ProjectedArea input on
+    # this module). dcm_F0B = identity so facet frame = body frame:
+    # nHat_F = [1,0,0] is the +x body normal, r_CopB_B = [0,0.5,0] the CoP
+    # in B frame -- the same facet the omni arm builds via
+    # addSRPFacet(1.0, n=(1,0,0), cop=(0,0.5,0), cd=0.2, cs=0.3).
+    # rotHat_F = [0,0,1] is the articulation axis, unused for a fixed
+    # facet. Sun wiring: srp.sunInMsg (NOT sunStateInMsg) subscribes to a
+    # SpicePlanetStateMsg carrying the inertial sun position [AU,0,0]
+    # (same static sun the omni arm sets via setSunState); the eclipse
+    # input stays unlinked -> factor 1.0 on both arms (firing at the
+    # predicted scale proves neither arm is shadowed). Attach via
+    # sc.addDynamicEffector (same attach path as the drag leg -- without
+    # it the effector never contributes). No pytest.skip fallback: a
+    # future API change must FAIL loudly here, never skip-as-pass.
+    # Measured 2026-10-13: stock env step [0,0,5.45093125e-10] vs omni
+    # [0,0,5.42305167e-10] rad/s (0.5%, inside the 5% parity gate;
+    # T_z ~ 3.3e-6 Nm both arms, band-gated firing proof both sides).
+    srp = _srp.FacetSRPDynamicEffector()
+    srp.setNumFacets(1)
+    srp.addFacet(1.0, [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+                 [1.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 0.5, 0.0],
+                 0.2, 0.3)
     sunMsg = messaging.SpicePlanetStateMsg()
     p = messaging.SpicePlanetStateMsgPayload()
     p.PositionVector = [AU, 0.0, 0.0]
     p.VelocityVector = [0.0, 0.0, 0.0]
     sunMsg.write(p)
-    srp.sunStateInMsg.subscribeTo(sunMsg)
-    try:
-        if hasattr(srp, "addSpacecraftToModel"):
-            srp.addSpacecraftToModel(sc.scStateOutMsg)
-    except Exception:
-        pass
+    srp.sunInMsg.subscribeTo(sunMsg)
+    sc.addDynamicEffector(srp)
     sim.AddModelToTask("t", srp)
     slog = sc.scStateOutMsg.recorder()
     sim.AddModelToTask("t", slog)
@@ -523,17 +543,21 @@ def _run_omni_srp_facet(offset, dt=DT, n_ticks=4):
 def test_host_srp_offset_direct_parity():
     """SRP-facet+offset DIRECT parity: omni vs stock, om[2]-om[1] at 5%.
 
-    FRAGILE (H5, WP25-C1): NOT measured. The stock facet+sizing link has
-    not landed on any host -- _run_stock_srp_facet guesses the addFacet
-    spelling and the facet sizing (area/ProjectedArea) + sun-state vector
-    wiring are unpinned. Until a host pass lands that link, this leg must
-    NEVER be cited as a shift verdict; both paths ship (rCop-c)xF
-    (spacecraft static-c, vec live-c) by construction, with the 3-line-flip
-    contingency in the module docstring. MISSING PIECE for a host pass
-    (python3/Basilisk absent on this container, so sims skip here): the
-    exact host-BSK FacetedSRPEffector.addFacet signature spelling +
-    facet-sizing semantics + sun SpicePlanetStateMsg wiring, then a
-    firing-proven (band-gated below) stock-vs-omni leg.
+    PINNED (2026-10-13, BSK 2.12.0, host firing-proven both arms -- the
+    former FRAGILE/H5 note is struck): the stock link is
+    facetSRPDynamicEffector.FacetSRPDynamicEffector with
+    setNumFacets(1) + addFacet(area, dcm_F0B, nHat_F, rotHat_F, r_CopB_B,
+    c_diffuse, c_specular); `area` is the FULL facet area (projected area
+    internal); sun via srp.sunInMsg <- SpicePlanetStateMsg([AU,0,0]);
+    eclipse unlinked -> 1.0; attached via sc.addDynamicEffector. Measured:
+    stock env step [0,0,5.45093125e-10] vs omni [0,0,5.42305167e-10]
+    rad/s (0.5% -- gate is 5% + atol 1e-9; T_z ~ 3.3e-6 Nm both arms).
+    Both paths ship (rCop-c)xF by construction (spacecraft static-c, vec
+    live-c); this single-offset parity corroborates that shared
+    construction against stock -- it is NOT an independent two-offset
+    arm-rule discriminator. 3-line-flip contingency outcome: NOT needed --
+    the link landed and the leg is green with the as-shipped (rCop-c)xF
+    arms on both sides, so no flip was applied.
     """
     pytest.importorskip("Basilisk", reason="host-only omni-vs-stock bench")
     out = _run_stock_srp_facet(C_REF)
