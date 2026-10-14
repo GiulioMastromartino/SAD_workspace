@@ -1,12 +1,12 @@
 {
   "name": "swap_multi",
-  "timestamp_utc": "2026-10-14T07:10:23.291742+00:00",
+  "timestamp_utc": "2026-10-14T08:47:35.261197+00:00",
   "platform": "macOS-27.0-arm64-arm-64bit",
   "python": "3.11.16",
   "basilisk": "2.12.0",
   "heyoka": "7.12.1",
   "env": {
-    "timestamp_utc": "2026-10-14T07:10:23.311934+00:00",
+    "timestamp_utc": "2026-10-14T08:47:35.282082+00:00",
     "platform": "macOS-27.0-arm64-arm-64bit",
     "os_tag": "macOS",
     "machine": "arm64",
@@ -41,7 +41,7 @@
           "mrp_stock": 5,
           "steps": 6000,
           "mrp_omni": 5,
-          "build_s": 0.3723
+          "build_s": 0.4115
         },
         "objB": {
           "r_BN_N": 0.0016133945900946856,
@@ -79,7 +79,7 @@
           "mrp_stock": 5,
           "steps": 6000,
           "mrp_omni": 5,
-          "build_s": 0.0101
+          "build_s": 0.0113
         },
         "objB": {
           "r_BN_N": 0.0008343849331140518,
@@ -93,7 +93,7 @@
           "mrp_stock": 20,
           "steps": 6000,
           "mrp_omni": 20,
-          "build_s": 0.0104
+          "build_s": 0.0116
         },
         "calls": 6000,
         "shared_graph": false,
