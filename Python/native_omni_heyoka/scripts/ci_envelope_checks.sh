@@ -124,6 +124,10 @@ check_graph_purity() {
 }
 
 # ------------------------------------------------------------------ (b) -----
+# SCOPE NOTE (L12, 2026-10-14, comment-only): audit_bundle/probes/
+# closed_loop_fuel.py + swap_multi.py are UNSCANNED by decision -- outside
+# the grep scope below (omniheyoka tests scratch*). Grep-verified clean for
+# the (b) patterns on 2026-10-14; if they ever enter scope, re-grep first.
 check_hardcoded_counts() {
   local hits
   hits="$(grep -rnE \
@@ -168,6 +172,9 @@ check_ctypes_state_indices() {
 }
 
 # ------------------------------------------------------------------ (e) -----
+# SCOPE NOTE (L12, 2026-10-14, comment-only): same exclusion as (b) --
+# audit_bundle/probes/closed_loop_fuel.py + swap_multi.py unscanned by
+# decision (outside grep scope); grep-verified clean for bare-19 widths.
 check_bare19_widths() {
   local hits
   hits="$(grep -rnE -e 'names,[[:space:]]*19[[:space:]]*\)' \
