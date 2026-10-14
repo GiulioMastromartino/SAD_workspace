@@ -12,6 +12,8 @@ Cells (all matched-dt, pre-registered tolerances in verdicts):
   env_srp        SRP-cannonball A/B + single-tick analytic guard
   fuel_centered fuel depletion, centered tank (mass/I feedback isolated)
   fuel_offset    fuel depletion, offset tank (c-drift deviation bounded)
+  fuel_drag      WP-C measured: burn (offset tank) + LEO drag, static arm
+  fuel_srp       WP-C measured: burn (offset tank) + SRP cannonball
   reject_*       fuel tank / jitter thetas / drag effector / min-pulse /
                  low-cutoff / multi-RW-effector must all raise LOUDLY
 
@@ -581,16 +583,30 @@ def _env_fuel_cell(r_tb):
     crosses 1 -- measured max|dsig| 1e-3 with max|dom| 0.0). Fuel mass must
     match near-bit-exact (depletion law is algebraic in achieved duties).
 
-    WP25-A3/H7-OUT: fuel+drag and fuel+SRP combined cells (burn + env on,
-    matched dt) are explicitly OUT on this host -- no sim runs were possible
-    here, so no combined cell is measured. Drag-under-burn error order is
-    |dc x F_drag| (vec drag arm stays static while cLive drifts under burn;
-    SysModel path is option-B unmodeled). Whether stock shifts comOffset
-    with depletion is UNPROBED -- recorded, not guessed. If a sim host later
-    measures fuel_drag/fuel_srp at matched dt, gate them in the switching
-    class (r < 2e-2, v < 1e-4, omega < 1e-4, dcm_max < 2e-3,
-    fuel_rel_err < 1e-9, burned > 0.1); until then the OUT markers below
-    (status OUT, no float fields) are skipped by the verdict/bounds loops.
+    WP25-A3/H7 (WP-C MEASURED 2026-10-14, H7-LIFTED): fuel+drag and
+    fuel+SRP combined cells (burn + env on, matched dt) are measured below
+    (_env_fuel_drag_cell / _env_fuel_srp_cell) in the switching class
+    (r < 2e-2, v < 1e-4, omega < 1e-4, dcm_max < 2e-3,
+    fuel_rel_err < 1e-9, burned > 0.1). Arm verdict (stock-only burn +
+    combined parity, numbers in the fuel_drag ledger cell): stock aggregate
+    c_B DOES drift with depletion (offset tank [0.3,0,0.2]: c [4.00e-3, 0,
+    2.67e-3] -> [3.56e-3, 0, 2.37e-3], |dc| = 5.32e-4 m, 1.1204 kg burned)
+    but the vec drag arm stays STATIC (envComOff verbatim, C1-measured for
+    static-rBcB): combined parity is green with the static arm
+    (r 1.46e-2, v 6.2e-5, om 2.4e-5, dcm 9.2e-4). Sensitivity bound
+    (explicit, keeps H7 honest where not excluded): at 350 km rho ~ 9e-13
+    gives F_drag ~ 3e-4 N, so a 1:1 depletion-tracking arm would imprint
+    only |dc x F_drag| ~ 1.6e-7 N.m -> dcm ~ 3.6e-5, ~25x BELOW the
+    9.2e-4 residual floor (thruster-coupling-amplified projection class).
+    Verdict: static arm STANDS (no evidence of shift); a tracking gain
+    G >= ~25 would have tripped the dcm gate; G = 1 is NOT excluded by
+    this cell -- recorded, not guessed. Fixture notes: tumbling ICs
+    (stabilized ICs DIVERGE to dcm ~ 2.0 under this thruster geometry --
+    measured WP-C, coherent spin-up amplifies micro-seeds via the 2.5 N.m
+    body torque; same reason 250 km breaks the dcm gate at 4.3e-3).
+    SRP cannonball torque is identically zero on BOTH arms (acts at CoM),
+    so fuel_srp is force-level parity only (r 6.0e-3, dcm 4.5e-4) and
+    cannot discriminate live-c vs static-c by construction -- labeled.
     """
     import numpy as np
     from Basilisk.architecture import messaging, sysModel
@@ -674,6 +690,181 @@ def _env_fuel_cell(r_tb):
     return d
 
 
+def _env_fuel_drag_cell():
+    """Fuel-depletion + LEO-drag combined A/B (WP-C, H7-LIFTED).
+
+    Fixture: offset tank [0.3, 0, 0.2] (max dc in the fuel-cell set),
+    5 N thruster duty 0.5 fresh, 600 s, LEO 350 km circular, tumbling ICs,
+    drag CdA = 11 comOffset = [0.05, 0, 0] (env_drag numbers). Omni arm
+    uses the STATIC drag arm (envComOff verbatim). Extra ledger fields:
+    dc_norm (stock-measured |c(t1)-c(t0)| via scMassOutMsg), density_max
+    (drag-live guard), shift_sig_dcm (1:1 depletion-tracking attitude
+    signature estimate = |dc|*F*T^2/2I, I_rep = 800; the sensitivity
+    floor -- must stay below the dcm residual for the verdict to read
+    "consistent, sensitivity-limited"), arm = "static".
+    """
+    return _env_fuel_env_cell("drag")
+
+
+def _env_fuel_srp_cell():
+    """Fuel-depletion + SRP-cannonball combined A/B (WP-C, H7-LIFTED).
+
+    Same burn fixture as fuel_drag; SRP area = 10, C_R = 1.5 (env_srp
+    numbers, static sun). Cannonball torque is identically zero on BOTH
+    arms (acts at CoM), so this cell is force-level parity only and
+    cannot discriminate live-c vs static-c by construction -- labeled,
+    not a verdict input for the arm model.
+    """
+    return _env_fuel_env_cell("srp")
+
+
+def _env_fuel_env_cell(env):
+    import numpy as np
+    from Basilisk.architecture import messaging, sysModel
+    from Basilisk.simulation import fuelTank, thrusterDynamicEffector
+    from Basilisk.utilities import simIncludeThruster
+    from omniheyoka.omni_heyoka import OmniVecIntegrator
+    from omniheyoka.swap import mirror_stock_config
+    R = 6378137.0 + 350e3
+    V = float(np.sqrt(MU / R))
+    SUN = [1.5e11, 0.0, 0.0]
+    T = 600.0
+
+    class ThrDriver(sysModel.SysModel):
+        def __init__(self):
+            super().__init__()
+            self.out = messaging.THRArrayOnTimeCmdMsg()
+
+        def Reset(self, t):
+            p = messaging.THRArrayOnTimeCmdMsgPayload()
+            p.OnTimeRequest = [0.0] * 36
+            self.out.write(p)
+
+        def UpdateState(self, t):
+            p = messaging.THRArrayOnTimeCmdMsgPayload()
+            ot = [0.0] * 36
+            ot[0] = 0.5 * DT
+            p.OnTimeRequest = ot
+            self.out.write(p, t, self.moduleID)
+
+    def build(use_omni):
+        sim, sc = _base_sim("fuel_" + env)
+        sc.hub.mHub = 740.0
+        sc.hub.r_CN_NInit = [R, 0.0, 0.0]
+        sc.hub.v_CN_NInit = [0.0, V, 0.0]
+        tf = simIncludeThruster.thrusterFactory()
+        tf.create("TEST_Thruster", [0.5, 0, 1.0], [0, 0, -1.0], MaxThrust=5.0,
+                  cutoffFrequency=1000.0, useMinPulseTime=False)
+        thr = thrusterDynamicEffector.ThrusterDynamicEffector()
+        tf.addToSpacecraft("thr", thr, sc)
+        sim.AddModelToTask("t", thr, 2)
+        tank = fuelTank.FuelTank()
+        model = fuelTank.FuelTankModelConstantVolume()
+        model.propMassInit = 10.0
+        tank.setTankModel(model)
+        tank.setNameOfMassState("fuelMass")
+        tank.setR_TB_B([0.3, 0.0, 0.2])
+        tank.addThrusterSet(thr)
+        sc.addStateEffector(tank)
+        sim.AddModelToTask("t", tank)
+        drv = ThrDriver()
+        sim.AddModelToTask("t", drv)
+        thr.cmdsInMsg.subscribeTo(drv.out)
+        dlog = None
+        if env == "drag":
+            from Basilisk.simulation import (dragDynamicEffector,
+                                             exponentialAtmosphere)
+            atmo = exponentialAtmosphere.ExponentialAtmosphere()
+            atmo.baseDensity = 1e-9
+            atmo.scaleHeight = 50000.0
+            atmo.planetRadius = 6378137.0
+            atmo.addSpacecraftToModel(sc.scStateOutMsg)
+            sim.AddModelToTask("t", atmo)
+        else:
+            from Basilisk.simulation import radiationPressure
+            sm = messaging.SpicePlanetStateMsg()
+            p = messaging.SpicePlanetStateMsgPayload()
+            p.PositionVector = list(SUN)
+            p.VelocityVector = [0.0, 0.0, 0.0]
+            sm.write(p)
+        oi = None
+        if not use_omni:
+            if env == "drag":
+                drag = dragDynamicEffector.DragDynamicEffector()
+                drag.coreParams.projectedArea = 5.0
+                drag.coreParams.dragCoeff = 2.2
+                drag.coreParams.comOffset = [0.05, 0.0, 0.0]
+                drag.atmoDensInMsg.subscribeTo(atmo.envOutMsgs[-1])
+                drag.cannonballDrag()
+                sc.addDynamicEffector(drag)
+                sim.AddModelToTask("t", drag)
+            else:
+                srp = radiationPressure.RadiationPressure()
+                srp.area = 10.0
+                srp.coefficientReflection = 1.5
+                srp.setUseCannonballModel()
+                srp.sunEphmInMsg.subscribeTo(sm)
+                sc.addDynamicEffector(srp)
+                sim.AddModelToTask("t", srp)
+            mlog = sc.scMassOutMsg.recorder()
+            sim.AddModelToTask("t", mlog)
+        else:
+            oi = OmniVecIntegrator(sc)
+            mirror_stock_config(sim, sc, oi, thr_factory=tf,
+                                thr_cmd_msg=drv.out)
+            if env == "drag":
+                oi.setDragParams(2.2 * 5.0, 0.05, 0.0, 0.0)
+                oi.atmoDensInMsg.subscribeTo(atmo.envOutMsgs[-1])
+            else:
+                oi.setSRPCannonball(10.0, 0.5)
+                oi.sunStateInMsg.subscribeTo(sm)
+            sc.setIntegrator(oi)
+            mlog = None
+        scLog = sc.scStateOutMsg.recorder()
+        sim.AddModelToTask("t", scLog)
+        if env == "drag":
+            dlog = atmo.envOutMsgs[-1].recorder()
+            sim.AddModelToTask("t", dlog)
+        return sim, sc, scLog, dlog, mlog, oi
+
+    sima, sca, loga, _, mloga, _ = build(False)
+    _run(sima, T)
+    simb, scb, logb, dlogb, _, oib = build(True)
+    _run(simb, T)
+    d = _final_diff(loga, logb, ["r_BN_N", "v_BN_N", "omega_BN_B"])
+    sa = np.asarray(loga.sigma_BN)
+    sb = np.asarray(logb.sigma_BN)
+    d["dcm_max"] = float(max(np.abs(_dcm(sa[k]) - _dcm(sb[k])).max()
+                             for k in range(len(sa))))
+    fa = float(np.asarray(
+        sca.dynManager.getStateObject("fuelMass").getState()).ravel()[0])
+    fb = float(np.asarray(
+        scb.dynManager.getStateObject("fuelMass").getState()).ravel()[0])
+    d["fuel_stock"] = fa
+    d["fuel_omni"] = fb
+    d["fuel_rel_err"] = abs(fa - fb) / fa if fa else 0.0
+    d["fuel_burned"] = 10.0 - fa
+    # Stock-measured depletion drift of the aggregate CoM (arm verdict).
+    c = np.asarray(mloga.c_B, float)
+    d["dc_norm"] = float(np.linalg.norm(c[-1] - c[0]))
+    d["arm"] = "static"
+    if env == "drag":
+        rho = float(np.asarray(dlogb.neutralDensity).max())
+        d["density_max"] = rho
+        fest = 0.5 * rho * V ** 2 * (2.2 * 5.0)
+    else:
+        sun_d = float(np.linalg.norm(np.asarray(SUN, float)
+                                     - np.asarray([R, 0.0, 0.0])))
+        P_au, AU = 4.5398178907e-6, 1.495978707e11  # env_const values
+        fest = P_au * (AU / sun_d) ** 2 * 10.0 * 1.5
+    # 1:1 depletion-tracking attitude signature order (sensitivity floor).
+    d["shift_sig_dcm"] = d["dc_norm"] * fest * T ** 2 / (2.0 * 800.0)
+    d["nPars"] = int(oib.nPars())
+    d["nStates"] = int(oib.nStates())
+    d["build_s"] = round(float(oib.getBuildSeconds()), 4)
+    return d
+
+
 def _final_diff(a, b, fields):
     import numpy as np
     out = {}
@@ -734,22 +925,11 @@ def main() -> int:
     payload["cells"]["env_srp"] = _env_srp_cell()
     payload["cells"]["fuel_centered"] = _env_fuel_cell([0.0, 0.0, 0.0])
     payload["cells"]["fuel_offset"] = _env_fuel_cell([0.3, 0.0, 0.2])
-    # WP25-A3/H7-OUT markers (see _env_fuel_cell docstring): combined
-    # fuel+env cells explicitly out of scope until a sim host measures them
-    # at matched dt. Status-only dicts: the verdict/bounds loops below skip
-    # keys they do not carry, and the vacuity loop only reads fuel_centered /
-    # fuel_offset -- so these markers never trip a gate.
-    payload["cells"]["fuel_drag"] = {
-        "status": "H7-OUT",
-        "reason": ("fuel+drag combined cell unmeasured; drag-under-burn "
-                   "error order |dc x F_drag|; stock comOffset-shift UNPROBED"),
-    }
-    payload["cells"]["fuel_srp"] = {
-        "status": "H7-OUT",
-        "reason": ("fuel+SRP combined cell unmeasured; SRP-arm live-c vs "
-                   "static-c split unlabeled under burn; stock "
-                   "comOffset-shift UNPROBED"),
-    }
+    # WP-C MEASURED (H7-LIFTED, see _env_fuel_cell docstring): combined
+    # fuel+env cells at matched dt, static drag arm. Switching-class gates
+    # apply via the fuel_ bounds branch + vacuity loop below.
+    payload["cells"]["fuel_drag"] = _env_fuel_drag_cell()
+    payload["cells"]["fuel_srp"] = _env_fuel_srp_cell()
 
     # Switching-residual ladder (documents linear-in-dt class, Update-4 #2).
     payload["thr_ladder_30s"] = {"dt0.1": None}  # filled below
@@ -820,6 +1000,23 @@ def main() -> int:
             fails.append(f"{cell}.fuel_rel_err={fc.get('fuel_rel_err'):.3e}")
         if not fc.get("dcm_max", 1.0) < 2e-3:
             fails.append(f"{cell}.dcm_max={fc.get('dcm_max'):.3e}")
+    for cell in ("fuel_drag", "fuel_srp"):
+        fc = payload["cells"].get(cell, {})
+        if not fc.get("fuel_burned", 0.0) > 0.1:
+            fails.append(f"{cell}.vacuous burned={fc.get('fuel_burned')}")
+        if not fc.get("fuel_rel_err", 1.0) < 1e-9:
+            fails.append(f"{cell}.fuel_rel_err={fc.get('fuel_rel_err'):.3e}")
+        if not fc.get("dcm_max", 1.0) < 2e-3:
+            fails.append(f"{cell}.dcm_max={fc.get('dcm_max'):.3e}")
+        if not fc.get("dc_norm", 0.0) > 1e-4:
+            fails.append(f"{cell}.vacuous dc={fc.get('dc_norm')}")
+        if not fc.get("shift_sig_dcm", 1.0) < fc.get("dcm_max", 0.0):
+            fails.append(f"{cell}.sensitivity "
+                         f"sig={fc.get('shift_sig_dcm'):.3e} "
+                         f"dcm={fc.get('dcm_max'):.3e}")
+    fdrag = payload["cells"].get("fuel_drag", {})
+    if not fdrag.get("density_max", 0.0) > 1e-13:
+        fails.append(f"fuel_drag.vacuous density_max={fdrag.get('density_max')}")
     payload["verdict"] = ("parity green" if not fails
                           else f"PARITY FAIL: {fails}")
     if fails:

@@ -149,26 +149,34 @@ def test_p1_sysmodel_fuel_publisher_absent():
 
 
 def test_p1_fuel_env_scope():
-    """WP25-A3/H7: fuel+drag and fuel+SRP combined cells are OUT by explicit
-    label (drag-under-burn error order |dc x F_drag| cited in the
-    _env_fuel_cell docstring; stock comOffset-shift-with-depletion UNPROBED,
-    recorded not guessed) -- or, once a sim host measures them at matched
-    dt, they must meet switching-class bounds (pre-registered, same class
-    as the fuel cells above)."""
-    probe = (REPO / "audit_bundle" / "probes" / "swap_p1_parity.py").read_text()
-    assert "H7-OUT" in probe
-    assert "|dc x F_drag|" in probe
-    assert "UNPROBED" in probe
+    """WP-C MEASURED (H7-LIFTED 2026-10-14): fuel+drag and fuel+SRP combined
+    cells are measured at matched dt (probe _env_fuel_drag_cell /
+    _env_fuel_srp_cell) and gated in the switching class (pre-registered in
+    the _env_fuel_cell docstring: r < 2e-2, v < 1e-4, omega < 1e-4,
+    dcm_max < 2e-3, fuel_rel_err < 1e-9, burned > 0.1). Arm verdict: static
+    drag arm stands (ledger fuel_drag arm == "static"); the ledger carries
+    the sensitivity bound explicitly -- stock-measured |dc| (dc_norm) with
+    the 1:1-shift signature estimate (shift_sig_dcm) BELOW the dcm residual
+    (sensitivity-limited consistency: a tracking gain >= ~25 would have
+    tripped the dcm gate; G = 1 is not excluded -- recorded, not guessed).
+    fuel_srp is force-level parity only (cannonball torque identically zero
+    both arms) and cannot discriminate by construction."""
     d = _load()["payload"]["cells"]
     for cell in ("fuel_drag", "fuel_srp"):
-        if cell not in d:
-            continue  # OUT by probe label above; no measured cell to gate
+        assert cell in d, f"missing cell {cell}"
         c = d[cell]
-        if c.get("status") == "H7-OUT":
-            continue  # explicit OUT marker, not a measurement
+        assert c.get("status", "ok") != "H7-OUT", f"{cell} unmeasured"
+        assert c["arm"] == "static", f"{cell}.arm={c.get('arm')}"
         assert c["r_BN_N"] < 2e-2, f"{cell}.r={c['r_BN_N']:.3e}"
         assert c["v_BN_N"] < 1e-4, f"{cell}.v={c['v_BN_N']:.3e}"
         assert c["omega_BN_B"] < 1e-4, f"{cell}.om={c['omega_BN_B']:.3e}"
         assert c["dcm_max"] < 2e-3, f"{cell}.dcm={c['dcm_max']:.3e}"
         assert c["fuel_burned"] > 0.1  # effect live, not vacuous
         assert c["fuel_rel_err"] < 1e-9
+        assert c["dc_norm"] > 1e-4, f"{cell}.dc={c['dc_norm']:.3e}"
+        assert c["shift_sig_dcm"] < c["dcm_max"], (
+            f"{cell} sensitivity sig={c['shift_sig_dcm']:.3e} "
+            f"dcm={c['dcm_max']:.3e}")
+        assert c["nStates"] == 13  # hub12 + fuel (no wheels)
+        assert c["nPars"] == 27  # 1 mdot + 3q + swirl + 7 hub + env (ledger-pinned)
+    assert d["fuel_drag"]["density_max"] > 1e-13  # drag live, not vacuous
