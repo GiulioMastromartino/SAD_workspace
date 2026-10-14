@@ -1,16 +1,26 @@
 """WP4+WP5 combo: env-force torque arms under hub offset (omni-vs-stock DIRECT).
 
-MEASURED SPLIT (2026-10-12, combo probe): the shift rule is NOT uniform
-across env effects -- stock treats them differently, so omni copies each:
-  drag:     UNSHIFTED. tau = comOffset x F  (beta)
+MEASURED RULES (corrected 2026-10-14; the 2026-10-12 combo-probe "split"
+below is VOID -- see retraction): stock effector offsets are
+aggregate-C-referenced with moments taken about B, uniformly:
+  drag:     SHIFTED. tau = F x (rBcB - comOffset)  ((com-rBcB) x F)
   SRP:      SHIFTED.   tau = (rCop - c_B) x F  (alpha)
   magnetic: NO arm (tau = m x B_B; B_B = dcm_BN(sigma) magField_N).
   gravity:  NO arm (a = sum mu_i (r_i - r)/|r_i-r|^3).
-Evidence (audit_bundle/results/wp45_combo.json, firing-proven legs):
-  drag-offset: |dT| ~ 1e-17 vs 1.29e-5 shifted prediction => unshifted,
-    ratio 2e-12. drag-zero-com corroborates: comOffset=0 => ~0 torque
-    with c_B != 0 (no implicit -c_B shift). N=3 samples x 10 ticks,
-    both runs firing (drag_abs_max > 1e-9), LEO fixture 400 km.
+RETRACTED evidence (kept for archaeology, never cite):
+  combo drag-offset "|dT| ~ 1e-17 => unshifted" used a 100x-wrong density
+  scale (flat rho=2e-12 vs actual falloff rho~=2e-14 at 400 km/scaleHeight
+  88000): its own dT=1.373e-7 N.m EQUALS the corrected rule F x h
+  (0.1 m x 1.37e-6 N) to ~0.1%. Combo drag-zero-com (~0 torque) was an
+  idle leg, refuted by a live com=0 run (+2.156e-9, exactly F x 0.1).
+  The C1 "verbatim, do NOT shift" reading coincided only at the degenerate
+  fixture rBcB = 2*comOffset (C_REF=0.1, com=0.05) where shifted and
+  unshifted are numerically identical.
+LIVE evidence (this file):
+  drag arm rule: test_stock_drag_arm_rule_rbcb_minus_com (5 stock configs:
+  zero at h==c, linear in (h-c), com=0 control at +2x).
+  drag parity: test_host_drag_offset_direct_parity (unchanged behavior at
+  the degenerate fixture; docstring corrected to the general rule).
   srp-offset: facet+sizing link LANDED 2026-10-13
     (FacetSRPDynamicEffector setNumFacets+addFacet pin, firing-proven
     both arms, 0.5% parity -- see test_host_srp_offset_direct_parity;
@@ -119,14 +129,27 @@ def test_ledgers_present_for_combo():
 
 
 def test_shifted_minus_unshifted_is_minus_cxF():
-    """(comOff-c)xF - comOffxF == -c x F; same for (rCop-c)xF."""
+    """Arm-difference identities (pure numpy, no physics input).
+
+    (comOff-c)xF - comOffxF == -c x F; same for (rCop-c)xF. These pin the
+    algebra used to read stock legs. CORRECTED physics 2026-10-14
+    (test_stock_drag_arm_rule_rbcb_minus_com): stock follows
+    T = F x (rBcB - comOffset), i.e. in x-convention ((com-rBcB)) x F --
+    NOT verbatim comOffset. At the C1 fixture (h=0.1, com=0.05, F=-y):
+    T = F x 0.05 = [0,0,+.05 f] (the old verbatim reading coincided here
+    because h == 2*com)."""
     F = np.array([0.0, -1.2937492587712527e-04, 0.0])  # ledger LEO scale
     d_drag = np.cross(DRAG_COM - C_REF, F) - np.cross(DRAG_COM, F)
     np.testing.assert_allclose(d_drag, -np.cross(C_REF, F), rtol=0.0, atol=0.0)
     F2 = np.array([-7.263708625120001e-06, 0.0, 0.0])
     d_srp = np.cross(SRP_RCOP - C_REF, F2) - np.cross(SRP_RCOP, F2)
     np.testing.assert_allclose(d_srp, -np.cross(C_REF, F2), rtol=0.0, atol=0.0)
-    # Exact drag numbers: com=[.05,0,0] F=-y -> T=[0,0,-.05 f].
+    # Corrected drag numbers: h=[.1,0,0], com=[.05,0,0], F=-y
+    # -> T = F x (h-com) = [0,0,+.05 f].
+    np.testing.assert_allclose(np.cross(F, C_REF - DRAG_COM),
+                               np.array([0.0, 0.0, 0.05 * 1.2937492587712527e-04]),
+                               rtol=1e-12)
+    # Archaeology: pre-flip helper order com x F gave [0,0,-.05 f] here.
     np.testing.assert_allclose(np.cross(DRAG_COM, F),
                                np.array([0.0, 0.0, -0.05 * 1.2937492587712527e-04]),
                                rtol=1e-12)
@@ -218,7 +241,7 @@ def _set_stock_drag(drag, Cd=2.2, com=(0.05, 0.0, 0.0)):
             pass
 
 
-def _run_stock_drag(offset, dt=DT, n_ticks=4):
+def _run_stock_drag(offset, dt=DT, n_ticks=4, com=(0.05, 0.0, 0.0)):
     pytest.importorskip("Basilisk.simulation.spacecraft")
     from Basilisk.simulation import spacecraft
     from Basilisk.utilities import (SimulationBaseClass, macros,
@@ -252,7 +275,7 @@ def _run_stock_drag(offset, dt=DT, n_ticks=4):
         pass
     sim.AddModelToTask("t", atmo)
     drag = dragMod.DragDynamicEffector()
-    _set_stock_drag(drag)
+    _set_stock_drag(drag, com=com)
     dens_msg, dens_name = _atmo_outbox(atmo)
     drag.atmoDensInMsg.subscribeTo(dens_msg)
     try:
@@ -362,9 +385,15 @@ def _run_omni_drag(offset, dt=DT, n_ticks=4):
 def test_host_drag_offset_direct_parity():
     """Drag+offset DIRECT parity: omni vs stock, same LEO setup, om[2]-om[1].
 
-    Measured convention (2026-10-13, firing-proven both arms): stock is
-    T = F x comOffset (about +z here); omni now matches via the shared
-    include/omni/environment.hpp::dragWrench flip (ledger wp45_combo.json).
+    Measured rule (2026-10-14, 4-point stock rBcB sweep + combo
+    reinterpretation): stock drag torque is T = F x (rBcB - comOffset)
+    (pressure-center offset aggregate-C-referenced, moment about B; on
+    this fixture rBcB=0.1/com=0.05 that reads +z). Omni matches via the
+    shared include/omni/environment.hpp::dragWrench flip PLUS the arm
+    (rBcB - comOffset) on both paths. NOTE: at this fixture rBcB =
+    2*comOffset, the corrected arm coincides numerically with verbatim
+    comOffset -- this leg cannot discriminate the arm rule (see
+    test_stock_drag_arm_rule_rbcb_minus_com); it gates force+firing+assembly.
 
     Pre-registered: rtol 5% on the fired (torque-active) axis, atol 1e-9 on
     unfired axes (wp4 bench pattern).
@@ -645,3 +674,183 @@ def test_host_mag_no_arm_smoke():
         "zero-offset magnetic leg idle or off-scale: no verdict may be read")
     np.testing.assert_allclose(a[2] - a[1], b[2] - b[1],
                                rtol=1e-9, atol=1e-12)
+
+
+def test_stock_drag_arm_rule_rbcb_minus_com():
+    """Pin the stock drag arm rule T = F x (rBcB - comOffset) (2026-10-14).
+
+    Five stock-only configs on the C1 LEO fixture (stabilized, live
+    density rho==2e-12, 4 ticks dt=0.1); env step = om[2]-om[1] z:
+      (h,c) = (0,.05) -> -z; (.05,.05) -> 0; (.1,.05) -> +z;
+      (.2,.05) -> +3x; (.1,0) -> +2x.
+    Linear in (h-c) with zero at h == c. This refutes two void readings:
+    the combo "unshifted" verdict (100x-wrong density scale in its
+    expectation; its own dT=1.373e-7 N.m equals F x h at ITS density to
+    ~0.1%) and the combo-zero-com idle leg (~0 torque from an unwired
+    effector, refuted by the live (.1,0) point at exactly F x 0.1).
+    The old verbatim-com reading coincided only at the degenerate
+    h == 2c fixture. Each leg is firing-gated (band (1e-10, 1e-7] scale
+    adapted: steps here are ~1e-9, nonzero and constant = real torque).
+    """
+    pytest.importorskip("Basilisk.simulation.spacecraft")
+    steps = {}
+    for h, com in [([0, 0, 0], [0.05, 0, 0]),
+                   ([0.05, 0, 0], [0.05, 0, 0]),
+                   ([0.1, 0, 0], [0.05, 0, 0]),
+                   ([0.2, 0, 0], [0.05, 0, 0]),
+                   ([0.1, 0, 0], [0, 0, 0])]:
+        slog = _run_stock_drag(h, com=com)[0]
+        om = np.asarray(slog.omega_BN_B, float)
+        steps[(h[0], com[0])] = om[2] - om[1]
+    z = {k: float(v[2]) for k, v in steps.items()}
+    # Firing: every nonzero config steps ~1e-9 class, constant sign.
+    assert z[(0.0, 0.05)] < -5e-10, z
+    assert abs(z[(0.05, 0.05)]) < 1e-11, z
+    assert z[(0.1, 0.05)] > 5e-10, z
+    assert z[(0.2, 0.05)] > 5e-10, z
+    assert z[(0.1, 0.0)] > 5e-10, z
+    # Linear form: zero at h == c, slope shared (ratio 3x over 3x arm,
+    # 2x for com=0 vs com=0.05 at h=0.1).
+    np.testing.assert_allclose(z[(0.2, 0.05)] / z[(0.1, 0.05)], 3.0,
+                               rtol=0.05)
+    np.testing.assert_allclose(z[(0.1, 0.0)] / z[(0.1, 0.05)], 2.0,
+                               rtol=0.05)
+    np.testing.assert_allclose(z[(0.0, 0.05)] / z[(0.1, 0.05)], -1.0,
+                               rtol=0.05)
+
+
+def _tilted_facet_runs():
+    """Stock vs omni-SysModel vs omni-vec on the tilted-facet fixture.
+
+    Facet normal 45 deg (sun +x): force gains a y-component, so
+    x-arm differences show up in T_z. rBcB=[0.1,0,0] hub offset,
+    cop=[0,0.5,0]. Returns (stock, sysmodel, vec) omega histories.
+    """
+    pytest.importorskip("Basilisk.simulation.spacecraft")
+    from Basilisk.simulation import spacecraft
+    from Basilisk.utilities import SimulationBaseClass, macros
+    from Basilisk.architecture import messaging
+    from Basilisk.simulation import facetSRPDynamicEffector as _srp
+    from Basilisk.utilities import simIncludeGravBody
+    SQ = float(0.5 ** 0.5)
+    NHAT = [SQ, SQ, 0.0]
+    COP = [0.0, 0.5, 0.0]
+
+    def sun_msg():
+        m = messaging.SpicePlanetStateMsg()
+        p = messaging.SpicePlanetStateMsgPayload()
+        p.PositionVector = [AU, 0.0, 0.0]
+        m.write(p)
+        return m
+
+    def base_sc(sc):
+        sc.hub.mHub = 750.0
+        sc.hub.IHubPntBc_B = [[900., 0, 0], [0, 800., 0], [0, 0, 600.]]
+        sc.hub.r_BcB_B = [0.1, 0.0, 0.0]
+        sc.hub.r_CN_NInit = [LEO_R, 0, 0]
+        sc.hub.v_CN_NInit = [0, LEO_V, 0]
+        sc.hub.sigma_BNInit = [0, 0, 0]
+        sc.hub.omega_BN_BInit = [0, 0, 0]
+        return sc
+
+    def run_stock():
+        sim = SimulationBaseClass.SimBaseClass()
+        sim.SetProgressBar(False)
+        proc = sim.CreateNewProcess('p')
+        proc.addTask(sim.CreateNewTask('t', macros.sec2nano(DT)))
+        sc = base_sc(spacecraft.Spacecraft())
+        sim.AddModelToTask('t', sc, 1)
+        grav = simIncludeGravBody.gravBodyFactory()
+        earth = grav.createEarth()
+        earth.isCentralBody = True
+        grav.addBodiesTo(sc)
+        srp = _srp.FacetSRPDynamicEffector()
+        srp.setNumFacets(1)
+        srp.addFacet(1.0, [[1, 0, 0], [0, 1, 0], [0, 0, 1]], list(NHAT),
+                     [0, 0, 1], list(COP), 0.2, 0.3)
+        srp.sunInMsg.subscribeTo(sun_msg())
+        sc.addDynamicEffector(srp)
+        sim.AddModelToTask('t', srp)
+        log = sc.scStateOutMsg.recorder()
+        sim.AddModelToTask('t', log)
+        sim.InitializeSimulation()
+        sim.ConfigureStopTime(macros.sec2nano(DT * 8))
+        sim.ExecuteSimulation()
+        return np.asarray(log.omega_BN_B, float)
+
+    def run_sysmodel():
+        oh = pytest.importorskip("omniheyoka.omni_heyoka",
+                                 reason="host-only: needs built omni_heyoka")
+        sim = SimulationBaseClass.SimBaseClass()
+        sim.SetProgressBar(False)
+        proc = sim.CreateNewProcess('p')
+        proc.addTask(sim.CreateNewTask('t', macros.sec2nano(DT)))
+        sc = oh.OmniSpacecraft()
+        sc.setMass(750.0)
+        sc.setInertia(900.0, 800.0, 600.0, 0.0, 0.0, 0.0)
+        sc.setMu(MU_EARTH)
+        sc.setUseGravityGradient(False)
+        sc.setTol(1e-12)
+        sc.setCoMOffset(0.1, 0.0, 0.0)
+        sc.addSRPFacet(1.0, NHAT[0], NHAT[1], NHAT[2], COP[0], COP[1],
+                       COP[2], 0.2, 0.3)
+        sc.setSunState(AU, 0.0, 0.0)
+        sc.setR_CN_NInit(LEO_R, 0, 0)
+        sc.setV_CN_NInit(0, LEO_V, 0)
+        sc.setSigmaBNInit(0, 0, 0)
+        sc.setOmegaBNInit(0, 0, 0)
+        sim.AddModelToTask('t', sc, 1)
+        log = sc.scStateOutMsg.recorder()
+        sim.AddModelToTask('t', log)
+        sim.InitializeSimulation()
+        sim.ConfigureStopTime(macros.sec2nano(DT * 8))
+        sim.ExecuteSimulation()
+        return np.asarray(log.omega_BN_B, float)
+
+    def run_vec():
+        oh = pytest.importorskip("omniheyoka.omni_heyoka",
+                                 reason="host-only: needs built omni_heyoka")
+        from omniheyoka.swap import mirror_stock_config
+        sim = SimulationBaseClass.SimBaseClass()
+        sim.SetProgressBar(False)
+        proc = sim.CreateNewProcess('p')
+        proc.addTask(sim.CreateNewTask('t', macros.sec2nano(DT)))
+        sc = base_sc(spacecraft.Spacecraft())
+        sim.AddModelToTask('t', sc, 1)
+        grav = simIncludeGravBody.gravBodyFactory()
+        earth = grav.createEarth()
+        earth.isCentralBody = True
+        grav.addBodiesTo(sc)
+        oi = oh.OmniVecIntegrator(sc)
+        mirror_stock_config(sim, sc, oi)
+        oi.addSRPFacet(1.0, NHAT[0], NHAT[1], NHAT[2], COP[0], COP[1],
+                       COP[2], 0.2, 0.3)
+        oi.setSunState(AU, 0.0, 0.0)
+        sc.setIntegrator(oi)
+        log = sc.scStateOutMsg.recorder()
+        sim.AddModelToTask('t', log)
+        sim.InitializeSimulation()
+        sim.ConfigureStopTime(macros.sec2nano(DT * 8))
+        sim.ExecuteSimulation()
+        return np.asarray(log.omega_BN_B, float)
+
+    return run_stock(), run_sysmodel(), run_vec()
+
+
+def test_host_srp_tilted_arm_discriminates():
+    """Tilted-facet SRP arm rule: as-shipped ((rCop-c)xF) vs stock.
+
+    The axial leg (test_host_srp_offset_direct_parity) is x-blind: with
+    x-directed force any x-arm shift drops out, so it validates force +
+    y-arm but cannot discriminate the rBcB-dependence. Here the 45-degree
+    facet gives force a y-component, so the unshifted rule (rCop x F)
+    would miss T_z by ~0.1*Fy (~9% of signal); the 5% gate below excludes
+    it while the as-shipped rule matches to ~0.5%. Covers stock +
+    omni-SysModel + omni-vec (first vec faceted validation).
+    """
+    s, o, v = _tilted_facet_runs()
+    step = s[2] - s[1]
+    assert 1e-10 < float(np.linalg.norm(step)) <= 1e-7, (
+        f"tilted SRP leg idle or off-scale: {np.linalg.norm(step):.3e}")
+    np.testing.assert_allclose(o[2] - o[1], step, rtol=0.05, atol=1e-12)
+    np.testing.assert_allclose(v[2] - v[1], step, rtol=0.05, atol=1e-12)

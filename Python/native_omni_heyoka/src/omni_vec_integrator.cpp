@@ -1174,10 +1174,19 @@ void OmniVecIntegrator::updateEnvInputs(size_t obj, const double* y,
             }
             const omni::env::Vec3 vRelB = omni::env::matvec_BN(
                 R, omni::env::vec_sub(v, vAir));
-            // Measured split (combo probe): drag arms do NOT shift.
-            const omni::env::Vec3 dragArm{C.envComOff[0],
-                                          C.envComOff[1],
-                                          C.envComOff[2]};
+            // CORRECTED 2026-10-14 (4-point stock rBcB sweep + combo
+            // reinterpretation): stock drag torque is T = F x (rBcB -
+            // comOffset) -- the pressure-center offset is aggregate-C-
+            // referenced, moment taken about B. The old "verbatim, do NOT
+            // shift" conclusion was drawn at the degenerate fixture
+            // rBcB = 2*comOffset where shifted and unshifted coincide
+            // numerically, and the combo probe's "unshifted" verdict used
+            // a 100x-wrong density scale (flat rho=2e-12 vs actual
+            // falloff rho~=2e-14). cLive is the live aggregate
+            // (record-verbatim without fuel, bit-exact).
+            const omni::env::Vec3 dragArm{cLive[0] - C.envComOff[0],
+                                          cLive[1] - C.envComOff[1],
+                                          cLive[2] - C.envComOff[2]};
             const omni::env::WrenchB w = omni::env::dragWrench(
                 atmo.neutralDensity, C.envCdA, vRelB, dragArm, 0.0);
             if (dO + 5 < P.size()) {
@@ -1218,8 +1227,13 @@ void OmniVecIntegrator::updateEnvInputs(size_t obj, const double* y,
                                                    shadow, sHatB));
                 }
                 for (const auto& f : C.srpFacets) {
-                    // Measured split: facet arms shift by live aggregate c
-                    // ((rCop - c) x F); drag arms do NOT shift (envComOff_).
+                    // Facet arms shift by live aggregate c ((rCop - c) x F),
+                    // discriminated by the tilted-facet leg
+                    // (test_host_srp_tilted_arm_discriminates: the axial leg
+                    // is x-blind -- any x-arm shift drops out against
+                    // x-directed force -- while the 45-degree facet excludes
+                    // the unshifted rule at ~19x). Drag arms shift too
+                    // (cLive - comOffset; see dragArm above).
                     const omni::env::WrenchB w = omni::env::srpFacet(
                         f.area, {f.nHat[0], f.nHat[1], f.nHat[2]},
                         {f.rCop[0] - cLive[0],

@@ -538,13 +538,19 @@ m/s² is fatal over the mission). Fast-varying wrenches (drag/SRP/mag) are
 re-refreshed per arc at the `// WP5-arc-hook` marker inside the module's
 arc loop (WP3-compatible: it writes env slots only).
 
-**Arm shift under hub offset (measured split — NOT uniform):** drag
-arms do NOT shift (tau = comOffset x F); SRP facet arms DO (tau =
-(rCop - c_B) x F); magnetic and gravity have no arms. Thruster dynamics
-arms shift ((r - c_B) x F) while thruster *telemetry* `thrustTorquePntB_B`
-stays r x F about B. Firing/scale gates are mandatory on every env-vs-env
-comparison — a mis-wired effector once produced a vacuous zeros-vs-zeros
-"shifted" verdict, which is why absolute-torque gates exist in the probe.
+**Arm shift under hub offset (measured, CORRECTED 2026-10-14):** stock
+effector offsets are aggregate-C-referenced with moments taken about B,
+uniformly: drag tau = F x (rBcB - comOffset); SRP facet tau =
+(rCop - c_B) x F; magnetic and gravity have no arms. (The old "drag does
+NOT shift" reading was drawn at the degenerate fixture rBcB = 2*comOffset
+where shifted and unshifted coincide, and the combo "unshifted" verdict
+used a 100x-wrong density scale -- see test_stock_drag_arm_rule_rbcb_minus_com.
+The helper cross-order F x () stands; only the arm gained its -rBcB term.)
+Thruster dynamics arms shift ((r - c_B) x F) while thruster *telemetry*
+`thrustTorquePntB_B` stays r x F about B. Firing/scale gates are mandatory
+on every env-vs-env comparison -- a mis-wired effector once produced a
+vacuous zeros-vs-zeros "shifted" verdict, which is why absolute-torque
+gates exist in the probe.
 
 **B/C output sign (measured, WP25-A1):** `r_BN_N = r_CN_N − Rᵀ·c_B`,
 `v_BN_N = v_CN_N − Rᵀ·(ω×c_B)` (R = C_BN) — stock-pinned by
@@ -569,9 +575,10 @@ intent and warns; `addFuelTank` still rejects any second tank. Live
 depletion (`fuel_rel_err 0.0`) lives on the vec path only
 (`swap_p1_parity.json:fuel_centered/fuel_offset`: 10 kg, 5 N, duty 0.5,
 600 s, 1.1 kg burned). Fuel+drag / fuel+SRP combined cells are OUT by label
-(H7): drag-under-burn error order is `|dc x F_drag|` (vec drag arm stays
-static while `cLive` drifts); whether stock shifts `comOffset` with
-depletion is UNPROBED on this host — recorded, not guessed.
+(H7): drag-under-burn error order is `|dc x F_drag|` against a live-c
+tracking arm (vec drag arm now follows live-c like the thruster/SRP arms;
+whether stock tracks depletion with `comOffset` is UNPROBED on this host
+-- recorded, not guessed; the 25x-insensitive fixture cannot see G=1).
 
 ## A14. Loud-rejection + layout hygiene (WP0/WP7)
 

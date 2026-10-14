@@ -1523,14 +1523,14 @@ void OmniSpacecraft::updateEnvInputs(const double* y) {
             }
             const omni::env::Vec3 vRelB = omni::env::matvec_BN(
                 R, omni::env::vec_sub(v, vAir));
-            // WP4-combo MEASURED (combo probe drag-offset leg, firing-proven):
-            // stock drag torque does NOT shift by -c_B (offset-vs-no-offset
-            // delta ~1e-17 vs 1.3e-5 shifted prediction). Pass the effector
-            // comOffset VERBATIM. (SRP facets DO shift -- separate path below;
-            // magnetic/gravity have no arms.)
-            const omni::env::Vec3 dragArm{this->envComOff[0],
-                                          this->envComOff[1],
-                                          this->envComOff[2]};
+            // CORRECTED 2026-10-14 (see vec dragArm note): stock drag torque
+            // is T = F x (rBcB - comOffset) -- the pressure-center offset
+            // is aggregate-C-referenced, moment taken about B. No fuel
+            // feedback on this path (option B), so the aggregate is the
+            // rBcB_ record verbatim.
+            const omni::env::Vec3 dragArm{this->rBcB_[0] - this->envComOff[0],
+                                          this->rBcB_[1] - this->envComOff[1],
+                                          this->rBcB_[2] - this->envComOff[2]};
             const omni::env::WrenchB w = omni::env::dragWrench(
                 atmo.neutralDensity, this->envCdA, vRelB, dragArm,
                 this->envDensityCorr);
@@ -1574,8 +1574,8 @@ void OmniSpacecraft::updateEnvInputs(const double* y) {
                 for (const auto& f : this->srpFacets) {
                     // WP4-combo (SRP side of the measured split): facet
                     // torque arm shifts by -c_B (about CoM) under hub offset.
-                    // NOTE drag does NOT shift -- see dragArm above; the
-                    // split is measured, not assumed.
+                    // Drag arms shift the same way now (c - comOffset; the
+                    // old no-shift reading was degenerate, see dragArm).
                     const omni::env::WrenchB w = omni::env::srpFacet(
                         f.area, {f.nHat[0], f.nHat[1], f.nHat[2]},
                         {f.rCop[0] - this->rBcB_[0],
