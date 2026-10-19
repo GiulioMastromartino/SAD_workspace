@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>native_omni_heyoka Granular Verification Matrix (281 Units)</title>
+<title>native_omni_heyoka Granular Verification Matrix (350 Units)</title>
 <style>
   :root {
     --bg: #0d1117;
@@ -110,6 +110,8 @@
   .cell:hover { transform: scale(1.18); z-index: 10; }
   .cell.selected { outline: 2px solid #58a6ff; outline-offset: 1px; }
   .cell-verified { background: rgba(46, 160, 67, 0.25); color: #3fb950; border: 1px solid rgba(46, 160, 67, 0.5); }
+  .cell-failed { background: rgba(248, 81, 73, 0.30); color: #f85149; border: 1px solid rgba(248, 81, 73, 0.7); }
+  .cell-skipped { background: rgba(210, 153, 34, 0.25); color: #d29922; border: 1px solid rgba(210, 153, 34, 0.5); }
   .cell-arm_split { background: rgba(210, 153, 34, 0.25); color: #d29922; border: 1px solid rgba(210, 153, 34, 0.5); }
   .cell-blocked { background: rgba(248, 81, 73, 0.25); color: #f85149; border: 1px solid rgba(248, 81, 73, 0.6); }
   .cell-in_progress { background: rgba(59, 130, 246, 0.25); color: #58a6ff; border: 1px solid rgba(59, 130, 246, 0.5); }
@@ -134,7 +136,7 @@
 <div class="container">
   <div class="header">
     <div class="title-group">
-      <h1>native_omni_heyoka <span class="tag">High-Density Matrix (281 Units)</span></h1>
+      <h1>native_omni_heyoka <span class="tag">High-Density Matrix (350 Units)</span></h1>
     </div>
   </div>
 
@@ -163,8 +165,8 @@
 
   <div class="controls">
     <div class="filter-tabs">
-      <button class="btn active" onclick="filterType('all')">All (281)</button>
-      <button class="btn" onclick="filterType('test_case')">Test Cases (230)</button>
+      <button class="btn active" onclick="filterType('all')">All (350)</button>
+      <button class="btn" onclick="filterType('test_case')">Test Cases (299)</button>
       <button class="btn" onclick="filterType('parity_cell')">Simulation Cells (21)</button>
       <button class="btn" onclick="filterType('audit_finding')">Audit Findings (30)</button>
     </div>
@@ -193,19 +195,40 @@
 <script>
 const DATA = {
   "project": "native_omni_heyoka",
-  "total_units": 281,
+  "total_units": 350,
   "breakdown": {
-    "automated_test_units": 230,
+    "automated_test_units": 299,
     "simulation_parity_cells": 21,
     "audit_ledger_items": 30
   },
   "summary": {
-    "verified": 225,
-    "arm_split": 10,
-    "blocked": 4,
-    "in_progress": 33,
-    "unstarted": 9,
-    "overall_progress_pct": 88.5
+    "verified": 328,
+    "failed": 0,
+    "skipped": 3,
+    "arm_split": 0,
+    "blocked": 1,
+    "in_progress": 11,
+    "unstarted": 7,
+    "overall_progress_pct": 96.3
+  },
+  "measurement": {
+    "method": "pytest JUnit outcomes + ledger verdict/freshness; audit items remain author-graded",
+    "measured_at": "2026-10-14T12:16:03.863182+00:00",
+    "pytest": {
+      "ran": true,
+      "returncode": 0,
+      "timeout_s": 3600,
+      "python": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+      "pytest": "9.1.1",
+      "junit": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/audit_bundle/results/pytest_junit.xml",
+      "error": null,
+      "n_passed": 289,
+      "n_failed": 0,
+      "n_skipped": 10,
+      "stdout_tail": "..........................sssssss....................................... [ 23%]\n........................................................................ [ 46%]\n...s.................................................................... [ 70%]\n........................................................................ [ 93%]\n.ss.................                                                     [100%]\n298 passed, 10 skipped in 32.33s\n\u001b[92mBSK_INFORMATION\u001b[0m: OmniSpacecraft: 15 states, 16 pars, 3 wheels; symbolic build 7.75 ms, tol 1e-12.\n\u001b[92mBSK_INFORMATION\u001b[0m: OmniSpacecraft: 16 states, 19 pars, 4 wheels; symbolic build 10.02 ms, tol 1e-12.\n\u001b[92mBSK_INFORMATION\u001b[0m: OmniSpacecraft: 12 states, 23 pars, 0 wheels; symbolic build 10.72 ms, tol 1e-12.\n\u001b[92mBSK_INFORMATION\u001b[0m: OmniSpacecraft: 15 states, 34 pars, 3 wheels; symbolic build 14.02 ms, tol 1e-12.\n",
+      "n_collected": 299,
+      "n_collection_errors": 0
+    }
   },
   "units": [
     {
@@ -218,8 +241,9 @@ const DATA = {
       "file": "tests/test_closed_loop_fuel.py:49",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_closed_loop_fuel.py (line 49)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_closed_loop_fuel::test_closed_loop_att_rate_parity",
@@ -231,8 +255,9 @@ const DATA = {
       "file": "tests/test_closed_loop_fuel.py:59",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_closed_loop_fuel.py (line 59)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_closed_loop_fuel::test_closed_loop_wheels_coupled_bound",
@@ -244,8 +269,9 @@ const DATA = {
       "file": "tests/test_closed_loop_fuel.py:66",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_closed_loop_fuel.py (line 66)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_closed_loop_fuel::test_closed_loop_fuel_bit_exact",
@@ -257,8 +283,9 @@ const DATA = {
       "file": "tests/test_closed_loop_fuel.py:72",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_closed_loop_fuel.py (line 72)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_closed_loop_fuel::test_closed_loop_mrp_and_vacuity",
@@ -270,8 +297,9 @@ const DATA = {
       "file": "tests/test_closed_loop_fuel.py:80",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_closed_loop_fuel.py (line 80)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_closed_loop_fuel::test_rejected_fixture_documented_nonparity",
@@ -283,8 +311,9 @@ const DATA = {
       "file": "tests/test_closed_loop_fuel.py:89",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_closed_loop_fuel.py (line 89)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_closed_loop_fuel::test_step_count_audit",
@@ -296,8 +325,9 @@ const DATA = {
       "file": "tests/test_closed_loop_fuel.py:102",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_closed_loop_fuel.py (line 102)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_closed_loop_fuel::test_build_s_recorded_not_gated",
@@ -309,8 +339,359 @@ const DATA = {
       "file": "tests/test_closed_loop_fuel.py:109",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_closed_loop_fuel.py (line 109)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_cpp_values::test_cpp_core_values",
+      "name": "test_cpp_core_values",
+      "type": "test_case",
+      "module": "test_cpp_values",
+      "subsystem": "C++ Absolute-Value Pins",
+      "category": "Core Math",
+      "file": "tests/test_cpp_values.py:28",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_env_mirror_contract::test_swap_baseline_intact",
+      "name": "test_swap_baseline_intact",
+      "type": "test_case",
+      "module": "test_env_mirror_contract",
+      "subsystem": "test_env_mirror_contract",
+      "category": "Unit Tests",
+      "file": "tests/test_env_mirror_contract.py:62",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_env_mirror_contract::test_drag_effector_shape",
+      "name": "test_drag_effector_shape",
+      "type": "test_case",
+      "module": "test_env_mirror_contract",
+      "subsystem": "test_env_mirror_contract",
+      "category": "Unit Tests",
+      "file": "tests/test_env_mirror_contract.py:74",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_env_mirror_contract::test_drag_correction_default_zero",
+      "name": "test_drag_correction_default_zero",
+      "type": "test_case",
+      "module": "test_env_mirror_contract",
+      "subsystem": "test_env_mirror_contract",
+      "category": "Unit Tests",
+      "file": "tests/test_env_mirror_contract.py:94",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_env_mirror_contract::test_facet_drag_reject_shape",
+      "name": "test_facet_drag_reject_shape",
+      "type": "test_case",
+      "module": "test_env_mirror_contract",
+      "subsystem": "test_env_mirror_contract",
+      "category": "Unit Tests",
+      "file": "tests/test_env_mirror_contract.py:118",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_env_mirror_contract::test_atmosphere_shape",
+      "name": "test_atmosphere_shape",
+      "type": "test_case",
+      "module": "test_env_mirror_contract",
+      "subsystem": "test_env_mirror_contract",
+      "category": "Unit Tests",
+      "file": "tests/test_env_mirror_contract.py:134",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_env_mirror_contract::test_wind_shape",
+      "name": "test_wind_shape",
+      "type": "test_case",
+      "module": "test_env_mirror_contract",
+      "subsystem": "test_env_mirror_contract",
+      "category": "Unit Tests",
+      "file": "tests/test_env_mirror_contract.py:152",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_env_mirror_contract::test_mujoco_cannonball_passthrough_shape",
+      "name": "test_mujoco_cannonball_passthrough_shape",
+      "type": "test_case",
+      "module": "test_env_mirror_contract",
+      "subsystem": "test_env_mirror_contract",
+      "category": "Unit Tests",
+      "file": "tests/test_env_mirror_contract.py:167",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_env_mirror_contract::test_srp_cannonball_shape",
+      "name": "test_srp_cannonball_shape",
+      "type": "test_case",
+      "module": "test_env_mirror_contract",
+      "subsystem": "test_env_mirror_contract",
+      "category": "Unit Tests",
+      "file": "tests/test_env_mirror_contract.py:182",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_env_mirror_contract::test_srp_facet_shape",
+      "name": "test_srp_facet_shape",
+      "type": "test_case",
+      "module": "test_env_mirror_contract",
+      "subsystem": "test_env_mirror_contract",
+      "category": "Unit Tests",
+      "file": "tests/test_env_mirror_contract.py:197",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_env_mirror_contract::test_srp_msgdriven_reject_shape",
+      "name": "test_srp_msgdriven_reject_shape",
+      "type": "test_case",
+      "module": "test_env_mirror_contract",
+      "subsystem": "test_env_mirror_contract",
+      "category": "Unit Tests",
+      "file": "tests/test_env_mirror_contract.py:213",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_env_mirror_contract::test_mtb_shape",
+      "name": "test_mtb_shape",
+      "type": "test_case",
+      "module": "test_env_mirror_contract",
+      "subsystem": "test_env_mirror_contract",
+      "category": "Unit Tests",
+      "file": "tests/test_env_mirror_contract.py:230",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_env_mirror_contract::test_mag_field_shape",
+      "name": "test_mag_field_shape",
+      "type": "test_case",
+      "module": "test_env_mirror_contract",
+      "subsystem": "test_env_mirror_contract",
+      "category": "Unit Tests",
+      "file": "tests/test_env_mirror_contract.py:244",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_env_mirror_contract::test_eclipse_shape",
+      "name": "test_eclipse_shape",
+      "type": "test_case",
+      "module": "test_env_mirror_contract",
+      "subsystem": "test_env_mirror_contract",
+      "category": "Unit Tests",
+      "file": "tests/test_env_mirror_contract.py:261",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_env_mirror_contract::test_gravity_shape",
+      "name": "test_gravity_shape",
+      "type": "test_case",
+      "module": "test_env_mirror_contract",
+      "subsystem": "test_env_mirror_contract",
+      "category": "Unit Tests",
+      "file": "tests/test_env_mirror_contract.py:274",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_env_mirror_contract::test_j2_shape",
+      "name": "test_j2_shape",
+      "type": "test_case",
+      "module": "test_env_mirror_contract",
+      "subsystem": "test_env_mirror_contract",
+      "category": "Unit Tests",
+      "file": "tests/test_env_mirror_contract.py:288",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_env_mirror_contract::test_ephemeris_shape",
+      "name": "test_ephemeris_shape",
+      "type": "test_case",
+      "module": "test_env_mirror_contract",
+      "subsystem": "test_env_mirror_contract",
+      "category": "Unit Tests",
+      "file": "tests/test_env_mirror_contract.py:299",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_env_mirror_contract::test_omni_env_setter_surface",
+      "name": "test_omni_env_setter_surface",
+      "type": "test_case",
+      "module": "test_env_mirror_contract",
+      "subsystem": "test_env_mirror_contract",
+      "category": "Unit Tests",
+      "file": "tests/test_env_mirror_contract.py:325",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_fsw_loop::test_leg_ledger_green",
+      "name": "test_leg_ledger_green",
+      "type": "test_case",
+      "module": "test_fsw_loop",
+      "subsystem": "test_fsw_loop",
+      "category": "Unit Tests",
+      "file": "tests/test_fsw_loop.py:50",
+      "status": "unstarted",
+      "progress": 0.2,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest SKIPPED (fsw_loop probe not run on this host yet): proof ledger absent -- not measured.",
+      "outcome": "skipped"
+    },
+    {
+      "id": "test_fsw_loop::test_fsw_att_rate_parity",
+      "name": "test_fsw_att_rate_parity",
+      "type": "test_case",
+      "module": "test_fsw_loop",
+      "subsystem": "test_fsw_loop",
+      "category": "Unit Tests",
+      "file": "tests/test_fsw_loop.py:61",
+      "status": "unstarted",
+      "progress": 0.2,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest SKIPPED (fsw_loop probe not run on this host yet): proof ledger absent -- not measured.",
+      "outcome": "skipped"
+    },
+    {
+      "id": "test_fsw_loop::test_fsw_wheels_coupled_bound",
+      "name": "test_fsw_wheels_coupled_bound",
+      "type": "test_case",
+      "module": "test_fsw_loop",
+      "subsystem": "test_fsw_loop",
+      "category": "Unit Tests",
+      "file": "tests/test_fsw_loop.py:68",
+      "status": "unstarted",
+      "progress": 0.2,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest SKIPPED (fsw_loop probe not run on this host yet): proof ledger absent -- not measured.",
+      "outcome": "skipped"
+    },
+    {
+      "id": "test_fsw_loop::test_fsw_mrp_totals_and_vacuity",
+      "name": "test_fsw_mrp_totals_and_vacuity",
+      "type": "test_case",
+      "module": "test_fsw_loop",
+      "subsystem": "test_fsw_loop",
+      "category": "Unit Tests",
+      "file": "tests/test_fsw_loop.py:74",
+      "status": "unstarted",
+      "progress": 0.2,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest SKIPPED (fsw_loop probe not run on this host yet): proof ledger absent -- not measured.",
+      "outcome": "skipped"
+    },
+    {
+      "id": "test_fsw_loop::test_fsw_saturation_edge_tick_match",
+      "name": "test_fsw_saturation_edge_tick_match",
+      "type": "test_case",
+      "module": "test_fsw_loop",
+      "subsystem": "test_fsw_loop",
+      "category": "Unit Tests",
+      "file": "tests/test_fsw_loop.py:96",
+      "status": "unstarted",
+      "progress": 0.2,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest SKIPPED (fsw_loop probe not run on this host yet): proof ledger absent -- not measured.",
+      "outcome": "skipped"
+    },
+    {
+      "id": "test_fsw_loop::test_fsw_allocator_firing_proof",
+      "name": "test_fsw_allocator_firing_proof",
+      "type": "test_case",
+      "module": "test_fsw_loop",
+      "subsystem": "test_fsw_loop",
+      "category": "Unit Tests",
+      "file": "tests/test_fsw_loop.py:104",
+      "status": "unstarted",
+      "progress": 0.2,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest SKIPPED (fsw_loop probe not run on this host yet): proof ledger absent -- not measured.",
+      "outcome": "skipped"
+    },
+    {
+      "id": "test_fsw_loop::test_step_count_audit",
+      "name": "test_step_count_audit",
+      "type": "test_case",
+      "module": "test_fsw_loop",
+      "subsystem": "test_fsw_loop",
+      "category": "Unit Tests",
+      "file": "tests/test_fsw_loop.py:120",
+      "status": "unstarted",
+      "progress": 0.2,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest SKIPPED (fsw_loop probe not run on this host yet): proof ledger absent -- not measured.",
+      "outcome": "skipped"
     },
     {
       "id": "test_fuel_multitank::test_multitank_mirror_raises",
@@ -320,10 +701,11 @@ const DATA = {
       "subsystem": "test_fuel_multitank",
       "category": "Unit Tests",
       "file": "tests/test_fuel_multitank.py:51",
-      "status": "unstarted",
-      "progress": 0.1,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_fuel_multitank.py (line 51)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_fuel_multitank::test_subset_links_unobservable",
@@ -335,8 +717,9 @@ const DATA = {
       "file": "tests/test_fuel_multitank.py:59",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_fuel_multitank.py (line 59)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_fuel_multitank::test_per_tank_getters_independent",
@@ -348,8 +731,9 @@ const DATA = {
       "file": "tests/test_fuel_multitank.py:73",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_fuel_multitank.py (line 73)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_fuel_multitank::test_single_tank_guard_unchanged",
@@ -361,8 +745,625 @@ const DATA = {
       "file": "tests/test_fuel_multitank.py:84",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_fuel_multitank.py (line 84)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_loop_split::test_loop_split_ledger_green",
+      "name": "test_loop_split_ledger_green",
+      "type": "test_case",
+      "module": "test_loop_split",
+      "subsystem": "Task Cost Split",
+      "category": "Architecture",
+      "file": "tests/test_loop_split.py:40",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_loop_split::test_loop_split_legs_shape",
+      "name": "test_loop_split_legs_shape",
+      "type": "test_case",
+      "module": "test_loop_split",
+      "subsystem": "Task Cost Split",
+      "category": "Architecture",
+      "file": "tests/test_loop_split.py:49",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_loop_split::test_loop_split_load_bearing_orderings",
+      "name": "test_loop_split_load_bearing_orderings",
+      "type": "test_case",
+      "module": "test_loop_split",
+      "subsystem": "Task Cost Split",
+      "category": "Architecture",
+      "file": "tests/test_loop_split.py:59",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_loop_split::test_loop_split_additivity",
+      "name": "test_loop_split_additivity",
+      "type": "test_case",
+      "module": "test_loop_split",
+      "subsystem": "Task Cost Split",
+      "category": "Architecture",
+      "file": "tests/test_loop_split.py:73",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_mirrored_set_exact",
+      "name": "test_mirrored_set_exact",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:88",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_task_effectors_order",
+      "name": "test_task_effectors_order",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:93",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_central_mu_single_body",
+      "name": "test_central_mu_single_body",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:101",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_hub_record_reads",
+      "name": "test_hub_record_reads",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:107",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_wheel_balanced_mirror_path",
+      "name": "test_wheel_balanced_mirror_path",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:118",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_gg_and_fuel_pass_envelope_scan",
+      "name": "test_gg_and_fuel_pass_envelope_scan",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:129",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_reject_nbody_two_bodies",
+      "name": "test_reject_nbody_two_bodies",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:140",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_reject_unmirrorable_env_effector",
+      "name": "test_reject_unmirrorable_env_effector",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:148",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_reject_two_rw_effectors",
+      "name": "test_reject_two_rw_effectors",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:157",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_reject_rw_logs_fewer_than_wheels",
+      "name": "test_reject_rw_logs_fewer_than_wheels",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:162",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_reject_jitter_wheel",
+      "name": "test_reject_jitter_wheel",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:171",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_reject_per_object_needs_explicit_lists",
+      "name": "test_reject_per_object_needs_explicit_lists",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:179",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_reject_sync_empty_specs",
+      "name": "test_reject_sync_empty_specs",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:184",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_reject_sync_spec_missing_keys",
+      "name": "test_reject_sync_spec_missing_keys",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:189",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_reject_thruster_no_factory",
+      "name": "test_reject_thruster_no_factory",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:195",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_reject_thruster_join_mismatch",
+      "name": "test_reject_thruster_join_mismatch",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:200",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_reject_thruster_order_mismatch",
+      "name": "test_reject_thruster_order_mismatch",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:210",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_reject_min_pulse",
+      "name": "test_reject_min_pulse",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:221",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_reject_cutoff_zero",
+      "name": "test_reject_cutoff_zero",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:228",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_reject_blowdown",
+      "name": "test_reject_blowdown",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:236",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_reject_swirl",
+      "name": "test_reject_swirl",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:244",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_reject_thruster_no_cmd_msg",
+      "name": "test_reject_thruster_no_cmd_msg",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:251",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_reject_multi_tank",
+      "name": "test_reject_multi_tank",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:260",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_gaps::test_reject_tank_without_thrusters",
+      "name": "test_reject_tank_without_thrusters",
+      "type": "test_case",
+      "module": "test_replacement_gaps",
+      "subsystem": "Loud-Reject Pins",
+      "category": "Architecture",
+      "file": "tests/test_replacement_gaps.py:265",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_matrix::test_matrix_probe_sections",
+      "name": "test_matrix_probe_sections",
+      "type": "test_case",
+      "module": "test_replacement_matrix",
+      "subsystem": "Replacement Matrix",
+      "category": "Architecture",
+      "file": "tests/test_replacement_matrix.py:64",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_matrix::test_swap_p1_integration_keys",
+      "name": "test_swap_p1_integration_keys",
+      "type": "test_case",
+      "module": "test_replacement_matrix",
+      "subsystem": "Replacement Matrix",
+      "category": "Architecture",
+      "file": "tests/test_replacement_matrix.py:71",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_matrix::test_swap_multi_integration_keys",
+      "name": "test_swap_multi_integration_keys",
+      "type": "test_case",
+      "module": "test_replacement_matrix",
+      "subsystem": "Replacement Matrix",
+      "category": "Architecture",
+      "file": "tests/test_replacement_matrix.py:86",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_matrix::test_closed_loop_integration_keys",
+      "name": "test_closed_loop_integration_keys",
+      "type": "test_case",
+      "module": "test_replacement_matrix",
+      "subsystem": "Replacement Matrix",
+      "category": "Architecture",
+      "file": "tests/test_replacement_matrix.py:92",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_matrix::test_arm_artifact_live_gates_resolve",
+      "name": "test_arm_artifact_live_gates_resolve",
+      "type": "test_case",
+      "module": "test_replacement_matrix",
+      "subsystem": "Replacement Matrix",
+      "category": "Architecture",
+      "file": "tests/test_replacement_matrix.py:103",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_matrix::test_proof_ledgers_fresh",
+      "name": "test_proof_ledgers_fresh",
+      "type": "test_case",
+      "module": "test_replacement_matrix",
+      "subsystem": "Replacement Matrix",
+      "category": "Architecture",
+      "file": "tests/test_replacement_matrix.py:124",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_matrix::test_mirrored_set_exact",
+      "name": "test_mirrored_set_exact",
+      "type": "test_case",
+      "module": "test_replacement_matrix",
+      "subsystem": "Replacement Matrix",
+      "category": "Architecture",
+      "file": "tests/test_replacement_matrix.py:136",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_matrix::test_reject_site_count_and_triggers",
+      "name": "test_reject_site_count_and_triggers",
+      "type": "test_case",
+      "module": "test_replacement_matrix",
+      "subsystem": "Replacement Matrix",
+      "category": "Architecture",
+      "file": "tests/test_replacement_matrix.py:146",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_matrix::test_env_mirror_gap_open",
+      "name": "test_env_mirror_gap_open",
+      "type": "test_case",
+      "module": "test_replacement_matrix",
+      "subsystem": "Replacement Matrix",
+      "category": "Architecture",
+      "file": "tests/test_replacement_matrix.py:164",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_matrix::test_demo_script_envelope_pins",
+      "name": "test_demo_script_envelope_pins",
+      "type": "test_case",
+      "module": "test_replacement_matrix",
+      "subsystem": "Replacement Matrix",
+      "category": "Architecture",
+      "file": "tests/test_replacement_matrix.py:181",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_matrix::test_leo_drag_gap_open",
+      "name": "test_leo_drag_gap_open",
+      "type": "test_case",
+      "module": "test_replacement_matrix",
+      "subsystem": "Replacement Matrix",
+      "category": "Architecture",
+      "file": "tests/test_replacement_matrix.py:190",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_matrix::test_stationkeeping_gap_open",
+      "name": "test_stationkeeping_gap_open",
+      "type": "test_case",
+      "module": "test_replacement_matrix",
+      "subsystem": "Replacement Matrix",
+      "category": "Architecture",
+      "file": "tests/test_replacement_matrix.py:205",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_matrix::test_bc_sign_docs_agree",
+      "name": "test_bc_sign_docs_agree",
+      "type": "test_case",
+      "module": "test_replacement_matrix",
+      "subsystem": "Replacement Matrix",
+      "category": "Architecture",
+      "file": "tests/test_replacement_matrix.py:232",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_matrix::test_docs_reconciled_markers",
+      "name": "test_docs_reconciled_markers",
+      "type": "test_case",
+      "module": "test_replacement_matrix",
+      "subsystem": "Replacement Matrix",
+      "category": "Architecture",
+      "file": "tests/test_replacement_matrix.py:248",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_matrix::test_speedup_gap_open",
+      "name": "test_speedup_gap_open",
+      "type": "test_case",
+      "module": "test_replacement_matrix",
+      "subsystem": "Replacement Matrix",
+      "category": "Architecture",
+      "file": "tests/test_replacement_matrix.py:267",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
+    },
+    {
+      "id": "test_replacement_matrix::test_fsw_loop_gap_open",
+      "name": "test_fsw_loop_gap_open",
+      "type": "test_case",
+      "module": "test_replacement_matrix",
+      "subsystem": "Replacement Matrix",
+      "category": "Architecture",
+      "file": "tests/test_replacement_matrix.py:305",
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_multi::test_multi_ledger_green",
@@ -372,10 +1373,11 @@ const DATA = {
       "subsystem": "test_swap_multi",
       "category": "Unit Tests",
       "file": "tests/test_swap_multi.py:46",
-      "status": "unstarted",
-      "progress": 0.1,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_multi.py (line 46)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_multi::test_multi_shared_leg_parity",
@@ -385,10 +1387,11 @@ const DATA = {
       "subsystem": "test_swap_multi",
       "category": "Unit Tests",
       "file": "tests/test_swap_multi.py:61",
-      "status": "unstarted",
-      "progress": 0.1,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_multi.py (line 61)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_multi::test_multi_split_leg_parity",
@@ -398,10 +1401,11 @@ const DATA = {
       "subsystem": "test_swap_multi",
       "category": "Unit Tests",
       "file": "tests/test_swap_multi.py:69",
-      "status": "unstarted",
-      "progress": 0.1,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_multi.py (line 69)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_multi::test_multi_step_audit_no_double_step",
@@ -411,10 +1415,11 @@ const DATA = {
       "subsystem": "test_swap_multi",
       "category": "Unit Tests",
       "file": "tests/test_swap_multi.py:77",
-      "status": "unstarted",
-      "progress": 0.1,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_multi.py (line 77)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_multi::test_multi_build_and_share_rule",
@@ -424,10 +1429,11 @@ const DATA = {
       "subsystem": "test_swap_multi",
       "category": "Unit Tests",
       "file": "tests/test_swap_multi.py:90",
-      "status": "unstarted",
-      "progress": 0.1,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_multi.py (line 90)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_multi::test_multi_vacuity_and_mrp",
@@ -437,10 +1443,11 @@ const DATA = {
       "subsystem": "test_swap_multi",
       "category": "Unit Tests",
       "file": "tests/test_swap_multi.py:108",
-      "status": "unstarted",
-      "progress": 0.1,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_multi.py (line 108)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_multi::test_multi_unmirrored_slot_loud",
@@ -450,10 +1457,11 @@ const DATA = {
       "subsystem": "test_swap_multi",
       "category": "Unit Tests",
       "file": "tests/test_swap_multi.py:124",
-      "status": "unstarted",
-      "progress": 0.1,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_multi.py (line 124)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_p0::test_p0_callback_absent",
@@ -465,8 +1473,9 @@ const DATA = {
       "file": "tests/test_swap_p0.py:27",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_p0.py (line 27)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_p0::test_p0_census_layout_and_roundtrip",
@@ -478,8 +1487,9 @@ const DATA = {
       "file": "tests/test_swap_p0.py:36",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_p0.py (line 36)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_p0::test_p0_swig_surface",
@@ -491,8 +1501,9 @@ const DATA = {
       "file": "tests/test_swap_p0.py:57",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_p0.py (line 57)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_p0::test_p0_ordering_record",
@@ -504,8 +1515,9 @@ const DATA = {
       "file": "tests/test_swap_p0.py:68",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_p0.py (line 68)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_p1::test_p1_ledger_green",
@@ -517,8 +1529,9 @@ const DATA = {
       "file": "tests/test_swap_p1.py:38",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_p1.py (line 38)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_p1::test_p1_hub_rw_parity",
@@ -530,8 +1543,9 @@ const DATA = {
       "file": "tests/test_swap_p1.py:45",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_p1.py (line 45)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_p1::test_p1_thruster_parity",
@@ -543,8 +1557,9 @@ const DATA = {
       "file": "tests/test_swap_p1.py:64",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_p1.py (line 64)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_p1::test_p1_env_parity",
@@ -556,8 +1571,9 @@ const DATA = {
       "file": "tests/test_swap_p1.py:84",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_p1.py (line 84)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_p1::test_p1_switching_ladder_linear",
@@ -569,8 +1585,9 @@ const DATA = {
       "file": "tests/test_swap_p1.py:102",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_p1.py (line 102)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_p1::test_p1_rejects_all_loud",
@@ -582,8 +1599,9 @@ const DATA = {
       "file": "tests/test_swap_p1.py:110",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_p1.py (line 110)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_p1::test_p1_fuel_parity",
@@ -595,8 +1613,9 @@ const DATA = {
       "file": "tests/test_swap_p1.py:123",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_p1.py (line 123)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_p1::test_p1_sysmodel_fuel_publisher_absent",
@@ -606,10 +1625,11 @@ const DATA = {
       "subsystem": "Swap P1 Parity",
       "category": "Architecture",
       "file": "tests/test_swap_p1.py:139",
-      "status": "arm_split",
-      "progress": 0.4,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_p1.py (line 139)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_swap_p1::test_p1_fuel_env_scope",
@@ -621,8 +1641,9 @@ const DATA = {
       "file": "tests/test_swap_p1.py:151",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_swap_p1.py (line 151)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_thruster_stock::test_staircase_edges_match_stock",
@@ -634,8 +1655,9 @@ const DATA = {
       "file": "tests/test_thruster_stock.py:127",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_thruster_stock.py (line 127)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_thruster_stock::test_no_valve_lag",
@@ -645,10 +1667,11 @@ const DATA = {
       "subsystem": "Stock Thruster Staircase",
       "category": "Thrusters",
       "file": "tests/test_thruster_stock.py:133",
-      "status": "arm_split",
-      "progress": 0.55,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_thruster_stock.py (line 133)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_thruster_stock::test_stale_message_goes_idle",
@@ -660,8 +1683,9 @@ const DATA = {
       "file": "tests/test_thruster_stock.py:137",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_thruster_stock.py (line 137)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_thruster_stock::test_omni_matches_stock_stale_path",
@@ -673,8 +1697,9 @@ const DATA = {
       "file": "tests/test_thruster_stock.py:153",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_thruster_stock.py (line 153)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_thruster_stock::test_geometry_helper_round_trip",
@@ -686,8 +1711,9 @@ const DATA = {
       "file": "tests/test_thruster_stock.py:207",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_thruster_stock.py (line 207)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_vec_mrp_switch::test_vec_mrp_switch_leg_total_pm1_with_trace",
@@ -699,8 +1725,9 @@ const DATA = {
       "file": "tests/test_vec_mrp_switch.py:120",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_vec_mrp_switch.py (line 120)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_ci_envelope_checks_pass_on_current_tree",
@@ -712,8 +1739,9 @@ const DATA = {
       "file": "tests/test_wp0_guards.py:78",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 78)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_layout_name_api_present",
@@ -725,8 +1753,9 @@ const DATA = {
       "file": "tests/test_wp0_guards.py:91",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 91)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_plan_trap_list_documented",
@@ -738,8 +1767,9 @@ const DATA = {
       "file": "tests/test_wp0_guards.py:106",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 106)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_guard_force_msg_raises_and_disarmed_runs",
@@ -749,10 +1779,11 @@ const DATA = {
       "subsystem": "Defensive Guards & Envelopes",
       "category": "Hygiene & Guards",
       "file": "tests/test_wp0_guards.py:164",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 164)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_guard_umin_raises_and_disarmed_runs",
@@ -762,10 +1793,11 @@ const DATA = {
       "subsystem": "Defensive Guards & Envelopes",
       "category": "Hygiene & Guards",
       "file": "tests/test_wp0_guards.py:182",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 182)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_guard_pmax_raises_and_disarmed_runs",
@@ -775,10 +1807,11 @@ const DATA = {
       "subsystem": "Defensive Guards & Envelopes",
       "category": "Hygiene & Guards",
       "file": "tests/test_wp0_guards.py:194",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 194)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_guard_max_wheel_accel_raises_and_disarmed_runs",
@@ -788,10 +1821,11 @@ const DATA = {
       "subsystem": "Defensive Guards & Envelopes",
       "category": "Hygiene & Guards",
       "file": "tests/test_wp0_guards.py:206",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 206)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_guard_large_torque_threshold_raises_and_disarmed_runs",
@@ -801,10 +1835,11 @@ const DATA = {
       "subsystem": "Defensive Guards & Envelopes",
       "category": "Hygiene & Guards",
       "file": "tests/test_wp0_guards.py:218",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 218)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_guard_jitter_fully_coupled_setter_raises",
@@ -814,10 +1849,11 @@ const DATA = {
       "subsystem": "Defensive Guards & Envelopes",
       "category": "Hygiene & Guards",
       "file": "tests/test_wp0_guards.py:230",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 230)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_guard_mtb_gt_raises_and_identity_runs",
@@ -827,10 +1863,11 @@ const DATA = {
       "subsystem": "Defensive Guards & Envelopes",
       "category": "Hygiene & Guards",
       "file": "tests/test_wp0_guards.py:248",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 248)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_guard_srp_rot_hat_raises_and_zero_runs",
@@ -840,10 +1877,11 @@ const DATA = {
       "subsystem": "Defensive Guards & Envelopes",
       "category": "Hygiene & Guards",
       "file": "tests/test_wp0_guards.py:260",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 260)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_guard_nbodies_gt2_raises_and_two_runs",
@@ -853,10 +1891,11 @@ const DATA = {
       "subsystem": "Defensive Guards & Envelopes",
       "category": "Hygiene & Guards",
       "file": "tests/test_wp0_guards.py:272",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 272)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_guard_prescribed_raises_and_disarmed_runs",
@@ -866,10 +1905,11 @@ const DATA = {
       "subsystem": "Defensive Guards & Envelopes",
       "category": "Hygiene & Guards",
       "file": "tests/test_wp0_guards.py:288",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 288)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_guard_flex_raises_and_disarmed_runs",
@@ -879,10 +1919,11 @@ const DATA = {
       "subsystem": "Defensive Guards & Envelopes",
       "category": "Hygiene & Guards",
       "file": "tests/test_wp0_guards.py:300",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 300)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_guard_slosh_raises_and_disarmed_runs",
@@ -892,10 +1933,11 @@ const DATA = {
       "subsystem": "Defensive Guards & Envelopes",
       "category": "Hygiene & Guards",
       "file": "tests/test_wp0_guards.py:312",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 312)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_guard_multi_tank_raises_and_single_runs",
@@ -905,10 +1947,11 @@ const DATA = {
       "subsystem": "Defensive Guards & Envelopes",
       "category": "Hygiene & Guards",
       "file": "tests/test_wp0_guards.py:324",
-      "status": "unstarted",
-      "progress": 0.1,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 324)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_guard_update_state_head_raises_post_init",
@@ -918,10 +1961,11 @@ const DATA = {
       "subsystem": "Defensive Guards & Envelopes",
       "category": "Hygiene & Guards",
       "file": "tests/test_wp0_guards.py:337",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 337)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_guard_default_config_runs",
@@ -933,8 +1977,9 @@ const DATA = {
       "file": "tests/test_wp0_guards.py:352",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 352)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp0_guards::test_printer_par_index_format_pinned",
@@ -946,8 +1991,9 @@ const DATA = {
       "file": "tests/test_wp0_guards.py:365",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp0_guards.py (line 365)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp1_bundle::test_wp1_sat_exists",
@@ -959,8 +2005,9 @@ const DATA = {
       "file": "tests/test_wp1_bundle.py:12",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp1_bundle.py (line 12)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp1_bundle::test_common_save_result_api_present",
@@ -972,8 +2019,9 @@ const DATA = {
       "file": "tests/test_wp1_bundle.py:19",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp1_bundle.py (line 19)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp1_bundle::test_plan_omega_max_by_message_struck",
@@ -985,8 +2033,9 @@ const DATA = {
       "file": "tests/test_wp1_bundle.py:30",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp1_bundle.py (line 30)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp1_saturation::test_add_rated_wheel_js_derivation_no_sim",
@@ -998,8 +2047,9 @@ const DATA = {
       "file": "tests/test_wp1_saturation.py:130",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp1_saturation.py (line 130)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp1_saturation::test_approach_below_overshoot_and_plateau",
@@ -1011,8 +2061,9 @@ const DATA = {
       "file": "tests/test_wp1_saturation.py:156",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp1_saturation.py (line 156)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp1_saturation::test_negative_spin_mirror",
@@ -1024,8 +2075,9 @@ const DATA = {
       "file": "tests/test_wp1_saturation.py:172",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp1_saturation.py (line 172)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp1_saturation::test_from_above_hold",
@@ -1037,8 +2089,9 @@ const DATA = {
       "file": "tests/test_wp1_saturation.py:182",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp1_saturation.py (line 182)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp1_saturation::test_reverse_descent",
@@ -1050,8 +2103,9 @@ const DATA = {
       "file": "tests/test_wp1_saturation.py:191",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp1_saturation.py (line 191)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp1_saturation::test_setter_only_cap_via_setWheelOmegaMax",
@@ -1063,8 +2117,9 @@ const DATA = {
       "file": "tests/test_wp1_saturation.py:199",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp1_saturation.py (line 199)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp1_saturation::test_custom_default_off",
@@ -1076,8 +2131,9 @@ const DATA = {
       "file": "tests/test_wp1_saturation.py:210",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp1_saturation.py (line 210)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp25_b2::test_b2_rwarrayconfig_linked_raises_and_unlinked_runs",
@@ -1087,10 +2143,11 @@ const DATA = {
       "subsystem": "Wave B2 Setter Envelopes",
       "category": "Hygiene & Guards",
       "file": "tests/test_wp25_b2.py:81",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp25_b2.py (line 81)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp25_b2::test_b2_friction_hub_sign_minus_one_raises",
@@ -1100,10 +2157,11 @@ const DATA = {
       "subsystem": "Wave B2 Setter Envelopes",
       "category": "Hygiene & Guards",
       "file": "tests/test_wp25_b2.py:102",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp25_b2.py (line 102)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp25_b2::test_b24_vec_diffusion_enabled_raises",
@@ -1113,10 +2171,11 @@ const DATA = {
       "subsystem": "Wave B2 Setter Envelopes",
       "category": "Hygiene & Guards",
       "file": "tests/test_wp25_b2.py:152",
-      "status": "verified",
-      "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp25_b2.py (line 152)."
+      "status": "skipped",
+      "progress": 0.5,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest SKIPPED (stock diffusion API not visible from Python: 'NoneType' object has no attribute 'setNumNoiseSources'): host-dep, not measured here.",
+      "outcome": "skipped"
     },
     {
       "id": "test_wp25_b2::test_b24_vec_freeze_stop_restart_clean",
@@ -1128,8 +2187,9 @@ const DATA = {
       "file": "tests/test_wp25_b2.py:181",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp25_b2.py (line 181)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_tauf_slot_names_decided",
@@ -1141,8 +2201,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:125",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 125)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_iter1_zero_at_rest",
@@ -1154,8 +2215,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:135",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 135)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_iter1_odd_symmetry",
@@ -1167,8 +2229,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:139",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 139)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_iter1_opposes_motion",
@@ -1180,8 +2243,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:146",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 146)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_iter1_coulomb_plateau",
@@ -1193,8 +2257,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:153",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 153)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_iter1_limit_cycle_zone_slope",
@@ -1206,8 +2271,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:160",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 160)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_iter1_k_from_omega_limit_cycle",
@@ -1219,8 +2285,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:168",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 168)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_iter1_iteration2_hooks_accepted_but_inert",
@@ -1232,8 +2299,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:177",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 177)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_off_state_is_identically_zero",
@@ -1245,8 +2313,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:184",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 184)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_port_zero_at_rest",
@@ -1258,8 +2327,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:255",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 255)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_port_opposes_motion_outside_band",
@@ -1271,8 +2341,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:259",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 259)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_port_beta_nonpositive_disables_band",
@@ -1284,8 +2355,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:266",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 266)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_port_limit_cycle_rescale_linear",
@@ -1297,8 +2369,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:276",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 276)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_port_latch_drops_on_deceleration",
@@ -1310,8 +2383,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:287",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 287)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_ledger_j1_deterministic",
@@ -1323,8 +2397,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:308",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 308)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_ledger_j1_hub_channel_deterministic",
@@ -1336,8 +2411,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:316",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 316)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_ledger_j1_horizon_matches_plan_rev",
@@ -1349,8 +2425,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:328",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 328)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_ledger_friction_probes_ok",
@@ -1362,8 +2439,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:344",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 344)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_ledger_friction_law_evidence_superseded",
@@ -1375,8 +2453,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:351",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 351)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_ledger_friction_baseline_param_set",
@@ -1388,8 +2467,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:365",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 365)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_ledger_f4_hub_reaction_sign",
@@ -1401,8 +2481,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:377",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 377)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_ledger_voltage_probes_ok",
@@ -1414,8 +2495,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:389",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 389)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_ledger_voltage_reuse_address",
@@ -1427,8 +2509,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:395",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 395)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_jitter_streams_split_per_wheel",
@@ -1440,8 +2523,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:406",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 406)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_jitter_seed_reproducible_distributionally",
@@ -1453,8 +2537,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:412",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 412)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_jitter_envelope_mean_var",
@@ -1466,8 +2551,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:427",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 427)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_jitter_zero_sigma_is_silent",
@@ -1479,8 +2565,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:437",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 437)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_rw_second_slot",
@@ -1492,8 +2579,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:454",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 454)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_no_tanh_in_graph",
@@ -1505,8 +2593,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:460",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 460)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_friction_offsets_helper",
@@ -1518,8 +2607,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:477",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 477)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_spacecraft_flags",
@@ -1529,10 +2619,11 @@ const DATA = {
       "subsystem": "Stribeck Friction & Jitter",
       "category": "Reaction Wheels",
       "file": "tests/test_wp2_friction_jitter.py:482",
-      "status": "arm_split",
-      "progress": 0.55,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 482)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_module_friction_block",
@@ -1544,8 +2635,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:491",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 491)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_sysmodel_stribeck_port",
@@ -1557,8 +2649,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:496",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 496)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_no_thetas_written",
@@ -1570,8 +2663,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:506",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 506)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_fully_coupled_setter_gated_only",
@@ -1583,8 +2677,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:515",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 515)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_min_pulse_dead_memory",
@@ -1596,8 +2691,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:534",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 534)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_fully_coupled_rejects",
@@ -1609,8 +2705,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:552",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 552)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp2_friction_jitter::test_cpp_contract_no_voltage_port",
@@ -1622,8 +2719,9 @@ const DATA = {
       "file": "tests/test_wp2_friction_jitter.py:562",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp2_friction_jitter.py (line 562)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_staircase_mirror_edges",
@@ -1635,8 +2733,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:228",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 228)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_min_pulse_gate_mirror",
@@ -1648,8 +2747,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:242",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 242)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_ramp_factor_mirror",
@@ -1661,8 +2761,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:251",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 251)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_lag_step_mirror",
@@ -1672,10 +2773,11 @@ const DATA = {
       "subsystem": "Thruster Valve Timing & Lag",
       "category": "Thrusters",
       "file": "tests/test_wp3_timing_models.py:266",
-      "status": "arm_split",
-      "progress": 0.55,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 266)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_blowdown_poly_mirror",
@@ -1687,8 +2789,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:279",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 279)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_swirl_axis_mirror",
@@ -1700,8 +2803,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:287",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 287)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_arc_cut_mirror_structure",
@@ -1713,8 +2817,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:297",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 297)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_offramp_tail_truncation_predicate",
@@ -1726,8 +2831,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:309",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 309)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_m1_ramp_shape_pure_prediction",
@@ -1739,8 +2845,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:323",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 323)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_ledger_mq_staircase_green",
@@ -1752,8 +2859,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:336",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 336)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_ledger_m3_suppress_fire_classes",
@@ -1765,8 +2873,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:348",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 348)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_ledger_m2_ladder_identical_at_dt01",
@@ -1778,8 +2887,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:364",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 364)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_ledger_m1_empty_ramps",
@@ -1791,8 +2901,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:375",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 375)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_ledger_m6_blowdown_swirl_force",
@@ -1804,8 +2915,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:382",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 382)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_ledger_smsg_thr_9_and_config_4",
@@ -1817,8 +2929,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:392",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 392)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_ledger_t1_dump_values",
@@ -1830,8 +2943,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:400",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 400)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_cpp_contract_header_flags_setters_telemetry",
@@ -1841,10 +2955,11 @@ const DATA = {
       "subsystem": "Thruster Valve Timing & Lag",
       "category": "Thrusters",
       "file": "tests/test_wp3_timing_models.py:431",
-      "status": "arm_split",
-      "progress": 0.55,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 431)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_cpp_contract_module_timing_states",
@@ -1856,8 +2971,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:447",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 447)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_cpp_contract_contributor_hooks_only",
@@ -1869,8 +2985,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:456",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 456)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_cpp_contract_no_branch_in_graph",
@@ -1882,8 +2999,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:470",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 470)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_cpp_contract_swig_payloads",
@@ -1895,8 +3013,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:480",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 480)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_cpp_contract_m14_fuel_guards",
@@ -1908,8 +3027,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:486",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 486)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_telemetry_nine_fields_tick0_and_steady",
@@ -1921,8 +3041,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:656",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 656)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_force_msg_guard_raises",
@@ -1932,10 +3053,11 @@ const DATA = {
       "subsystem": "Thruster Valve Timing & Lag",
       "category": "Thrusters",
       "file": "tests/test_wp3_timing_models.py:686",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 686)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_timing_setters_validation_raises",
@@ -1947,8 +3069,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:692",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 692)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_timing_models_enabled_run_stays_sane",
@@ -1960,8 +3083,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:727",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 727)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_m3_min_pulse_rows_on_sim",
@@ -1973,8 +3097,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:742",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 742)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_m2_ladder_default_path_matches_ledger",
@@ -1986,8 +3111,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:768",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 768)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_t2_chatter_row_dt001",
@@ -1999,8 +3125,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:814",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 814)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_m4_phase_row_delayed_matches_normal",
@@ -2012,8 +3139,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:823",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 823)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_m5_over_negative_rows",
@@ -2025,8 +3153,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:841",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 841)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_swirl_axis_telemetry_and_dynamics",
@@ -2038,8 +3167,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:851",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 851)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_blowdown_no_tank_factors_one",
@@ -2051,8 +3181,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:876",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 876)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_m4_phase_stock_vs_omni_with_half_step_control",
@@ -2064,8 +3195,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:972",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 972)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_m5_true_20hz_train_dt005",
@@ -2077,8 +3209,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:1008",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 1008)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_m0_two_writes_same_stamp_arbitration",
@@ -2090,8 +3223,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:1029",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 1029)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_telemetry_timing_vs_dynamics_truth",
@@ -2103,8 +3237,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:1052",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 1052)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_m1_ramp_shape_trace_gate",
@@ -2116,8 +3251,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:1077",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 1077)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp3_timing_models::test_ledger_m2_inert_1pct_gate",
@@ -2129,8 +3265,9 @@ const DATA = {
       "file": "tests/test_wp3_timing_models.py:1112",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp3_timing_models.py (line 1112)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp45_env_offset::test_ledgers_present_for_combo",
@@ -2142,8 +3279,9 @@ const DATA = {
       "file": "tests/test_wp45_env_offset.py:122",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 122)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp45_env_offset::test_shifted_minus_unshifted_is_minus_cxF",
@@ -2155,8 +3293,9 @@ const DATA = {
       "file": "tests/test_wp45_env_offset.py:134",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 134)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp45_env_offset::test_magnetic_gravity_have_no_arm",
@@ -2168,8 +3307,9 @@ const DATA = {
       "file": "tests/test_wp45_env_offset.py:161",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 161)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp45_env_offset::test_zero_offset_shift_identity",
@@ -2181,8 +3321,9 @@ const DATA = {
       "file": "tests/test_wp45_env_offset.py:174",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 174)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp45_env_offset::test_combo_ledger_verdict_shape_if_present",
@@ -2194,8 +3335,9 @@ const DATA = {
       "file": "tests/test_wp45_env_offset.py:183",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 183)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp45_env_offset::test_host_drag_offset_direct_parity",
@@ -2207,8 +3349,9 @@ const DATA = {
       "file": "tests/test_wp45_env_offset.py:401",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 401)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp45_env_offset::test_host_srp_offset_direct_parity",
@@ -2220,8 +3363,9 @@ const DATA = {
       "file": "tests/test_wp45_env_offset.py:588",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 588)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp45_env_offset::test_host_mag_no_arm_smoke",
@@ -2233,8 +3377,9 @@ const DATA = {
       "file": "tests/test_wp45_env_offset.py:635",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 635)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp45_env_offset::test_stock_drag_arm_rule_rbcb_minus_com",
@@ -2246,8 +3391,9 @@ const DATA = {
       "file": "tests/test_wp45_env_offset.py:696",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 696)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp45_env_offset::test_host_srp_tilted_arm_discriminates",
@@ -2259,8 +3405,9 @@ const DATA = {
       "file": "tests/test_wp45_env_offset.py:857",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp45_env_offset.py (line 857)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp4_offset::test_ledger_present_and_ids",
@@ -2272,8 +3419,9 @@ const DATA = {
       "file": "tests/test_wp4_offset.py:86",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp4_offset.py (line 86)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp4_offset::test_offset_norm_preserved_under_rotation",
@@ -2285,8 +3433,9 @@ const DATA = {
       "file": "tests/test_wp4_offset.py:108",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp4_offset.py (line 108)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp4_offset::test_signed_component_gate_static_attitude",
@@ -2298,8 +3447,9 @@ const DATA = {
       "file": "tests/test_wp4_offset.py:122",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp4_offset.py (line 122)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp4_offset::test_sysmodel_vs_swap_cross_path_gate",
@@ -2311,8 +3461,9 @@ const DATA = {
       "file": "tests/test_wp4_offset.py:146",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp4_offset.py (line 146)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp4_offset::test_sysmodel_source_sign_pin",
@@ -2324,8 +3475,9 @@ const DATA = {
       "file": "tests/test_wp4_offset.py:193",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp4_offset.py (line 193)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp4_offset::test_zero_offset_identity_regression",
@@ -2337,8 +3489,9 @@ const DATA = {
       "file": "tests/test_wp4_offset.py:206",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp4_offset.py (line 206)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp4_offset::test_B_C_blocks_antisymmetric_pair",
@@ -2350,8 +3503,9 @@ const DATA = {
       "file": "tests/test_wp4_offset.py:221",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp4_offset.py (line 221)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp4_offset::test_parallel_axis_exact_for_x_offset",
@@ -2363,8 +3517,9 @@ const DATA = {
       "file": "tests/test_wp4_offset.py:232",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp4_offset.py (line 232)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp4_offset::test_gravity_moment_rev0_fix_nonzero",
@@ -2376,8 +3531,9 @@ const DATA = {
       "file": "tests/test_wp4_offset.py:240",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp4_offset.py (line 240)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp4_offset::test_dynamics_vs_telemetry_arm_split",
@@ -2389,8 +3545,9 @@ const DATA = {
       "file": "tests/test_wp4_offset.py:251",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp4_offset.py (line 251)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp4_offset::test_friction_shaft_torque_no_arm_and_rWB_fenced",
@@ -2402,8 +3559,9 @@ const DATA = {
       "file": "tests/test_wp4_offset.py:266",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp4_offset.py (line 266)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp4_offset::test_no_new_par_slots_static",
@@ -2415,8 +3573,9 @@ const DATA = {
       "file": "tests/test_wp4_offset.py:281",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp4_offset.py (line 281)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp4_offset::test_graph_purity_static",
@@ -2428,8 +3587,9 @@ const DATA = {
       "file": "tests/test_wp4_offset.py:295",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp4_offset.py (line 295)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp4_offset::test_stock_finite_difference_anchor_host",
@@ -2441,8 +3601,9 @@ const DATA = {
       "file": "tests/test_wp4_offset.py:400",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp4_offset.py (line 400)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp4_offset::test_omni_offset_bench_openloop_both_arms_host",
@@ -2454,8 +3615,9 @@ const DATA = {
       "file": "tests/test_wp4_offset.py:443",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp4_offset.py (line 443)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp4_offset::test_zero_offset_regression_host",
@@ -2467,8 +3629,9 @@ const DATA = {
       "file": "tests/test_wp4_offset.py:610",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp4_offset.py (line 610)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_ledger_grav_central_sign",
@@ -2480,8 +3643,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:135",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 135)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_ledger_sun_tide",
@@ -2493,8 +3657,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:142",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 142)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_ledger_staleness_bound",
@@ -2506,8 +3671,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:147",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 147)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_ledger_j2_cbar",
@@ -2519,8 +3685,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:155",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 155)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_ledger_j2_rel",
@@ -2532,8 +3699,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:163",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 163)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_ledger_drag_numbers",
@@ -2545,8 +3713,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:169",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 169)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_ledger_srp_cannonball",
@@ -2558,8 +3727,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:177",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 177)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_ledger_srp_faceted",
@@ -2571,8 +3741,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:183",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 183)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_ledger_mag_chain",
@@ -2584,8 +3755,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:198",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 198)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_ledger_absent_link_rows",
@@ -2597,8 +3769,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:205",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 205)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_ledger_modules_present",
@@ -2610,8 +3783,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:224",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 224)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_ledger_erp_field_only",
@@ -2623,8 +3797,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:234",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 234)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_ref_nbody_sign_and_tide",
@@ -2636,8 +3811,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:243",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 243)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_ref_j2_law",
@@ -2649,8 +3825,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:258",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 258)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_ref_drag_law_leo",
@@ -2662,8 +3839,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:269",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 269)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_ref_srp_two_term_and_scaling",
@@ -2675,8 +3853,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:290",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 290)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_ref_mag_frame_chain",
@@ -2688,8 +3867,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:318",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 318)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_env_header_contract",
@@ -2701,8 +3881,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:337",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 337)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_env_slot_layout_math",
@@ -2714,8 +3895,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:356",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 356)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_module_path_convention",
@@ -2727,8 +3909,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:368",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 368)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_host_env_layout_par_growth",
@@ -2740,8 +3923,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:407",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 407)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_host_jit_budget",
@@ -2753,8 +3937,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:429",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 429)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_host_nbody_matched_dt",
@@ -2766,8 +3951,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:469",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 469)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_host_drag_leo_fixture",
@@ -2779,8 +3965,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:476",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 476)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_host_srp_cannonball_and_faceted",
@@ -2792,8 +3979,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:487",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 487)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_host_mag_mtb_direct_and_crosscheck",
@@ -2805,8 +3993,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:498",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 498)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_host_erp_field_only",
@@ -2818,8 +4007,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:509",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 509)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_host_absent_link_truth_table",
@@ -2831,8 +4021,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:516",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 516)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_c1_reject_or_model_static_pins",
@@ -2844,8 +4035,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:529",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 529)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_penumbra_eclipse_dt_constraint_recorded",
@@ -2857,8 +4049,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:555",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 555)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp5_env::test_host_density_correction_setter_validation",
@@ -2870,8 +4063,9 @@ const DATA = {
       "file": "tests/test_wp5_env.py:571",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp5_env.py (line 571)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp6_telemetry::test_thr_field_set_matches_stock_record",
@@ -2883,8 +4077,9 @@ const DATA = {
       "file": "tests/test_wp6_telemetry.py:98",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp6_telemetry.py (line 98)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp6_telemetry::test_rw_field_set_23_and_sample_tick_values",
@@ -2896,8 +4091,9 @@ const DATA = {
       "file": "tests/test_wp6_telemetry.py:120",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp6_telemetry.py (line 120)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp6_telemetry::test_sc_gap_audit_labels_documented",
@@ -2909,8 +4105,9 @@ const DATA = {
       "file": "tests/test_wp6_telemetry.py:158",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp6_telemetry.py (line 158)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp6_telemetry::test_dv_accumulation_smoke",
@@ -2922,8 +4119,9 @@ const DATA = {
       "file": "tests/test_wp6_telemetry.py:193",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp6_telemetry.py (line 193)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp6_telemetry::test_fuel_msg_shape_static_and_bookkeeping_uses_achieved",
@@ -2935,8 +4133,9 @@ const DATA = {
       "file": "tests/test_wp6_telemetry.py:212",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp6_telemetry.py (line 212)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp6_telemetry::test_viz_direct_import_no_sim_no_helper",
@@ -2948,8 +4147,9 @@ const DATA = {
       "file": "tests/test_wp6_telemetry.py:243",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp6_telemetry.py (line 243)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp6_telemetry::test_viz_smoke_live_gated",
@@ -2959,10 +4159,11 @@ const DATA = {
       "subsystem": "Telemetry & Live Fuel",
       "category": "Telemetry",
       "file": "tests/test_wp6_telemetry.py:276",
-      "status": "verified",
-      "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp6_telemetry.py (line 276)."
+      "status": "skipped",
+      "progress": 0.5,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest SKIPPED (WP6_RUN_VIZ_SIM!=1: live VizInterface sim gated (headless segfault host)): host-dep, not measured here.",
+      "outcome": "skipped"
     },
     {
       "id": "test_wp6_telemetry::test_fuel_burn_live_gated",
@@ -2972,10 +4173,11 @@ const DATA = {
       "subsystem": "Telemetry & Live Fuel",
       "category": "Telemetry",
       "file": "tests/test_wp6_telemetry.py:300",
-      "status": "verified",
-      "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp6_telemetry.py (line 300)."
+      "status": "skipped",
+      "progress": 0.5,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest SKIPPED (WP6_RUN_FUEL_SIM!=1: fuel-burn sim segfaults on audit host (T3 isolated)): host-dep, not measured here.",
+      "outcome": "skipped"
     },
     {
       "id": "test_wp6_telemetry::test_b2_custom_off_wheel_reports_off",
@@ -2985,10 +4187,11 @@ const DATA = {
       "subsystem": "Telemetry & Live Fuel",
       "category": "Telemetry",
       "file": "tests/test_wp6_telemetry.py:412",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp6_telemetry.py (line 412)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp6_telemetry::test_b2_setumax_post_registration_effective",
@@ -2998,10 +4201,11 @@ const DATA = {
       "subsystem": "Telemetry & Live Fuel",
       "category": "Telemetry",
       "file": "tests/test_wp6_telemetry.py:444",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp6_telemetry.py (line 444)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp6_telemetry::test_b2_dv_rotated_at_nonidentity_attitude",
@@ -3011,10 +4215,11 @@ const DATA = {
       "subsystem": "Telemetry & Live Fuel",
       "category": "Telemetry",
       "file": "tests/test_wp6_telemetry.py:478",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp6_telemetry.py (line 478)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp6_telemetry::test_b2_double_reset_dv_clean",
@@ -3024,10 +4229,11 @@ const DATA = {
       "subsystem": "Telemetry & Live Fuel",
       "category": "Telemetry",
       "file": "tests/test_wp6_telemetry.py:544",
-      "status": "in_progress",
-      "progress": 0.5,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp6_telemetry.py (line 544)."
+      "status": "verified",
+      "progress": 1.0,
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp6_telemetry::test_fuel_reset_restores_m0_not_max",
@@ -3039,8 +4245,9 @@ const DATA = {
       "file": "tests/test_wp6_telemetry.py:596",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp6_telemetry.py (line 596)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp7_dispersion_jit::test_budget_constants_sane",
@@ -3052,8 +4259,9 @@ const DATA = {
       "file": "tests/test_wp7_dispersion_jit.py:163",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp7_dispersion_jit.py (line 163)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp7_dispersion_jit::test_layout_growth_math",
@@ -3065,8 +4273,9 @@ const DATA = {
       "file": "tests/test_wp7_dispersion_jit.py:173",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp7_dispersion_jit.py (line 173)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp7_dispersion_jit::test_bundle_env_baseline",
@@ -3078,8 +4287,9 @@ const DATA = {
       "file": "tests/test_wp7_dispersion_jit.py:190",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp7_dispersion_jit.py (line 190)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp7_dispersion_jit::test_parametric_js_static_contract",
@@ -3091,8 +4301,9 @@ const DATA = {
       "file": "tests/test_wp7_dispersion_jit.py:214",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp7_dispersion_jit.py (line 214)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp7_dispersion_jit::test_skip_guards_when_wheel_unbuilt",
@@ -3104,8 +4315,9 @@ const DATA = {
       "file": "tests/test_wp7_dispersion_jit.py:238",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp7_dispersion_jit.py (line 238)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp7_dispersion_jit::test_mc_js_ensemble",
@@ -3117,8 +4329,9 @@ const DATA = {
       "file": "tests/test_wp7_dispersion_jit.py:560",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp7_dispersion_jit.py (line 560)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp7_dispersion_jit::test_mc_geometry_ensemble",
@@ -3130,8 +4343,9 @@ const DATA = {
       "file": "tests/test_wp7_dispersion_jit.py:591",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp7_dispersion_jit.py (line 591)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp7_dispersion_jit::test_tilt_w3_plant_sensitivity_stock_vs_stock",
@@ -3143,8 +4357,9 @@ const DATA = {
       "file": "tests/test_wp7_dispersion_jit.py:679",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp7_dispersion_jit.py (line 679)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp7_dispersion_jit::test_tilt_w3_openloop_isolator",
@@ -3156,8 +4371,9 @@ const DATA = {
       "file": "tests/test_wp7_dispersion_jit.py:709",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp7_dispersion_jit.py (line 709)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp7_dispersion_jit::test_tilt_w3_openloop_timevarying",
@@ -3169,8 +4385,9 @@ const DATA = {
       "file": "tests/test_wp7_dispersion_jit.py:824",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp7_dispersion_jit.py (line 824)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp7_dispersion_jit::test_js_flows_per_run",
@@ -3182,8 +4399,9 @@ const DATA = {
       "file": "tests/test_wp7_dispersion_jit.py:1020",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp7_dispersion_jit.py (line 1020)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "test_wp7_dispersion_jit::test_jit_budget_table",
@@ -3195,8 +4413,9 @@ const DATA = {
       "file": "tests/test_wp7_dispersion_jit.py:1085",
       "status": "verified",
       "progress": 1.0,
-      "target": "pytest pass (bit-exact / tolerance)",
-      "desc": "Automated test case in test_wp7_dispersion_jit.py (line 1085)."
+      "target": "pytest result (measured, not name-graded)",
+      "desc": "pytest PASSED (2026-10-14T12:16:03.863182+00:00).",
+      "outcome": "passed"
     },
     {
       "id": "cell::hub_60s",
@@ -3208,16 +4427,10 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "sigma=6.90e-14, omega=1.95e-17",
-      "desc": "Matched-dt parity cell hub_60s (nStates=12, nPars=7).",
-      "metrics": {
-        "r_BN_N": 0.0,
-        "v_BN_N": 0.0,
-        "sigma_BN": 6.900036098045348e-14,
-        "omega_BN_B": 1.951563910473908e-17,
-        "nPars": 7,
-        "nStates": 12,
-        "build_s": 0.0078
-      }
+      "desc": "Matched-dt parity cell hub_60s (nStates=12, nPars=7): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::rw3_open_pos",
@@ -3229,17 +4442,10 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "sigma=8.80e-12, omega=5.00e-13",
-      "desc": "Matched-dt parity cell rw3_open_pos (nStates=15, nPars=16).",
-      "metrics": {
-        "r_BN_N": 0.0,
-        "v_BN_N": 9.094947017729282e-13,
-        "sigma_BN": 8.795325578958568e-12,
-        "omega_BN_B": 4.998987335191885e-13,
-        "wheels": 4.547473508864641e-13,
-        "nPars": 16,
-        "nStates": 15,
-        "build_s": 0.0103
-      }
+      "desc": "Matched-dt parity cell rw3_open_pos (nStates=15, nPars=16): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::rw3_open_neg",
@@ -3251,17 +4457,10 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "sigma=6.85e-12, omega=1.92e-13",
-      "desc": "Matched-dt parity cell rw3_open_neg (nStates=15, nPars=16).",
-      "metrics": {
-        "r_BN_N": 0.0,
-        "v_BN_N": 9.094947017729282e-13,
-        "sigma_BN": 6.847522548980578e-12,
-        "omega_BN_B": 1.920893999418638e-13,
-        "wheels": 2.8421709430404007e-13,
-        "nPars": 16,
-        "nStates": 15,
-        "build_s": 0.0084
-      }
+      "desc": "Matched-dt parity cell rw3_open_neg (nStates=15, nPars=16): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::rw3_pd",
@@ -3273,17 +4472,10 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "sigma=2.96e-13, omega=2.00e-14",
-      "desc": "Matched-dt parity cell rw3_pd (nStates=15, nPars=16).",
-      "metrics": {
-        "r_BN_N": 0.0,
-        "v_BN_N": 9.094947017729282e-13,
-        "sigma_BN": 2.9609648066752925e-13,
-        "omega_BN_B": 2.000483112496454e-14,
-        "wheels": 2.0038015691170585e-10,
-        "nPars": 16,
-        "nStates": 15,
-        "build_s": 0.0088
-      }
+      "desc": "Matched-dt parity cell rw3_pd (nStates=15, nPars=16): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::rw3_fric",
@@ -3295,17 +4487,10 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "sigma=8.34e-13, omega=1.93e-14",
-      "desc": "Matched-dt parity cell rw3_fric (nStates=15, nPars=16).",
-      "metrics": {
-        "r_BN_N": 0.0,
-        "v_BN_N": 9.094947017729282e-13,
-        "sigma_BN": 8.342215807033426e-13,
-        "omega_BN_B": 1.9343034118879388e-14,
-        "wheels": 1.4210854715202004e-14,
-        "nPars": 16,
-        "nStates": 15,
-        "build_s": 0.0086
-      }
+      "desc": "Matched-dt parity cell rw3_fric (nStates=15, nPars=16): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::rw1",
@@ -3317,17 +4502,10 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "sigma=6.41e-14, omega=2.78e-17",
-      "desc": "Matched-dt parity cell rw1 (nStates=13, nPars=10).",
-      "metrics": {
-        "r_BN_N": 0.0,
-        "v_BN_N": 0.0,
-        "sigma_BN": 6.411537967210279e-14,
-        "omega_BN_B": 2.7755575615628914e-17,
-        "wheels": 0.0,
-        "nPars": 10,
-        "nStates": 13,
-        "build_s": 0.0105
-      }
+      "desc": "Matched-dt parity cell rw1 (nStates=13, nPars=10): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::rw2",
@@ -3339,17 +4517,10 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "sigma=5.31e-14, omega=2.95e-17",
-      "desc": "Matched-dt parity cell rw2 (nStates=14, nPars=13).",
-      "metrics": {
-        "r_BN_N": 0.0,
-        "v_BN_N": 0.0,
-        "sigma_BN": 5.306866057708248e-14,
-        "omega_BN_B": 2.949029909160572e-17,
-        "wheels": 0.0,
-        "nPars": 13,
-        "nStates": 14,
-        "build_s": 0.0111
-      }
+      "desc": "Matched-dt parity cell rw2 (nStates=14, nPars=13): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::rw1tilt",
@@ -3361,17 +4532,10 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "sigma=5.15e-14, omega=9.54e-18",
-      "desc": "Matched-dt parity cell rw1tilt (nStates=13, nPars=10).",
-      "metrics": {
-        "r_BN_N": 0.0,
-        "v_BN_N": 0.0,
-        "sigma_BN": 5.154210391822289e-14,
-        "omega_BN_B": 9.540979117872439e-18,
-        "wheels": 0.0,
-        "nPars": 10,
-        "nStates": 13,
-        "build_s": 0.0114
-      }
+      "desc": "Matched-dt parity cell rw1tilt (nStates=13, nPars=10): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::thr_fresh_05",
@@ -3383,16 +4547,10 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "sigma=2.46e-05, omega=6.00e-07",
-      "desc": "Matched-dt parity cell thr_fresh_05 (nStates=12, nPars=11).",
-      "metrics": {
-        "r_BN_N": 0.0003053266555070877,
-        "v_BN_N": 4.05554249027773e-06,
-        "sigma_BN": 2.4568740919037046e-05,
-        "omega_BN_B": 5.995587251360346e-07,
-        "nPars": 11,
-        "nStates": 12,
-        "build_s": 0.0111
-      }
+      "desc": "Matched-dt parity cell thr_fresh_05 (nStates=12, nPars=11): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::thr_fresh_10",
@@ -3404,16 +4562,10 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "sigma=5.17e-14, omega=5.48e-16",
-      "desc": "Matched-dt parity cell thr_fresh_10 (nStates=12, nPars=11).",
-      "metrics": {
-        "r_BN_N": 9.313225746154785e-10,
-        "v_BN_N": 0.0,
-        "sigma_BN": 5.1736392947532295e-14,
-        "omega_BN_B": 5.48172618408671e-16,
-        "nPars": 11,
-        "nStates": 12,
-        "build_s": 0.0095
-      }
+      "desc": "Matched-dt parity cell thr_fresh_10 (nStates=12, nPars=11): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::thr_writeonce",
@@ -3425,16 +4577,10 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "sigma=2.96e-08, omega=5.58e-10",
-      "desc": "Matched-dt parity cell thr_writeonce (nStates=12, nPars=11).",
-      "metrics": {
-        "r_BN_N": 1.7043203115463257e-07,
-        "v_BN_N": 3.1868694350123405e-09,
-        "sigma_BN": 2.9578987204015306e-08,
-        "omega_BN_B": 5.582275848167728e-10,
-        "nPars": 11,
-        "nStates": 12,
-        "build_s": 0.0108
-      }
+      "desc": "Matched-dt parity cell thr_writeonce (nStates=12, nPars=11): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::thr_frozen",
@@ -3446,16 +4592,10 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "sigma=3.49e-08, omega=5.43e-10",
-      "desc": "Matched-dt parity cell thr_frozen (nStates=12, nPars=11).",
-      "metrics": {
-        "r_BN_N": 2.0489096641540527e-07,
-        "v_BN_N": 3.182321961503476e-09,
-        "sigma_BN": 3.4908305079905944e-08,
-        "omega_BN_B": 5.430280756307804e-10,
-        "nPars": 11,
-        "nStates": 12,
-        "build_s": 0.0102
-      }
+      "desc": "Matched-dt parity cell thr_frozen (nStates=12, nPars=11): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::thr_lag10",
@@ -3464,19 +4604,13 @@ const DATA = {
       "subsystem": "Simulation Parity Ledger",
       "category": "Parity Cells",
       "file": "audit_bundle/results/swap_p1_parity.json",
-      "status": "arm_split",
-      "progress": 0.65,
+      "status": "verified",
+      "progress": 1.0,
       "target": "sigma=2.46e-05, omega=6.00e-07",
-      "desc": "Matched-dt parity cell thr_lag10 (nStates=12, nPars=11).",
-      "metrics": {
-        "r_BN_N": 0.0003053266555070877,
-        "v_BN_N": 4.05554249027773e-06,
-        "sigma_BN": 2.4568740919037046e-05,
-        "omega_BN_B": 5.995587251360346e-07,
-        "nPars": 11,
-        "nStates": 12,
-        "build_s": 0.0088
-      }
+      "desc": "Matched-dt parity cell thr_lag10 (nStates=12, nPars=11): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::thr_offset",
@@ -3485,21 +4619,13 @@ const DATA = {
       "subsystem": "Simulation Parity Ledger",
       "category": "Parity Cells",
       "file": "audit_bundle/results/swap_p1_parity.json",
-      "status": "blocked",
-      "progress": 0.4,
+      "status": "verified",
+      "progress": 1.0,
       "target": "sigma=1.02e-13, omega=1.08e-15",
-      "desc": "Matched-dt parity cell thr_offset (nStates=12, nPars=11).",
-      "metrics": {
-        "r_BN_N": 2.2351741790771484e-08,
-        "v_BN_N": 7.275957614183426e-12,
-        "sigma_BN": 1.0241807402167069e-13,
-        "omega_BN_B": 1.0798653637955624e-15,
-        "r_CN_N": 2.2351741790771484e-08,
-        "v_CN_N": 7.275957614183426e-12,
-        "nPars": 11,
-        "nStates": 12,
-        "build_s": 0.0085
-      }
+      "desc": "Matched-dt parity cell thr_offset (nStates=12, nPars=11): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::env_drag",
@@ -3511,15 +4637,10 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "sigma=4.96e-08, omega=2.27e-09",
-      "desc": "Matched-dt parity cell env_drag (nStates=0, nPars=0).",
-      "metrics": {
-        "r_BN_N": 0.00010243896394968033,
-        "v_BN_N": 3.502245817799121e-07,
-        "sigma_BN": 4.956000458633536e-08,
-        "omega_BN_B": 2.268405277473188e-09,
-        "density_max": 9.118821407130932e-13,
-        "density_min": 9.118819345166462e-13
-      }
+      "desc": "Matched-dt parity cell env_drag (nStates=0, nPars=0): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::env_drag_still",
@@ -3531,15 +4652,10 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "sigma=1.44e-08, omega=2.84e-10",
-      "desc": "Matched-dt parity cell env_drag_still (nStates=0, nPars=0).",
-      "metrics": {
-        "r_BN_N": 4.2049214243888855e-06,
-        "v_BN_N": 1.4259967429097742e-08,
-        "sigma_BN": 1.436905945097211e-08,
-        "omega_BN_B": 2.836183961449167e-10,
-        "density_max": 9.118821425383488e-13,
-        "density_min": 9.118819349249345e-13
-      }
+      "desc": "Matched-dt parity cell env_drag_still (nStates=0, nPars=0): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::env_srp",
@@ -3551,16 +4667,10 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "sigma=0.00e+00, omega=0.00e+00",
-      "desc": "Matched-dt parity cell env_srp (nStates=0, nPars=0).",
-      "metrics": {
-        "r_BN_N": 4.377216100692749e-08,
-        "v_BN_N": 1.3915268937125802e-10,
-        "sigma_BN": 0.0,
-        "omega_BN_B": 0.0,
-        "srp_single_tick_meas": 9.031834835582231e-09,
-        "srp_single_tick_analytic": 9.031834770923471e-09,
-        "srp_single_tick_ratio": 1.0000000071589839
-      }
+      "desc": "Matched-dt parity cell env_srp (nStates=0, nPars=0): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::fuel_centered",
@@ -3572,20 +4682,10 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "sigma=0.00e+00, omega=1.19e-05",
-      "desc": "Matched-dt parity cell fuel_centered (nStates=13, nPars=12).",
-      "metrics": {
-        "r_BN_N": 0.006259138695895672,
-        "v_BN_N": 2.941156162705738e-05,
-        "omega_BN_B": 1.1907044462966532e-05,
-        "dcm_max": 0.0004477855990706603,
-        "fuel_stock": 8.879619494202458,
-        "fuel_omni": 8.879619494202458,
-        "fuel_rel_err": 0.0,
-        "fuel_burned": 1.1203805057975416,
-        "nPars": 12,
-        "nStates": 13,
-        "build_s": 0.0115
-      }
+      "desc": "Matched-dt parity cell fuel_centered (nStates=13, nPars=12): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::fuel_offset",
@@ -3594,23 +4694,13 @@ const DATA = {
       "subsystem": "Simulation Parity Ledger",
       "category": "Parity Cells",
       "file": "audit_bundle/results/swap_p1_parity.json",
-      "status": "blocked",
-      "progress": 0.4,
+      "status": "verified",
+      "progress": 1.0,
       "target": "sigma=0.00e+00, omega=1.47e-05",
-      "desc": "Matched-dt parity cell fuel_offset (nStates=13, nPars=12).",
-      "metrics": {
-        "r_BN_N": 0.005843746475875378,
-        "v_BN_N": 2.5454156457271893e-05,
-        "omega_BN_B": 1.4654721818760374e-05,
-        "dcm_max": 0.0004451371562819162,
-        "fuel_stock": 8.879619494202458,
-        "fuel_omni": 8.879619494202458,
-        "fuel_rel_err": 0.0,
-        "fuel_burned": 1.1203805057975416,
-        "nPars": 12,
-        "nStates": 13,
-        "build_s": 0.0087
-      }
+      "desc": "Matched-dt parity cell fuel_offset (nStates=13, nPars=12): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::fuel_drag",
@@ -3622,24 +4712,10 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "sigma=0.00e+00, omega=1.47e-05",
-      "desc": "Matched-dt parity cell fuel_drag (nStates=13, nPars=27).",
-      "metrics": {
-        "r_BN_N": 0.00550827756524086,
-        "v_BN_N": 2.3931253963382915e-05,
-        "omega_BN_B": 1.4656124172285345e-05,
-        "dcm_max": 0.00044508841089335727,
-        "fuel_stock": 8.879619494202458,
-        "fuel_omni": 8.879619494202458,
-        "fuel_rel_err": 0.0,
-        "fuel_burned": 1.1203805057975416,
-        "dc_norm": 0.000532225482766668,
-        "arm": "live-c-tracking",
-        "density_max": 9.118819633615838e-13,
-        "shift_sig_dcm": 3.558135210776978e-05,
-        "nPars": 27,
-        "nStates": 13,
-        "build_s": 0.0118
-      }
+      "desc": "Matched-dt parity cell fuel_drag (nStates=13, nPars=27): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "cell::fuel_srp",
@@ -3651,23 +4727,10 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "sigma=0.00e+00, omega=1.46e-05",
-      "desc": "Matched-dt parity cell fuel_srp (nStates=13, nPars=27).",
-      "metrics": {
-        "r_BN_N": 0.0059931520372629166,
-        "v_BN_N": 2.617133122839732e-05,
-        "omega_BN_B": 1.4607978140276923e-05,
-        "dcm_max": 0.00044525517397452086,
-        "fuel_stock": 8.879619494202458,
-        "fuel_omni": 8.879619494202458,
-        "fuel_rel_err": 0.0,
-        "fuel_burned": 1.1203805057975416,
-        "dc_norm": 0.000532225482766668,
-        "arm": "live-c-tracking",
-        "shift_sig_dcm": 8.111760890228822e-06,
-        "nPars": 27,
-        "nStates": 13,
-        "build_s": 0.0102
-      }
+      "desc": "Matched-dt parity cell fuel_srp (nStates=13, nPars=27): ledger verdict green, proof fresh (margin 1895.9s).",
+      "ledger_verdict": "parity green",
+      "fresh": true,
+      "fresh_margin_s": 1895.9
     },
     {
       "id": "audit::C1",
@@ -3676,10 +4739,10 @@ const DATA = {
       "subsystem": "Audit 0-2 (Critical)",
       "category": "Disturbances",
       "file": "src/omni_spacecraft.cpp:620",
-      "status": "blocked",
-      "progress": 0.25,
+      "status": "verified",
+      "progress": 1.0,
       "target": "WP25-A1",
-      "desc": "SysModel outputs + instead of \u2212 for translation offset (0.2m error under burn)."
+      "desc": "Audit_0-3 FIXED in code (code+ledger, host re-run pending): SysModel flipped to measured minus (spacecraft:709-710), source-pinned; residual one-sided cell."
     },
     {
       "id": "audit::X1",
@@ -3691,7 +4754,7 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "Gate T1",
-      "desc": "Source masking verified: trailing thruster c-subset correctly registered."
+      "desc": "Audit_0-3 re-verified no regression (code+ledger, host re-run pending). Source masking stands."
     },
     {
       "id": "audit::X2",
@@ -3703,7 +4766,7 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "test_swap_p1.py",
-      "desc": "Friction promoted to full parity; all remaining effectors throw loud bskError."
+      "desc": "Audit_0-3 re-verified no regression (L6 BUILD:410 remnant excepted). Loud rejects stand."
     },
     {
       "id": "audit::X3",
@@ -3715,7 +4778,7 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "rw3_fric cell",
-      "desc": "Vec arm matches stock Basilisk Stribeck friction to machine precision."
+      "desc": "Audit_0-3 re-verified no regression (code+ledger, host re-run pending). Vec Stribeck stock-exact stands."
     },
     {
       "id": "audit::X4",
@@ -3727,7 +4790,7 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "Gate F-fuel",
-      "desc": "Live mass and dynamic center of mass shifting integrated per tick."
+      "desc": "Audit_0-3 re-verified no regression (M14 bounded writes + short-Isp raise landed vec-side). Live mass/c stands."
     },
     {
       "id": "audit::X5",
@@ -3739,7 +4802,7 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "Audit_0-1",
-      "desc": "Zero-offset regressions, linear3 Schur complement purity preserved."
+      "desc": "Audit_0-3 re-verified no regressions; counts/CI asserts fixed (L6/L11 remnants excepted). Closures stand."
     },
     {
       "id": "audit::H1",
@@ -3748,10 +4811,10 @@ const DATA = {
       "subsystem": "Audit 0-2 (High)",
       "category": "Thrusters",
       "file": "src/omni_spacecraft.cpp:1020",
-      "status": "arm_split",
-      "progress": 0.5,
+      "status": "verified",
+      "progress": 1.0,
       "target": "WP25-A2",
-      "desc": "SysModel lagState diverges 0.63x from inert vec law; scheduled for removal."
+      "desc": "Audit_0-3 FIXED in code (code+ledger, host re-run pending): filter DELETED (spacecraft:1315-1324), ratio test 0.99-1.01; residuals M20/L7."
     },
     {
       "id": "audit::H2",
@@ -3760,10 +4823,10 @@ const DATA = {
       "subsystem": "Audit 0-2 (High)",
       "category": "Hygiene & Guards",
       "file": "src/omni_spacecraft.cpp:743",
-      "status": "in_progress",
-      "progress": 0.3,
+      "status": "verified",
+      "progress": 1.0,
       "target": "WP25-B1",
-      "desc": "Unmodeled effectors (diffusion, large torques) need fatal runtime raises."
+      "desc": "Audit_0-3 FIXED in code (code+ledger, host re-run pending): 14 behavioral raise-before-propagation tests over 13 traps both heads."
     },
     {
       "id": "audit::H3",
@@ -3775,7 +4838,7 @@ const DATA = {
       "status": "in_progress",
       "progress": 0.3,
       "target": "WP25-B2",
-      "desc": "Custom-OFF wheels echo 6000 RPM defaults rather than unset indicators."
+      "desc": "Audit_0-3 STILL-OPEN: no explicit FIXED verdict for RW echo (H2 notes config-echo labeling only); keep grade, see Audit_0-3 H2/M18/L8."
     },
     {
       "id": "audit::H4",
@@ -3787,7 +4850,7 @@ const DATA = {
       "status": "in_progress",
       "progress": 0.4,
       "target": "WP25-B3",
-      "desc": "Deterministic noise seeds need true 2x400 horizon validation."
+      "desc": "Audit_0-3 H4-wp45-scope FIXED for that file only; this entry is jitter-horizon content, M19 J1-blindness STILL-OPEN (400-tick lengthens vacuous metric) so keep in_progress; ID/content drift recorded, not guessed."
     },
     {
       "id": "audit::H5",
@@ -3796,10 +4859,10 @@ const DATA = {
       "subsystem": "Audit 0-2 (High)",
       "category": "Reaction Wheels",
       "file": "src/omni_spacecraft.cpp:346",
-      "status": "arm_split",
-      "progress": 0.6,
+      "status": "verified",
+      "progress": 1.0,
       "target": "WP25-B3",
-      "desc": "SysModel arm uses iter-1 stiction suppression rather than Stribeck curve."
+      "desc": "Audit_0-3 FIXED in code (code+ledger, host re-run pending): Stribeck-port part landed (spacecraft:1058-1147, latch+omegaBefore); 5-knob vs per-wheel noted."
     },
     {
       "id": "audit::H6",
@@ -3808,10 +4871,10 @@ const DATA = {
       "subsystem": "Audit 0-2 (High)",
       "category": "Telemetry",
       "file": "src/omni_spacecraft.cpp:402",
-      "status": "arm_split",
-      "progress": 0.35,
+      "status": "verified",
+      "progress": 1.0,
       "target": "WP25-A3",
-      "desc": "SysModel publishes full tank telemetry despite burn; port vec law in A3."
+      "desc": "Audit_0-3 FIXED in code (code+ledger, host re-run pending): fuel fixed as option-B absence, publisher NEVER written (:819-827); residuals M18/L8."
     },
     {
       "id": "audit::H7",
@@ -3823,7 +4886,7 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "WP26-C",
-      "desc": "fuel_drag/fuel_srp parity-in-switching-class, fuel bit-exact; drag arm sensitivity-limited (25x-insensitive fixture, G=1 open pointer, recorded not guessed) -- arm rule cited via arm_rule_discrimination.json, not proven by this badge."
+      "desc": "Audit_0-3 H9/H11/H12 sensitivity-limited: fuel_drag/fuel_srp parity-in-switching-class only, fuel bit-exact; drag arm 25x-insensitive fixture G=1 open, arm NOT proven by this badge; keep verified (parity) per caveat rule."
     },
     {
       "id": "audit::H8",
@@ -3832,10 +4895,10 @@ const DATA = {
       "subsystem": "Audit 0-2 (High)",
       "category": "Telemetry",
       "file": "src/omni_spacecraft.cpp:646",
-      "status": "in_progress",
-      "progress": 0.3,
+      "status": "verified",
+      "progress": 1.0,
       "target": "WP25-B2",
-      "desc": "Body impulse not rotated by R_BN into DV_CN_N."
+      "desc": "Audit_0-3 FIXED in code (code+ledger, host re-run pending): content is DV frame (audit M11 :1375-1405 R_BN.F.k); map H8 = audit M11 by content, audit H8 sign-reject has no map entry; drift recorded."
     },
     {
       "id": "audit::M1",
@@ -3847,7 +4910,7 @@ const DATA = {
       "status": "in_progress",
       "progress": 0.5,
       "target": "WP25-A2",
-      "desc": "Ramp factor mirror requires explicit gating."
+      "desc": "Audit_0-3 no explicit FIXED verdict; ramp gating tied to H1/M16 deletion but not separately closed; keep in_progress, see M20/L7."
     },
     {
       "id": "audit::M2",
@@ -3859,7 +4922,7 @@ const DATA = {
       "status": "in_progress",
       "progress": 0.5,
       "target": "WP25-A2",
-      "desc": "Ratio test must assert 0.99 - 1.01 inert response."
+      "desc": "Audit_0-3 H1/M16: ratio test rewritten 0.99-1.01 in code but host-only + ledger stale (M20 wp3_timing predates deletion); keep in_progress per staleness family."
     },
     {
       "id": "audit::M3",
@@ -3871,7 +4934,7 @@ const DATA = {
       "status": "in_progress",
       "progress": 0.6,
       "target": "WP25-B3",
-      "desc": "Min-pulse models suppress-only behavior documented."
+      "desc": "Audit_0-3 no explicit FIXED verdict for min-pulse; suppress-only behavior stands but unclosed; keep in_progress."
     },
     {
       "id": "audit::M4",
@@ -3883,7 +4946,7 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "Gate T1",
-      "desc": "Duty quantization operates cleanly at time step boundary."
+      "desc": "Audit_0-3 no regression noted; keep verified (code+ledger, host re-run pending). Duty quantization clean at step boundary."
     },
     {
       "id": "audit::M5",
@@ -3895,7 +4958,7 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "Audit X1",
-      "desc": "Checked par count bounds heap safely."
+      "desc": "Audit_0-3 X1 re-verified no regression; keep verified (code+ledger, host re-run pending). Par count bounds heap safe."
     },
     {
       "id": "audit::M6",
@@ -3907,7 +4970,7 @@ const DATA = {
       "status": "in_progress",
       "progress": 0.7,
       "target": "WP25-A2",
-      "desc": "Tank pressure blowdown factor mirrors stock."
+      "desc": "Audit_0-3 M6/M7 FIXED is N-body/rotHat/Gt behavioral, not this blowdown/swirl content (ID drift); no explicit verdict here so keep in_progress, drift recorded."
     },
     {
       "id": "audit::M8",
@@ -3919,7 +4982,7 @@ const DATA = {
       "status": "in_progress",
       "progress": 0.5,
       "target": "WP25-B3",
-      "desc": "F-ledger superseded-pointer to rw3_fric recorded."
+      "desc": "Audit_0-3 M20 ledger-stale + M22 void-flags applicable (wp2 rev-1 2x40, F-rows null, no in-JSON flags); keep in_progress pending host regen."
     },
     {
       "id": "audit::M10",
@@ -3931,7 +4994,7 @@ const DATA = {
       "status": "blocked",
       "progress": 0.25,
       "target": "WP25-A1",
-      "desc": "Direct consequence of C1 sign inversion."
+      "desc": "Audit_0-3 no explicit M10 verdict; C1 FIXED suggests likely-fixed but SysModel minus has one-sided residual (no signed stock cell); do not guess, keep blocked."
     },
     {
       "id": "audit::M11",
@@ -3941,9 +5004,9 @@ const DATA = {
       "category": "Telemetry",
       "file": "src/omni_spacecraft.cpp:755",
       "status": "in_progress",
-      "progress": 0.4,
+      "progress": 0.8,
       "target": "WP25-B2",
-      "desc": "Accumulated DV and nonConsAccelB zeroed on Reset."
+      "desc": "Audit_0-3 M12 FIXED with leftover M18 (matches this Reset content: Reset restores FULL tank not m0, spacecraft:974); per leftover rule keep in_progress; literal M11-DV FIXED maps to H8, drift recorded."
     },
     {
       "id": "audit::M13",
@@ -3952,10 +5015,10 @@ const DATA = {
       "subsystem": "Audit 0-2 (Medium)",
       "category": "Reaction Wheels",
       "file": "src/omni_spacecraft.cpp:841",
-      "status": "arm_split",
-      "progress": 0.6,
+      "status": "in_progress",
+      "progress": 0.5,
       "target": "WP25-B3",
-      "desc": "Near-zero speed stiction band documented as iter-1 limit."
+      "desc": "Audit_0-3 J1-blindness STILL-OPEN in probe/test (M19 spike-only label, wheelSpeeds-only); Stribeck code landed but probe blind; downgrade arm_split->in_progress."
     },
     {
       "id": "audit::M16",
@@ -3964,10 +5027,10 @@ const DATA = {
       "subsystem": "Audit 0-2 (Medium)",
       "category": "Thrusters",
       "file": "src/omni_spacecraft.cpp",
-      "status": "in_progress",
-      "progress": 0.5,
+      "status": "verified",
+      "progress": 1.0,
       "target": "WP25-A2",
-      "desc": "Filter removal reconciles both integrator arms."
+      "desc": "Audit_0-3 FIXED in code (code+ledger, host re-run pending) with H1: filter DELETED both paths; residuals M20/L7."
     },
     {
       "id": "audit::L1",
@@ -3979,7 +5042,7 @@ const DATA = {
       "status": "in_progress",
       "progress": 0.6,
       "target": "BUILD_STATUS.md",
-      "desc": "Documentation refers to 19 pars instead of derived 13."
+      "desc": "Audit_0-3 L10 manifest stale counts + L6/L11 remnants applicable; counts fixed except remnants; keep in_progress."
     },
     {
       "id": "audit::L2",
@@ -3991,7 +5054,7 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "Audit X1",
-      "desc": "NPOS sentinel guards non-coupled thruster axes."
+      "desc": "Audit_0-3 no regression noted; keep verified. NPOS sentinel guards non-coupled axes."
     },
     {
       "id": "audit::L3",
@@ -4003,7 +5066,7 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "Audit X2",
-      "desc": "Shim required for SWIG %import documented."
+      "desc": "Audit_0-3 no regression noted; keep verified. SWIG shim documented."
     },
     {
       "id": "audit::L4",
@@ -4015,7 +5078,7 @@ const DATA = {
       "status": "verified",
       "progress": 1.0,
       "target": "CMakeLists.txt",
-      "desc": "rpath links libheyoka directly for Taylor stepping."
+      "desc": "Audit_0-3 CI L4 all fixed; keep verified. Heyoka rpath link stands."
     },
     {
       "id": "audit::L5",
@@ -4027,7 +5090,7 @@ const DATA = {
       "status": "in_progress",
       "progress": 0.5,
       "target": "WP25-A1",
-      "desc": "Cite exact cell 2.24e-08 in ledger."
+      "desc": "Audit_0-3 M24 phantom cite (hpp:214-216 numbers absent from wp45_combo.json) + H9 no discriminating row + M22 void flags; keep in_progress."
     }
   ]
 };

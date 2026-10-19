@@ -298,8 +298,8 @@ The offset enters ONLY through (a) shifted dynamics arms `(r−c_B)×F` at the
 wrench consumers (thruster; env-force arms per the spec below) and (b) the
 B/C output kinematics. Concretely: hub blocks UNCHANGED (A/D/I/GG as at zero
 offset); `ThrusterContributorT` carries structural `comOff_` wired from
-`hub_.rBcB` in `refresh()`; outputs `r_BN_N = r_CN_N + Rᵀ·c_B`,
-`v_BN_N = v_CN_N + Rᵀ·(ω×c_B)` (R = C_BN); `omegaDot` **published** (Rev-0
+`hub_.rBcB` in `refresh()`; outputs `r_BN_N = r_CN_N − Rᵀ·c_B`,
+`v_BN_N = v_CN_N − Rᵀ·(ω×c_B)` (R = C_BN); `omegaDot` **published** (Rev-0
 "stays zero" struck); wheel `rWB_B` fenced (balanced-only negligible unless
 rotor mass counts toward CoM — probe decides; jitter-imbalance makes it
 load-bearing); friction is a shaft torque (**no moment arm**); thruster

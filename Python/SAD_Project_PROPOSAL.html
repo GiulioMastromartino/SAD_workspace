@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAD_Project Design Proposal</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'SF SF Text', 'Segoe UI', sans-serif;
+         max-width: 900px; margin: 2rem auto; padding: 0 1rem;
+         color: #1a1a1a; line-height: 1.6; }
+  h1 { border-bottom: 2px solid #0066cc; padding-bottom: .3rem; }
+  h2 { border-bottom: 1px solid #ccc; padding-bottom: .2rem; margin-top: 2rem; }
+  h3 { margin-top: 1.5rem; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+  th, td { border: 1px solid #ccc; padding: .5rem .75rem; text-align: left; }
+  th { background: #f0f4f9; }
+  pre { background: #f4f4f4; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+  code { background: #f4f4f4; padding: .1rem .3rem; border-radius: 3px; font-size: .9em; }
+  pre code { background: none; padding: 0; }
+  .tag { display: inline-block; background: #e8f0fe; color: #1565c0;
+         padding: .1rem .5rem; border-radius: 3px; font-size: .85em; }
+  .warning { background: #fff3e0; border-left: 4px solid #ff9800; padding: .5rem 1rem; margin: 1rem 0; }
+  .info { background: #e3f2fd; border-left: 4px solid #2196f3; padding: .5rem 1rem; margin: 1rem 0; }
+  ul li { margin-bottom: .3rem; }
+  .footer { margin-top: 3rem; color: #888; font-size: .85em; border-top: 1px solid #ddd; padding-top: 1rem; }
+</style>
+</head>
+<body>
+
+<h1>SAD_Project — Design Proposal</h1>
+
+<p><span class="tag">6U CubeSat</span>
+<span class="tag">Quaternions</span>
+<span class="tag">Star Tracker</span>
+<span class="tag">Variable Thrust Jets</span>
+<span class="tag">Detumble → Slew → Track</span></p>
+
+<div class="warning">
+<strong>Status: proposal only.</strong> No code written yet. This document defines
+what will be built, what is reused from <code>cubesat_12u_sim</code>, and what is new.
+</div>
+
+<h2>1. Requirements</h2>
+
+<table>
+  <tr><th>Aspect</th><th>12U baseline</th><th>SAD_Project</th></tr>
+  <tr><td>Bus size</td><td>200×200×300 mm, 20 kg</td><td>6U: 100×200×300 mm, ~8 kg</td></tr>
+  <tr><td>Attitude rep</td><td>Euler 3-2-1 (+MRP in MC)</td><td><strong>Hamiltonian quaternions</strong> (scalar-last) throughout</td></tr>
+  <tr><td>Sensors</td><td>Rate gyro + CSS</td><td><strong>Star tracker</strong> (primary), optional <strong>9-axis IMU</strong></td></tr>
+  <tr><td>Actuators</td><td>12 thrusters + RWs</td><td><strong>8 variable-thrust jets</strong> (primary), optional <strong>3 RWs</strong></td></tr>
+  <tr><td>Mission</td><td>Free-fall + orbit-keeping</td><td><strong>Detumble → slew with orientation constraint</strong></td></tr>
+  <tr><td>Control</td><td>MRP PD (Basilisk) + RTN PID</td><td><strong>Quaternion PD</strong> on thrusters, sun-pointing cone</td></tr>
+</table>
+
+<p><strong>Mission flow:</strong> Detumble (null initial body rates, hold attitude)
+→ Slew (rotate to a 90° target quaternion) → Track within a keep-in cone about
+the Sun (body +X boresight stays within 15° of Sun line).</p>
+
+<h2>2. Architecture</h2>
+
+<pre><code>Python/SAD_Project/
+├── __init__.py
+├── README.md
+├── requirements.txt
+│
+├── core/                              # pure numpy/scipy
+│   ├── __init__.py
+│   ├── config.py                      # 6U params, quaternion PD gains
+│   ├── dynamics.py                    # 13-state EOM: [r,v,q(4),omega]
+│   ├── actuators.py                   # 8-jet thrusters + optional RWs
+│   ├── sensors.py                     # StarTracker + optional IMU9Axis
+│   ├── sun_model.py                   # Sun ephemeris + sun-pointing quaternion
+│   └── propagate.py                   # solve_ivp harness, quaternion renorm
+│
+├── control/
+│   ├── __init__.py
+│   └── controller.py                  # QuaternionPD: detumble/slew/track modes
+│
+├── backends/
+│   ├── __init__.py
+│   └── basilisk/
+│       ├── __init__.py
+│       └── basilisk_sim.py            # Basilisk driver (star tracker + thrusters)
+│
+├── missions/
+│   ├── __init__.py
+│   └── run_detumble_slew.py           # detumble → slew → track
+│
+├── uncertainty/
+│   ├── __init__.py
+│   └── monte_carlo.py                 # dispersed MC campaign
+│
+├── tuning/
+│   ├── __init__.py
+│   └── profiling.py                   # reused verbatim from cubesat_12u_sim
+│
+└── tests/
+    ├── __init__.py
+    ├── test_dynamics.py
+    ├── test_actuators.py
+    ├── test_sensors.py
+    ├── test_controller.py
+    └── test_config.py</code></pre>
+
+<h2>3. Reuse vs Reimplement</h2>
+
+<h3>Reused verbatim (copy without modification)</h3>
+<table>
+  <tr><th>File</th><th>Reason</th></tr>
+  <tr><td><code>tuning/profiling.py</code></td><td>Pure utility, no project-specific deps</td></tr>
+  <tr><td><code>core/actuators.py::allocation_pinv</code></td><td>Geometry-independent pinv allocation</td></tr>
+  <tr><td><code>core/actuators.py::quantize_duty_cycle</code></td><td>Same Basinship effect on 6U thrusters</td></tr>
+  <tr><td><code>core/dynamics.py::gravity_accel</code></td><td>Point-mass gravity, frame-independent</td></tr>
+  <tr><td><code>core/dynamics.py::gravity_gradient_torque</code></td><td>Frame-independent given a DCM/quat function</td></tr>
+  <tr><td><code>control/controller.py::rtn_frame</code></td><td>RTN frame construction, frame-independent</td></tr>
+</table>
+
+<h3>Adapted (pattern reused, parameters/logic updated)</h3>
+<table>
+  <tr><th>Module</th><th>Change</th></tr>
+  <tr><td><code>core/config.py</code></td><td>6U bus (0.1×0.2×0.3 m, 8 kg), 8 thrusters, star tracker params, cone constraint</td></tr>
+  <tr><td><code>core/dynamics.py</code></td><td>Quaternion kinematics instead of Euler; state 12→13; euler_to_dcm → quat_to_dcm</td></tr>
+  <tr><td><code>core/actuators.py</code></td><td>New 8-thruster 6U geometry; RWs optional via flag</td></tr>
+  <tr><td><code>core/sensors.py</code></td><td>StarTracker class; IMU9Axis (gyro+accel+mag)</td></tr>
+  <tr><td><code>core/sun_model.py</code></td><td>Sun-pointing reference returns quaternion (not MRP)</td></tr>
+  <tr><td><code>backends/basilisk/basilisk_sim.py</code></td><td>ST_Kalman/ST_Live replaces CSS; quaternion feedback replaces MRP feedback</td></tr>
+</table>
+
+<h3>Created new</h3>
+<ul>
+  <li><code>core/sensors.py</code> — star tracker model (no equivalent in cubesat_12u_sim)</li>
+  <li><code>control/controller.py</code> — QuaternionPD controller (was Euler/MRP-specific)</li>
+  <li><code>missions/run_detumble_slew.py</code> — new mission scenario</li>
+  <li><code>uncertainty/monte_carlo.py</code> — reimplemented for detumble→slew flow</li>
+  <li>All test files — fresh project, fresh tests</li>
+</ul>
+
+<h2>4. Key Algorithms</h2>
+
+<h3>4.1 Quaternion Kinematics</h3>
+<p>State vector: <code>y = [r(3), v(3), q(4), omega(3)]</code> = 13 states.</p>
+<pre><code>q_vec_dot = 0.5 * (q4 * omega + cross(omega, q_vec))
+q4_dot    = -0.5 * dot(omega, q_vec)</code></pre>
+<p>Renormalize <code>y[6:10]</code> every RHS evaluation to prevent drift.</p>
+
+<h3>4.2 Quaternion PD Controller</h3>
+<p>Attitude error: <code>q_err = q_desired * q_current^{-1}</code>.</p>
+<pre><code>tau = -K * q_err_vec - P * omega    (detumble: q_desired = identity)</code></pre>
+<ul>
+  <li><strong>Detumble</strong>: <code>q_desired = [0,0,0,1]</code>, high K (rate damping)</li>
+  <li><strong>Slew</strong>: <code>q_desired = ACS_SLEW_QUAT</code>, moderate K</li>
+  <li><strong>Sun-track</strong>: <code>q_desired = sun_pointing_quaternion()</code>, cone check</li>
+</ul>
+
+<h3>4.3 Star Tracker Model</h3>
+<p>Returns noisy <code>q_BN</code> or <code>None</code> (dropout: motion blur, Sun flare, rate cap).</p>
+<pre><code>StarTracker.measure(q_bn_true, omega_body, t, sun_dir_b) -> q_bn_noisy | None</code></pre>
+
+<h3>4.4 Sun-Pointing Orientation Constraint</h3>
+<p>After slew, keep body +X within <code>SUN_KEEP_IN_CONE_DEG</code> of Sun.</p>
+<p><code>sun_pointing_quaternion()</code> computes target attitude (DCM construction same as
+cubesat_12u_sim's <code>sun_pointing_sigma()</code>, only final conversion differs).</p>
+
+<h3>4.5 Basilisk Backend Mapping</h3>
+<table>
+  <tr><th>cubesat_12u_sim</th><th>SAD_Project</th></tr>
+  <tr><td><code>coarseSunSensor</code> (3x CSS)</td><td><code>ST_Kalman</code> or <code>ST_Live</code> (star tracker)</td></tr>
+  <tr><td><code>imuSensor</code></td><td><code>imuSensor</code> (9-axis mode)</td></tr>
+  <tr><td><code>mrpFeedback</code></td><td>quaternion feedback controller</td></tr>
+  <tr><td>12 thrusters</td><td>8 thrusters</td></tr>
+</table>
+
+<h3>4.6 Optional RW Path</h3>
+<pre><code>tau_body = -K * q_err_vec - P * omega     (commanded to RWs)
+tau_rw   = RW.step(tau_body, dt)          (first-order + saturation)
+u        = allocation_pinv(F=0, tau=tau_rw)</code></pre>
+
+<h2>5. Monte Carlo Dispersed Set</h2>
+<table>
+  <tr><th>Dispersion</th><th>Value</th></tr>
+  <tr><td>Mass</td><td>±5%</td></tr>
+  <tr><td>Inertia</td><td>±5% diagonal, ±5% products</td></tr>
+  <tr><td>Tip-off rates</td><td>±1.5 °/s</td></tr>
+  <tr><td>Initial attitude</td><td>±0.08 rad quaternion error</td></tr>
+  <tr><td>Thruster Tmax</td><td>±5% per thruster</td></tr>
+  <tr><td>Thruster canting</td><td>±1° per thruster</td></tr>
+  <tr><td>Star tracker sigma</td><td>±20%</td></tr>
+  <tr><td>Orbit injection</td><td>±5 km / ±5 m/s</td></tr>
+</table>
+<p><strong>KPIs:</strong> detumble settle time + residual rate, slew settle time + residual error (<code>4·atan(|q_vec|)</code>), cone compliance, total propellant/ΔV.</p>
+
+<h2>6. Execution Plan</h2>
+<ol>
+  <li><strong>Core</strong>: <code>config.py</code> → <code>dynamics.py</code> → <code>actuators.py</code> → <code>sensors.py</code> → <code>sun_model.py</code> → <code>propagate.py</code></li>
+  <li><strong>Control</strong>: <code>controller.py</code></li>
+  <li><strong>Backend</strong>: <code>basilisk_sim.py</code></li>
+  <li><strong>Mission</strong>: <code>run_detumble_slew.py</code></li>
+  <li><strong>Uncertainty + tuning</strong>: <code>monte_carlo.py</code>, <code>profiling.py</code></li>
+  <li><strong>Tests</strong>: parity (quaternion vs DCM, thruster allocation, PD gains)</li>
+  <li><strong>Smoke run</strong> from <code>Python/</code></li>
+</ol>
+
+<h2>7. Open Questions</h2>
+<div class="info">
+<ol>
+  <li><strong>LEO drag/J2</strong> — off by default for the 180 s mission?</li>
+  <li><strong>Star tracker model</strong> — <code>ST_Kalman</code> (estimation) or <code>ST_Live</code> (ideal lookup)?</li>
+  <li><strong>Slew target</strong> — 90° about body +Z confirmed?</li>
+</ol>
+</div>
+
+<div class="footer">
+SAD_Project Design Proposal · Spacecraft Attitude Dynamics course · Politecnico di Milano
+</div>
+
+</body>
+</html>

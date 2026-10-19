@@ -77,6 +77,13 @@ struct AtmoPropsMsg_C;
 struct EclipseMsg_C;
 %include "architecture/msgPayloadDefC/MagneticFieldMsgPayload.h"
 struct MagneticFieldMsg_C;
+// ExtForceTorque message payloads (external force/torque channel).
+%include "architecture/msgPayloadDefC/CmdTorqueBodyMsgPayload.h"
+struct CmdTorqueBodyMsg_C;
+%include "architecture/msgPayloadDefC/CmdForceBodyMsgPayload.h"
+struct CmdForceBodyMsg_C;
+%include "architecture/msgPayloadDefC/CmdForceInertialMsgPayload.h"
+struct CmdForceInertialMsg_C;
 %include "architecture/msgPayloadDefC/EarthRadiationMsgPayload.h"
 struct EarthRadiationMsg_C;
 %include "architecture/msgPayloadDefC/SpicePlanetStateMsgPayload.h"

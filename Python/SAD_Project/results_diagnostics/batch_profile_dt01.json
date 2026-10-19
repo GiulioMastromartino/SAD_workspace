@@ -1,0 +1,216 @@
+{
+  "runs": 20,
+  "seed": 42,
+  "disperse": true,
+  "batch_ms": 3100.883625,
+  "py_wall_ms": 3100.9608750173356,
+  "track_dt": 0.1,
+  "steps": 1975153,
+  "phase_steps": [
+    400,
+    2328,
+    1972425
+  ],
+  "us_per_step": 1.5699460370918101,
+  "ns": {
+    "sun_step": 244620743.0,
+    "  sun_point_quat": 163429390.0,
+    "startracker_step": 41519023.0,
+    "mission_step": 38872620.0,
+    "quatpd_step": 38690094.0,
+    "thruster_allocate": 209272129.0,
+    "  alloc_build_A": 1293.0,
+    "  alloc_jacobiSVD": 124167.0,
+    "  alloc_clamp_scale": 42118451.0,
+    "  alloc_solve": 43732041.0,
+    "allocator_init": 134002.0,
+    "thruster_step": 138721882.0,
+    "  thr_dir_normalize": 54080282.0,
+    "dynamics_step": 1909632514.0,
+    "  dyn_vector_allocs": 259242697.0,
+    "  rhs_total(4 stages)": 1140109194.0,
+    "    rhs_quat_to_dcm": 148997028.0,
+    "    rhs_gravity_grad": 152817832.0,
+    "    rhs_quat_deriv": 157403936.0,
+    "kpi_bookkeeping": 39916306.0,
+    "dispersion": 14332.0,
+    "per_run_setup": 197082.0,
+    "loop_iteration_total": 3055412246.0
+  },
+  "calls": {
+    "sun_step": 1975153,
+    "  sun_point_quat": 1975153,
+    "startracker_step": 1975153,
+    "mission_step": 1975153,
+    "quatpd_step": 1975153,
+    "thruster_allocate": 1975153,
+    "  alloc_build_A": 20,
+    "  alloc_jacobiSVD": 20,
+    "  alloc_clamp_scale": 1975153,
+    "  alloc_solve": 1975153,
+    "allocator_init": 20,
+    "thruster_step": 1975153,
+    "  thr_dir_normalize": 1975153,
+    "dynamics_step": 1975153,
+    "  dyn_vector_allocs": 1975153,
+    "  rhs_total(4 stages)": 7900612,
+    "    rhs_quat_to_dcm": 7900612,
+    "    rhs_gravity_grad": 7900612,
+    "    rhs_quat_deriv": 7900612,
+    "kpi_bookkeeping": 1972442,
+    "dispersion": 20,
+    "per_run_setup": 20,
+    "loop_iteration_total": 1975153
+  },
+  "phase_ns": {
+    "sun_step": [
+      50166.0,
+      286708.0,
+      244283869.0
+    ],
+    "  sun_point_quat": [
+      34130.0,
+      192419.0,
+      163202841.0
+    ],
+    "startracker_step": [
+      52294.0,
+      251918.0,
+      41214811.0
+    ],
+    "mission_step": [
+      7620.0,
+      56243.0,
+      38808757.0
+    ],
+    "quatpd_step": [
+      7754.0,
+      45756.0,
+      38636584.0
+    ],
+    "thruster_allocate": [
+      42549.0,
+      243556.0,
+      208986024.0
+    ],
+    "  alloc_build_A": [
+      42.0,
+      167.0,
+      1084.0
+    ],
+    "  alloc_jacobiSVD": [
+      9750.0,
+      8125.0,
+      106292.0
+    ],
+    "  alloc_clamp_scale": [
+      8679.0,
+      47952.0,
+      42061820.0
+    ],
+    "  alloc_solve": [
+      8913.0,
+      51635.0,
+      43671493.0
+    ],
+    "allocator_init": [
+      10000.0,
+      8668.0,
+      115334.0
+    ],
+    "thruster_step": [
+      27745.0,
+      161911.0,
+      138532226.0
+    ],
+    "  thr_dir_normalize": [
+      10660.0,
+      62813.0,
+      54006809.0
+    ],
+    "dynamics_step": [
+      398995.0,
+      2267408.0,
+      1906966111.0
+    ],
+    "  dyn_vector_allocs": [
+      53915.0,
+      309386.0,
+      258879396.0
+    ],
+    "  rhs_total(4 stages)": [
+      241627.0,
+      1347181.0,
+      1138520386.0
+    ],
+    "    rhs_quat_to_dcm": [
+      29868.0,
+      182670.0,
+      148784490.0
+    ],
+    "    rhs_gravity_grad": [
+      30139.0,
+      175954.0,
+      152611739.0
+    ],
+    "    rhs_quat_deriv": [
+      31082.0,
+      181235.0,
+      157191619.0
+    ],
+    "kpi_bookkeeping": [
+      0.0,
+      2667.0,
+      39913639.0
+    ],
+    "dispersion": [
+      1083.0,
+      501.0,
+      12748.0
+    ],
+    "per_run_setup": [
+      13416.0,
+      16624.0,
+      167042.0
+    ],
+    "loop_iteration_total": [
+      659028.0,
+      3727248.0,
+      3051025970.0
+    ]
+  },
+  "run_ms": [
+    1.105542,
+    186.029916,
+    179.813125,
+    180.80375,
+    178.917083,
+    182.798959,
+    1.097708,
+    179.200209,
+    179.99725,
+    185.55325,
+    178.69525,
+    1.19325,
+    190.948875,
+    191.034041,
+    179.7645,
+    178.144458,
+    183.66425,
+    179.136333,
+    181.864834,
+    181.066833
+  ],
+  "params": {
+    "detumble_K": 0.5343,
+    "detumble_P": 0.7025,
+    "detumble_Ki": 0.0001,
+    "slew_K": 0.9357,
+    "slew_P": 0.2743,
+    "slew_Ki": 0.00015,
+    "track_K": 0.9048,
+    "track_P": 2.9218,
+    "track_Ki": 0.00024,
+    "TS": 68.3
+  }
+}

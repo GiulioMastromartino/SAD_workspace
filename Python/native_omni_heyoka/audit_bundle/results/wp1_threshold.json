@@ -1,12 +1,12 @@
 {
   "name": "wp1_threshold",
-  "timestamp_utc": "2026-10-12T15:45:47.577136+00:00",
+  "timestamp_utc": "2026-10-14T09:22:29.098770+00:00",
   "platform": "macOS-27.0-arm64-arm-64bit",
   "python": "3.11.16",
   "basilisk": "2.12.0",
   "heyoka": "7.12.1",
   "env": {
-    "timestamp_utc": "2026-10-12T15:45:47.577186+00:00",
+    "timestamp_utc": "2026-10-14T09:22:29.098809+00:00",
     "platform": "macOS-27.0-arm64-arm-64bit",
     "os_tag": "macOS",
     "machine": "arm64",
@@ -25,7 +25,7 @@
   "payload": {
     "probe": "wp1_threshold",
     "env": {
-      "timestamp_utc": "2026-10-12T15:45:45.340829+00:00",
+      "timestamp_utc": "2026-10-14T09:22:27.291325+00:00",
       "platform": "macOS-27.0-arm64-arm-64bit",
       "os_tag": "macOS",
       "machine": "arm64",

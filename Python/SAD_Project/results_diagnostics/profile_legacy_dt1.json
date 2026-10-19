@@ -1,0 +1,247 @@
+{
+  "runs": 50,
+  "seed": 42,
+  "disperse": true,
+  "batch_ms": 699.736625,
+  "py_wall_ms": 699.771666986635,
+  "track_dt": 1.0,
+  "implicit_pd": false,
+  "steps": 461587,
+  "phase_steps": [
+    1000,
+    8070,
+    452517
+  ],
+  "us_per_step": 1.5159365948347765,
+  "ns": {
+    "sun_step": 55365153.0,
+    "  sun_point_quat": 36928017.0,
+    "startracker_step": 9895184.0,
+    "mission_step": 9227458.0,
+    "quatpd_step": 8801409.0,
+    "thruster_allocate": 47234366.0,
+    "  alloc_build_A": 2001.0,
+    "  alloc_jacobiSVD": 165790.0,
+    "  alloc_clamp_scale": 9497338.0,
+    "  alloc_solve": 9779013.0,
+    "allocator_init": 174752.0,
+    "thruster_step": 31329249.0,
+    "  thr_dir_normalize": 12211881.0,
+    "dynamics_step": 429074849.0,
+    "  dyn_vector_allocs": 56773642.0,
+    "  rhs_total(4 stages)": 257357445.0,
+    "    rhs_quat_to_dcm": 33649474.0,
+    "    rhs_gravity_grad": 34491690.0,
+    "    rhs_quat_deriv": 35291029.0,
+    "kpi_bookkeeping": 9112749.0,
+    "dispersion": 11746.0,
+    "per_run_setup": 309830.0,
+    "loop_iteration_total": 689082879.0
+  },
+  "calls": {
+    "sun_step": 461587,
+    "  sun_point_quat": 461587,
+    "startracker_step": 461587,
+    "mission_step": 461587,
+    "quatpd_step": 461587,
+    "thruster_allocate": 461587,
+    "  alloc_build_A": 50,
+    "  alloc_jacobiSVD": 50,
+    "  alloc_clamp_scale": 461587,
+    "  alloc_solve": 461587,
+    "allocator_init": 50,
+    "thruster_step": 461587,
+    "  thr_dir_normalize": 461587,
+    "dynamics_step": 461587,
+    "  dyn_vector_allocs": 461587,
+    "  rhs_total(4 stages)": 1846348,
+    "    rhs_quat_to_dcm": 1846348,
+    "    rhs_gravity_grad": 1846348,
+    "    rhs_quat_deriv": 1846348,
+    "kpi_bookkeeping": 452556,
+    "dispersion": 50,
+    "per_run_setup": 50,
+    "loop_iteration_total": 461587
+  },
+  "phase_ns": {
+    "sun_step": [
+      123662.0,
+      965575.0,
+      54275916.0
+    ],
+    "  sun_point_quat": [
+      81960.0,
+      642740.0,
+      36203317.0
+    ],
+    "startracker_step": [
+      105198.0,
+      696846.0,
+      9093140.0
+    ],
+    "mission_step": [
+      17552.0,
+      163235.0,
+      9046671.0
+    ],
+    "quatpd_step": [
+      18828.0,
+      151272.0,
+      8631309.0
+    ],
+    "thruster_allocate": [
+      101552.0,
+      812624.0,
+      46320190.0
+    ],
+    "  alloc_build_A": [
+      83.0,
+      335.0,
+      1583.0
+    ],
+    "  alloc_jacobiSVD": [
+      9708.0,
+      16831.0,
+      139251.0
+    ],
+    "  alloc_clamp_scale": [
+      21120.0,
+      162115.0,
+      9314103.0
+    ],
+    "  alloc_solve": [
+      22016.0,
+      171573.0,
+      9585424.0
+    ],
+    "allocator_init": [
+      9959.0,
+      18250.0,
+      146543.0
+    ],
+    "thruster_step": [
+      67690.0,
+      542627.0,
+      30718932.0
+    ],
+    "  thr_dir_normalize": [
+      26175.0,
+      215277.0,
+      11970429.0
+    ],
+    "dynamics_step": [
+      929680.0,
+      7442602.0,
+      420702567.0
+    ],
+    "  dyn_vector_allocs": [
+      124170.0,
+      980068.0,
+      55669404.0
+    ],
+    "  rhs_total(4 stages)": [
+      556312.0,
+      4475367.0,
+      252325766.0
+    ],
+    "    rhs_quat_to_dcm": [
+      71932.0,
+      585368.0,
+      32992174.0
+    ],
+    "    rhs_gravity_grad": [
+      73843.0,
+      600499.0,
+      33817348.0
+    ],
+    "    rhs_quat_deriv": [
+      75052.0,
+      615180.0,
+      34600797.0
+    ],
+    "kpi_bookkeeping": [
+      0.0,
+      2459.0,
+      9110290.0
+    ],
+    "dispersion": [
+      958.0,
+      1960.0,
+      8828.0
+    ],
+    "per_run_setup": [
+      13291.0,
+      43123.0,
+      253416.0
+    ],
+    "loop_iteration_total": [
+      1536169.0,
+      12172495.0,
+      675374215.0
+    ]
+  },
+  "run_ms": [
+    1.054417,
+    17.623,
+    17.523625,
+    17.5105,
+    17.838292,
+    17.900292,
+    1.070417,
+    17.571042,
+    17.513625,
+    17.808125,
+    17.552,
+    1.0545,
+    18.067292,
+    18.106458,
+    18.773834,
+    17.853875,
+    17.342209,
+    17.272083,
+    17.648708,
+    17.739542,
+    17.308417,
+    17.490542,
+    17.677541,
+    18.07375,
+    17.7425,
+    17.431291,
+    17.278875,
+    1.043167,
+    1.031958,
+    17.594208,
+    17.337791,
+    17.38225,
+    17.514875,
+    17.824,
+    17.315458,
+    17.640292,
+    17.464167,
+    17.684417,
+    1.071583,
+    17.777875,
+    17.610125,
+    1.096833,
+    1.057291,
+    1.058666,
+    17.719833,
+    17.477291,
+    1.009625,
+    17.446,
+    17.654625,
+    1.031
+  ],
+  "params": {
+    "detumble_K": 0.5343,
+    "detumble_P": 0.7025,
+    "detumble_Ki": 0.0001,
+    "slew_K": 0.9357,
+    "slew_P": 0.2743,
+    "slew_Ki": 0.00015,
+    "track_K": 0.9048,
+    "track_P": 2.9218,
+    "track_Ki": 0.00024,
+    "TS": 68.3
+  }
+}

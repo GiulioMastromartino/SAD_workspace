@@ -26,6 +26,9 @@
 #include "architecture/msgPayloadDefC/ArrayMotorTorqueMsgPayload.h"
 #include "architecture/msgPayloadDefC/THRArrayOnTimeCmdMsgPayload.h"
 #include "architecture/msgPayloadDefC/THRArrayCmdForceMsgPayload.h"
+#include "architecture/msgPayloadDefC/CmdTorqueBodyMsgPayload.h"
+#include "architecture/msgPayloadDefC/CmdForceBodyMsgPayload.h"
+#include "architecture/msgPayloadDefC/CmdForceInertialMsgPayload.h"
 #include "architecture/msgPayloadDefCpp/THROutputMsgPayload.h"
 #include "architecture/msgPayloadDefC/RWSpeedMsgPayload.h"
 #include "architecture/msgPayloadDefC/RWArrayConfigMsgPayload.h"
@@ -94,6 +97,13 @@ public:
     ReadFunctor<SpicePlanetStateMsgPayload> moonStateInMsg;  //!< optional body-1 per-tick refresh
     ReadFunctor<MagneticFieldMsgPayload> magFieldInMsg;  //!< magField_N inertial N; required when mag on
     ReadFunctor<EarthRadiationMsgPayload> erpInMsg;  //!< field-only (message equality); NEVER force
+    // --- ExtForceTorque message hijack (external force/torque channel) ---------
+    // Stock ExtForceTorque exposes cmdTorqueInMsg (body torque), cmdForceBodyInMsg
+    // (body force) and cmdForceInertialInMsg (inertial force). All three ADD to
+    // the constant fields below (never replace). Unlinked -> constant only.
+    ReadFunctor<CmdTorqueBodyMsgPayload> extTorqueInMsg;  //!< torqueRequestBody [Nm, body]
+    ReadFunctor<CmdForceBodyMsgPayload> extForceBodyInMsg;  //!< forceRequestBody [N, body]
+    ReadFunctor<CmdForceInertialMsgPayload> extForceInertialInMsg;  //!< forceRequestInertial [N, inertial]
 
     mutable BSKLogger bskLogger;  // mutable so the const WP0 guard can raise
 
@@ -151,6 +161,13 @@ public:
     void setMagneticMoment(double mx, double my, double mz);  // MTB dipole [Am^2], body
     void setMagneticDipole(double g10, double g11, double h11);  // centered-dipole preset (recorded)
     void setMaxMtbDipole(double dmax);  // identity-Gt clamp preset
+    // --- ExtForceTorque: external force/torque (DynamicEffector channel) ------
+    // Constant body force + body torque about B. Either (or both) may be set;
+    // the message-driven inputs (extTorqueInMsg / extForceBodyInMsg /
+    // extForceInertialInMsg) ADD to these constants when linked. Units: N, Nm.
+    void setExtForceTorque(double fx, double fy, double fz,
+                           double tx, double ty, double tz);
+    void setExtForceInertial(double fx, double fy, double fz);
     // --- WP3: thruster timing models (all default OFF) -------
     // Each setter flips its WP0 guard flag and installs the model; all are
     // runtime (tick-rate) state -- none rebuilds the integrator.
@@ -159,6 +176,8 @@ public:
                           const std::vector<double>& offRamp,
                           bool linearShape = true);
     void setCutoffFrequency(double cutoffFrequency);
+    // Thruster lag (state-effector emulation): opt-in. Default off.
+    void setThrusterLag(bool lag, double cutoff);
     void setBlowdownCoeffs(const std::vector<double>& thrustCoeffs);
     void setBlowdownCoeffs(const std::vector<double>& thrustCoeffs,
                            const std::vector<double>& ispCoeffs);
@@ -263,6 +282,8 @@ private:
     std::vector<double> offRamp_;  // off-ramp knots [s] since valve closed
     bool rampLinear_ = true;
     double cutoffFreq_ = 10.0;  // [rad/s] stock default; accepted but INERT
+    bool thrLag_ = false;
+    double thrLagCutoff_ = 10.0;
     // without ramps (WP25-A2: recorded, never modeled -- 10 vs 1000 identical)
     std::vector<double> blowdownThrustCoeffs_;  // descending poly; no tank => 1.0 + warn
     std::vector<double> blowdownIspCoeffs_;
@@ -287,6 +308,11 @@ private:
     double magG10 = 0.0, magG11 = 0.0, magH11 = 0.0;
     double maxMtbDipole_ = 1.0;
     bool envConfigured = false;  // any env setter called -> registers 'e' cluster
+    // ExtForceTorque (external force/torque, DynamicEffector channel).
+    bool hasExtft_ = false;
+    std::array<double, 3> extForceB_{0.0, 0.0, 0.0};
+    std::array<double, 3> extTorqueB_{0.0, 0.0, 0.0};
+    std::array<double, 3> extForceN_{0.0, 0.0, 0.0};
     double mass = 750.0;
     double Ixx = 900.0, Iyy = 800.0, Izz = 600.0;
     double Ixy = 0.0, Ixz = 0.0, Iyz = 0.0;
@@ -399,6 +425,10 @@ private:
     // frozen) + drag/SRP/mag wrenches from state + config + msgs.
     // Module-side doubles only (A3).
     void updateEnvInputs(const double* y);
+    // ExtForceTorque per-tick (/per-arc) refresh: composes the constant
+    // fields with the linked messages (additive) and writes the 9 slots.
+    // Module-side doubles only (A3).
+    void updateExtInputs(const double* y);
 };
 
 #endif  // OMNI_SPACECRAFT_HPP

@@ -1,0 +1,83 @@
+{
+  "N": 300,
+  "seed": 42,
+  "repeats": 3,
+  "heyoka_tol": 1e-12,
+  "heyoka_compact": true,
+  "rk4": {
+    "times_s": [
+      2.6293399580172263,
+      2.810561708989553,
+      2.6021616669895593
+    ],
+    "median_s": 2.6293399580172263,
+    "metrics": {
+      "failures": 0,
+      "reached": 300,
+      "fuel_mean_kg": 0.0005443598314583504,
+      "rate_median_rad_s": 3.502141579474059e-06,
+      "detumble_mean_s": 2.0000000000000004,
+      "slew_mean_s": 4.898999999999998,
+      "track_mean_deg": 0.008648737841882111,
+      "track_max_deg": 1.2858086811685363,
+      "box_max_km": 4.6717641836544495,
+      "box_mean_km": 1.998172462442744
+    }
+  },
+  "heyoka": {
+    "times_s": [
+      12.47628704100498,
+      12.568431167019298,
+      12.494959000003291
+    ],
+    "median_s": 12.494959000003291,
+    "metrics": {
+      "failures": 0,
+      "reached": 300,
+      "fuel_mean_kg": 0.000544359779277843,
+      "rate_median_rad_s": 3.5021435964582635e-06,
+      "detumble_mean_s": 2.0000000000000004,
+      "slew_mean_s": 4.898999999999998,
+      "track_mean_deg": 0.008648737055201113,
+      "track_max_deg": 1.285807168330962,
+      "box_max_km": 4.671764183384366,
+      "box_mean_km": 1.9981724624572075
+    }
+  },
+  "comparison": {
+    "detumble_settle": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "slew_settle": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "final_rate": {
+      "max_abs": 8.929566920942424e-12,
+      "max_rel": 1.1379156910587267e-05
+    },
+    "fuel_used": {
+      "max_abs": 1.0550200968927059e-10,
+      "max_rel": 2.034160869342014e-07
+    },
+    "track_ang_mean": {
+      "max_abs": 2.4644235626161692e-08,
+      "max_rel": 3.741287070729575e-06
+    },
+    "track_ang_max": {
+      "max_abs": 1.8356907441896553e-06,
+      "max_rel": 2.008989310091579e-06
+    },
+    "orbit_err": {
+      "max_abs": 3.162812234336343e-10,
+      "max_rel": 1.4651258012901923e-09
+    },
+    "box_max": {
+      "max_abs": 4.768372363628259e-10,
+      "max_rel": 1.3365331862747721e-09
+    }
+  },
+  "time_ratio_heyoka_over_rk4": 4.7521276059812685,
+  "throughput_ratio_rk4_over_heyoka": 0.2104320596823514
+}

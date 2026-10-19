@@ -64,6 +64,9 @@
 #include "architecture/messaging/messaging.h"
 #include "architecture/msgPayloadDefC/RWConfigLogMsgPayload.h"
 #include "architecture/msgPayloadDefC/THRArrayOnTimeCmdMsgPayload.h"
+#include "architecture/msgPayloadDefC/CmdTorqueBodyMsgPayload.h"
+#include "architecture/msgPayloadDefC/CmdForceBodyMsgPayload.h"
+#include "architecture/msgPayloadDefC/CmdForceInertialMsgPayload.h"
 #include "architecture/msgPayloadDefC/AtmoPropsMsgPayload.h"
 #include "architecture/msgPayloadDefC/EclipseMsgPayload.h"
 #include "architecture/msgPayloadDefC/MagneticFieldMsgPayload.h"
@@ -118,6 +121,11 @@ public:
     void setMagneticMoment(double mx, double my, double mz);
     void setMagneticDipole(double g10, double g11, double h11);
     void setMaxMtbDipole(double dmax);
+    void setThrusterLag(bool lag, double cutoff);
+    // --- ExtForceTorque (external force/torque, DynamicEffector channel) -------
+    void setExtForceTorque(double fx, double fy, double fz,
+                           double tx, double ty, double tz);
+    void setExtForceInertial(double fx, double fy, double fz);
     // --- Phase-2 swap: fuel depletion (single tank) --------------------------
     // fuelStateName is the STOCK registered state name (e.g. "fuelMass" or
     // "fuelTankMass2"); the graph's canonical state is always "fuelMass"
@@ -185,6 +193,10 @@ public:
     void setMagneticDipoleForObject(size_t obj, double g10, double g11,
                                     double h11);
     void setMaxMtbDipoleForObject(size_t obj, double dmax);
+    void setThrusterLagForObject(size_t obj, bool lag, double cutoff);
+    void setExtForceTorqueForObject(size_t obj, double fx, double fy, double fz,
+                                    double tx, double ty, double tz);
+    void setExtForceInertialForObject(size_t obj, double fx, double fy, double fz);
     void setFuelStateNameForObject(size_t obj, const std::string& name);
     void setFuelTankForObject(size_t obj, double rTBx, double rTBy,
                               double rTBz, double leak);
@@ -216,6 +228,12 @@ public:
                                 Message<SpicePlanetStateMsgPayload>* src);
     void subscribeMagForObject(size_t obj,
                                Message<MagneticFieldMsgPayload>* src);
+    void subscribeExtTorqueForObject(size_t obj,
+                                     Message<CmdTorqueBodyMsgPayload>* src);
+    void subscribeExtForceBodyForObject(size_t obj,
+                                        Message<CmdForceBodyMsgPayload>* src);
+    void subscribeExtForceInertialForObject(size_t obj,
+                                            Message<CmdForceInertialMsgPayload>* src);
 
     // --- wheel-log inputs: u_current, timing-identical by construction ----
     // Link i-th wheel to the stock effector's i-th rwOutMsgs element:
@@ -242,6 +260,10 @@ public:
     ReadFunctor<SpicePlanetStateMsgPayload> sunStateInMsg;
     ReadFunctor<SpicePlanetStateMsgPayload> moonStateInMsg;
     ReadFunctor<MagneticFieldMsgPayload> magFieldInMsg;
+    // --- ExtForceTorque message hijack (external force/torque channel) --------
+    ReadFunctor<CmdTorqueBodyMsgPayload> extTorqueInMsg;   //!< torqueRequestBody [Nm, body]
+    ReadFunctor<CmdForceBodyMsgPayload> extForceBodyInMsg;  //!< forceRequestBody [N, body]
+    ReadFunctor<CmdForceInertialMsgPayload> extForceInertialInMsg;  //!< forceRequestInertial [N, inertial]
 
     // --- introspection --------------------------------------------------------
     size_t nStates() const;
@@ -334,6 +356,9 @@ private:
         std::vector<std::array<double, 3>> thrDirs;
         std::vector<std::array<double, 3>> thrPos;
         std::vector<double> thrTmax;
+        // Thruster lag (state-effector emulation): opt-in.
+        bool thrLag = false;
+        double thrLagCutoff = 10.0;
         // Staged on-time mailbox edge (survives rebuilds, as before).
         int64_t lastThrStamp = -1;
         // Pre-init command snapshot (write-once path).
@@ -357,6 +382,11 @@ private:
         double magG10 = 0.0, magG11 = 0.0, magH11 = 0.0;
         double maxMtbDipole = 1.0;
         bool envConfigured = false;
+        // --- ExtForceTorque records -------------------------------------------
+        bool hasExtft = false;
+        double extForceB[3]{0.0, 0.0, 0.0};
+        double extTorqueB[3]{0.0, 0.0, 0.0};
+        double extForceN[3]{0.0, 0.0, 0.0};
         // --- Phase-2 fuel records ---------------------------------------------
         std::string fuelStateName;
         bool hasFuel = false;
@@ -384,6 +414,9 @@ private:
         ReadFunctor<SpicePlanetStateMsgPayload> sun;
         ReadFunctor<SpicePlanetStateMsgPayload> moon;
         ReadFunctor<MagneticFieldMsgPayload> mag;
+        ReadFunctor<CmdTorqueBodyMsgPayload> extTorque;
+        ReadFunctor<CmdForceBodyMsgPayload> extForceBody;
+        ReadFunctor<CmdForceInertialMsgPayload> extForceInertial;
     };
     // Uniform per-object message view (pointers; slot 0 aliases the legacy
     // public members so the stepping path is single-sourced).
@@ -396,6 +429,9 @@ private:
         ReadFunctor<SpicePlanetStateMsgPayload>* sun = nullptr;
         ReadFunctor<SpicePlanetStateMsgPayload>* moon = nullptr;
         ReadFunctor<MagneticFieldMsgPayload>* mag = nullptr;
+        ReadFunctor<CmdTorqueBodyMsgPayload>* extTorque = nullptr;
+        ReadFunctor<CmdForceBodyMsgPayload>* extForceBody = nullptr;
+        ReadFunctor<CmdForceInertialMsgPayload>* extForceInertial = nullptr;
     };
     std::vector<ObjCfg> objCfgs_{1};  // slot 0 pre-exists (legacy surface)
     std::vector<ObjMsgSet> extraMsgs_;  // slot i>=1 <-> extraMsgs_[i-1]
@@ -425,7 +461,7 @@ private:
     void buildOnce();  // guards + shared-graph decision + per-slot builds
     void claimAndGrab(
         size_t obj, const std::vector<std::pair<std::string, size_t>>& census,
-        size_t& nW, size_t& nF);
+        size_t& nW, size_t& nF, size_t& nK);
     void buildObjectFull(
         size_t obj, const std::vector<std::pair<std::string, size_t>>& census);
     void buildObjectShared(
@@ -437,6 +473,7 @@ private:
     // omni-order state; P = live par vector. Module-side doubles only (A3).
     void updateEnvInputs(size_t obj, const double* y, std::vector<double>& P,
                          const double cLive[3]);
+    void updateExtInputs(size_t obj, std::vector<double>& P);
 };
 
 #endif  // OMNI_VEC_INTEGRATOR_HPP

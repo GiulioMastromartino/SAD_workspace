@@ -1,0 +1,59 @@
+{
+  "name": "hijack_scenarioAttitudeFeedbackRWPower",
+  "timestamp_utc": "2026-10-17T16:24:03.566449+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-17T16:24:03.814776+00:00",
+    "platform": "macOS-27.2-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "demo": "scenarioAttitudeFeedbackRWPower",
+    "tag": "v2.12.0",
+    "mode": "parity",
+    "scenario": "scenarioAttitudeFeedbackRWPower.py",
+    "note": "same hub+3RW MRP closed loop as scenarioAttitudeFeedbackRW (10 min @ 0.1 s); the added RW power/battery modules are SysModels (no dynamics) and run identically on both arms, so the measured RW-class tol holds",
+    "port_path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/audit_bundle/results/scenarioAttitudeFeedbackRWPower_omni.py",
+    "port_bytes": 17724,
+    "marked_blocks": 2,
+    "stock_exit": 0,
+    "stock_wall_s": 1.6,
+    "vacuity": [],
+    "omni_exit": 0,
+    "omni_wall_s": 2.2,
+    "omni_cold_wall_s": 11.4,
+    "speedup_cold": 0.14,
+    "speedup": 0.727,
+    "diffs": {
+      "r_BN_N": 9.313225746154785e-10,
+      "v_BN_N": 1.9895196601282805e-13,
+      "sigma_BN": 8.352693536828326e-16,
+      "omega_BN_B": 6.824036236259545e-17,
+      "wheels": 1.8673063095775433e-11
+    },
+    "tol": {
+      "r_BN_N": 1e-09,
+      "v_BN_N": 1e-09,
+      "sigma_BN": 1e-09,
+      "omega_BN_B": 1e-09,
+      "wheels": 0.0001
+    },
+    "verdict": "parity green",
+    "status": "ok"
+  }
+}

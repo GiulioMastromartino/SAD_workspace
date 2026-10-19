@@ -1,0 +1,66 @@
+{
+  "command": [
+    "./env/bin/python",
+    "-m",
+    "cubesat_12u_sim.tuning.run_mc_optimize",
+    "--generations",
+    "50",
+    "--popsize",
+    "50",
+    "--runs",
+    "50",
+    "--vehicles",
+    "25",
+    "--workers",
+    "4",
+    "--seed",
+    "20261007",
+    "--checkpoint",
+    "ckpt_mc.json"
+  ],
+  "config": {
+    "dim": 16,
+    "eval_cfg": {
+      "dt_inner": 60.0,
+      "dt_outer": 600.0,
+      "maxiter": 50,
+      "pid_dt": 10.0,
+      "spec_box": 25000.0,
+      "t_end": 43200.0,
+      "tol": 1e-12,
+      "w_final": 0.05,
+      "w_viol": 1000.0
+    },
+    "generations": 50,
+    "mc": {
+      "alloc_eff_nom": 0.5,
+      "dr_sigma": 0.0005,
+      "dv_bias": -0.005,
+      "dv_dir_sigma": 0.0001,
+      "n_runs": 50,
+      "n_vehicles": 25,
+      "seed": 20261007,
+      "sigma_alloc": 0.05,
+      "sigma_dv": 0.002,
+      "sigma_mass": 0.05,
+      "sigma_thrust": 0.05
+    },
+    "popsize": 50,
+    "seed": 20261007,
+    "sigma0": 0.3,
+    "weights": {
+      "tail_frac": 0.1,
+      "w_hi": 0.5,
+      "w_infeasible": 1000.0,
+      "w_lo": 0.5,
+      "w_nmpc": 0.5,
+      "w_pid": 0.5
+    },
+    "workers": 4
+  },
+  "dirty_tree": true,
+  "exported_utc": "2026-10-09T13:35:50.264626+00:00",
+  "git_commit": "8e5ad0a5",
+  "git_diff_note": "working tree was dirty at export time; the commit alone does not reproduce this run",
+  "source": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/results_mc_optimize/res_mc_optimize.json"
+}

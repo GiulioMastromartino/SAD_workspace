@@ -64,6 +64,8 @@ struct OmniSpacecraft::Impl {
     // WP5 env slot bases + body count (valid after buildIntegrator).
     size_t envBody = 0, envDrag = 0, envSrp = 0, envMag = 0, envNBodies = 0;
     bool hasEnv = false;
+    bool hasExtft = false;
+    size_t extOff = 0;  // base slot of the 9 ext-force-torque slots
 
     Impl() = default;
 };
@@ -248,6 +250,14 @@ void OmniSpacecraft::setCutoffFrequency(double cutoffFrequency) {
     this->cutoffFreq_ = cutoffFrequency;
 }
 
+void OmniSpacecraft::setThrusterLag(bool lag, double cutoff) {
+    if (!(cutoff > 0.0) || !std::isfinite(cutoff))
+        this->bskLogger.bskError("OmniSpacecraft: thruster lag cutoff must be finite positive.");
+    this->thrLag_ = lag;
+    this->thrLagCutoff_ = cutoff;
+    this->configDirty = true;
+}
+
 void OmniSpacecraft::setBlowdownCoeffs(const std::vector<double>& thrustCoeffs) {
     this->setBlowdownCoeffs(thrustCoeffs, std::vector<double>());
 }
@@ -368,6 +378,20 @@ void OmniSpacecraft::setMaxMtbDipole(double dmax) {
     if (!(dmax > 0.0) || !std::isfinite(dmax))
         this->bskLogger.bskError("OmniSpacecraft: maxMtbDipole must be finite positive.");
     this->maxMtbDipole_ = dmax;
+}
+
+// --- ExtForceTorque: external force/torque (DynamicEffector channel) ---------
+void OmniSpacecraft::setExtForceTorque(double fx, double fy, double fz,
+                                       double tx, double ty, double tz) {
+    this->extForceB_[0] = fx; this->extForceB_[1] = fy; this->extForceB_[2] = fz;
+    this->extTorqueB_[0] = tx; this->extTorqueB_[1] = ty; this->extTorqueB_[2] = tz;
+    this->hasExtft_ = true;
+    this->configDirty = true;
+}
+void OmniSpacecraft::setExtForceInertial(double fx, double fy, double fz) {
+    this->extForceN_[0] = fx; this->extForceN_[1] = fy; this->extForceN_[2] = fz;
+    this->hasExtft_ = true;
+    this->configDirty = true;
 }
 
 // --- WP2 friction / jitter / voltage setters (runtime; no rebuild) ------------
@@ -563,6 +587,9 @@ void OmniSpacecraft::buildIntegrator() {
         std::vector<std::array<double, 3>> p = this->thrPos;
         this->impl->sys.add_thrusters(std::move(d), std::move(p), this->thrTmax);
     }
+    if (this->thrLag_) {
+        this->impl->sys.set_thruster_lag(this->thrLag_, this->thrLagCutoff_);
+    }
     // WP5 env replay: bodies + J2 feed the graph (g_N channel); drag/SRP/mag
     // geometry lives module-side and enters via slots (A3). Any configured
     // effect registers the single 'e' cluster.
@@ -588,6 +615,10 @@ void OmniSpacecraft::buildIntegrator() {
             this->impl->sys.setMagneticMoment(this->magM_[0], this->magM_[1],
                                               this->magM_[2]);
         this->impl->sys.setMagneticDipole(this->magG10, this->magG11, this->magH11);
+    }
+    // ExtForceTorque registration (opt-in).
+    if (this->hasExtft_) {
+        this->impl->sys.add_ext_force_torque();
     }
 
     // WP25-B2.3 (M12): resolve-then-fill -- state-block offsets are resolved
@@ -640,6 +671,11 @@ void OmniSpacecraft::buildIntegrator() {
         this->impl->envSrp = es.srp;
         this->impl->envMag = es.mag;
         this->impl->envNBodies = es.nBodies;
+        this->impl->hasExtft = this->hasExtft_;
+        if (this->hasExtft_) {
+            try { this->impl->extOff = this->impl->sys.par_index("extFxB"); }
+            catch (...) { this->impl->extOff = 0; }
+        }
     }
     this->impl->ta_npars = omni::OmniSystem::checked_par_count(
         sysrows, this->impl->pars.size());
@@ -1327,6 +1363,7 @@ void OmniSpacecraft::UpdateState(uint64_t CurrentSimNanos) {
             // from the CURRENT arc state y. Writes env slots ONLY -- never
             // touches openT/sw/eff/fill_thruster_inputs (WP3-compatible).
             if (this->impl->hasEnv) this->updateEnvInputs(y.data());
+            if (this->impl->hasExtft) this->updateExtInputs(y.data());
             if (!openT.empty())
                 this->impl->sys.fill_thruster_inputs(dt, eff.data(), eff.size(), P);
             for (size_t i = 0; i < P.size() && i < this->impl->ta_npars; ++i) pd[i] = P[i];
@@ -1614,4 +1651,39 @@ void OmniSpacecraft::updateEnvInputs(const double* y) {
         }
     }
     // ERP: read-only field (message equality in the bench); NO slots, NO force.
+}
+
+// ExtForceTorque per-tick (/per-arc) refresh: composes the constant fields
+// with the linked messages (ADDITIVE, per stock semantics) and writes the 9
+// slots. Module-side doubles only (A3).
+void OmniSpacecraft::updateExtInputs(const double* /*y*/) {
+    if (!this->impl || !this->impl->hasExtft) return;
+    std::vector<double>& P = this->impl->pars;
+    const size_t o = this->impl->extOff;
+    if (o + 8 >= P.size()) return;
+    // Body force = const + cmdForceBody (if linked).
+    double fB[3] = {this->extForceB_[0], this->extForceB_[1], this->extForceB_[2]};
+    double tB[3] = {this->extTorqueB_[0], this->extTorqueB_[1], this->extTorqueB_[2]};
+    double fN[3] = {this->extForceN_[0], this->extForceN_[1], this->extForceN_[2]};
+    if (this->extForceBodyInMsg.isLinked()) {
+        const CmdForceBodyMsgPayload m = this->extForceBodyInMsg();
+        fB[0] += m.forceRequestBody[0];
+        fB[1] += m.forceRequestBody[1];
+        fB[2] += m.forceRequestBody[2];
+    }
+    if (this->extTorqueInMsg.isLinked()) {
+        const CmdTorqueBodyMsgPayload m = this->extTorqueInMsg();
+        tB[0] += m.torqueRequestBody[0];
+        tB[1] += m.torqueRequestBody[1];
+        tB[2] += m.torqueRequestBody[2];
+    }
+    if (this->extForceInertialInMsg.isLinked()) {
+        const CmdForceInertialMsgPayload m = this->extForceInertialInMsg();
+        fN[0] += m.forceRequestInertial[0];
+        fN[1] += m.forceRequestInertial[1];
+        fN[2] += m.forceRequestInertial[2];
+    }
+    P[o + 0] = fB[0]; P[o + 1] = fB[1]; P[o + 2] = fB[2];
+    P[o + 3] = tB[0]; P[o + 4] = tB[1]; P[o + 5] = tB[2];
+    P[o + 6] = fN[0]; P[o + 7] = fN[1]; P[o + 8] = fN[2];
 }

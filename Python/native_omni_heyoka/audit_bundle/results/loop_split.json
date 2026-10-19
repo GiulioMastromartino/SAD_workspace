@@ -1,0 +1,119 @@
+{
+  "name": "loop_split",
+  "timestamp_utc": "2026-10-17T16:22:29.906579+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-17T16:22:30.136781+00:00",
+    "platform": "macOS-27.2-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "status": "ok",
+    "n_runs": 3,
+    "fixture": "stock hub+3RW+1thr+tank+central, 600 ticks @ dt=0.1; L2 idle-linked, L3 duty 0.5, L4 PD reader/writer, L5 recorders",
+    "ticks": 600,
+    "nanos_ok": true,
+    "nanos_expected": 60000000000,
+    "legs": {
+      "L0_hub": {
+        "wall_samples_s": [
+          0.0087,
+          0.0092,
+          0.01
+        ],
+        "wall_mean_s": 0.0093,
+        "wall_median_s": 0.0092,
+        "per_tick_median_ms": 0.0153
+      },
+      "L1_rw": {
+        "wall_samples_s": [
+          0.0098,
+          0.0099,
+          0.0105
+        ],
+        "wall_mean_s": 0.0101,
+        "wall_median_s": 0.0099,
+        "per_tick_median_ms": 0.0166
+      },
+      "L2_thr_tank_idle": {
+        "wall_samples_s": [
+          0.0165,
+          0.0171,
+          0.0178
+        ],
+        "wall_mean_s": 0.0171,
+        "wall_median_s": 0.0171,
+        "per_tick_median_ms": 0.0286
+      },
+      "L3_fire": {
+        "wall_samples_s": [
+          0.0165,
+          0.0165,
+          0.0168
+        ],
+        "wall_mean_s": 0.0166,
+        "wall_median_s": 0.0165,
+        "per_tick_median_ms": 0.0276
+      },
+      "L4_python_driver": {
+        "wall_samples_s": [
+          0.0274,
+          0.028,
+          0.0307
+        ],
+        "wall_mean_s": 0.0287,
+        "wall_median_s": 0.028,
+        "per_tick_median_ms": 0.0466
+      },
+      "L5_recorders": {
+        "wall_samples_s": [
+          0.0275,
+          0.0278,
+          0.0281
+        ],
+        "wall_mean_s": 0.0278,
+        "wall_median_s": 0.0278,
+        "per_tick_median_ms": 0.0463
+      }
+    },
+    "per_tick_median_ms": {
+      "L0_hub": 0.0153,
+      "L1_rw": 0.0166,
+      "L2_thr_tank_idle": 0.0286,
+      "L3_fire": 0.0276,
+      "L4_python_driver": 0.0466,
+      "L5_recorders": 0.0463
+    },
+    "attribution_ms": {
+      "rw_ms": 0.0012,
+      "thr_tank_idle_ms": 0.012,
+      "fire_ms": -0.001,
+      "python_driver_ms": 0.0192,
+      "recorders_ms": -0.0003,
+      "total_ms": 0.031,
+      "basis": "median walls / 600 ticks; signed (noise can print small negatives)"
+    },
+    "throughput_ticks_per_s": 21582.7,
+    "loadavg": [
+      3.48046875,
+      6.71435546875,
+      6.310546875
+    ],
+    "note": "ablation: each part = heavier leg minus lighter leg on medians; full-loop throughput from the L5 median wall."
+  }
+}

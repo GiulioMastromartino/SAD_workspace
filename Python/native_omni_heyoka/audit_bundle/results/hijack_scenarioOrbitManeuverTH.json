@@ -1,0 +1,57 @@
+{
+  "name": "hijack_scenarioOrbitManeuverTH",
+  "timestamp_utc": "2026-10-17T16:25:11.938490+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-17T16:25:12.165097+00:00",
+    "platform": "macOS-27.2-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "demo": "scenarioOrbitManeuverTH",
+    "tag": "v2.12.0",
+    "mode": "parity",
+    "scenario": "scenarioOrbitManeuverTH.py",
+    "note": "phase-1 coast capped at 0.25 P (1457 s); ext torque mirrored (live msg); thruster idle over the cap. Stock arm = RKF45 at dt=2 s (tolerance-driven).",
+    "port_path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/audit_bundle/results/scenarioOrbitManeuverTH_omni.py",
+    "port_bytes": 19588,
+    "marked_blocks": 2,
+    "stock_exit": 0,
+    "stock_wall_s": 1.4,
+    "vacuity": [],
+    "omni_exit": 0,
+    "omni_wall_s": 2.0,
+    "omni_cold_wall_s": 2.0,
+    "speedup_cold": 0.7,
+    "speedup": 0.7,
+    "diffs": {
+      "r_BN_N": 2.416782081127167e-07,
+      "v_BN_N": 1.5279510989785194e-10,
+      "sigma_BN": 8.307188270606503e-11,
+      "omega_BN_B": 1.823969956167237e-12
+    },
+    "tol": {
+      "r_BN_N": 1000.0,
+      "v_BN_N": 2.0,
+      "sigma_BN": 1e-06,
+      "omega_BN_B": 1e-06
+    },
+    "verdict": "parity green",
+    "status": "ok"
+  }
+}

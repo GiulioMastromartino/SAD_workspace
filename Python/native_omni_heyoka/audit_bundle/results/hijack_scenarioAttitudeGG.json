@@ -1,0 +1,57 @@
+{
+  "name": "hijack_scenarioAttitudeGG",
+  "timestamp_utc": "2026-10-17T16:24:10.323924+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-17T16:24:10.556953+00:00",
+    "platform": "macOS-27.2-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "demo": "scenarioAttitudeGG",
+    "tag": "v2.12.0",
+    "mode": "parity",
+    "scenario": "scenarioAttitudeGG.py",
+    "note": "extForceTorque (msg-driven) mirrored; GG already passes the guard",
+    "port_path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/audit_bundle/results/scenarioAttitudeGG_omni.py",
+    "port_bytes": 13947,
+    "marked_blocks": 2,
+    "stock_exit": 0,
+    "stock_wall_s": 1.5,
+    "vacuity": [],
+    "omni_exit": 0,
+    "omni_wall_s": 2.2,
+    "omni_cold_wall_s": 2.0,
+    "speedup_cold": 0.75,
+    "speedup": 0.682,
+    "diffs": {
+      "r_BN_N": 0.0,
+      "v_BN_N": 9.094947017729282e-13,
+      "sigma_BN": 2.5405603215622463e-07,
+      "omega_BN_B": 6.168821745132849e-08
+    },
+    "tol": {
+      "r_BN_N": 1e-09,
+      "v_BN_N": 1e-09,
+      "sigma_BN": 1e-06,
+      "omega_BN_B": 1e-06
+    },
+    "verdict": "parity green",
+    "status": "ok"
+  }
+}

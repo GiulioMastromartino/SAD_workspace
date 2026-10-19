@@ -1,0 +1,57 @@
+{
+  "name": "hijack_scenarioDragDeorbit",
+  "timestamp_utc": "2026-10-17T16:24:39.369416+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-17T16:24:39.601851+00:00",
+    "platform": "macOS-27.2-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "demo": "scenarioDragDeorbit",
+    "tag": "v2.12.0",
+    "mode": "parity",
+    "scenario": "scenarioDragDeorbit.py",
+    "note": "Upstream default runs model='msis' over a 100-orbit horizon with a 100 km terminal event. Two documented deviations, both injected inside the marked block (no upstream line touched): (1) stop time clamped to 1200 s so both arms fly the same ~0.22-orbit arc (the terminal event never fires); (2) planet.isCentralBody=True, which upstream omits (createEarth() defaults False in v2.12.0) and the mirror's stage-1 needs -- verified bit-identical for the stock arm. Residual class = coarse-dt density sampling: the mirrored drag consumes the atmosphere's once-per-step density message while stock samples it across RK4 substeps, so the arms differ by the within-step density variation at the demo's own dt=15 s. That is FIRST-order in dt (measured 2.8e2/1.4e2/7.1e1/3.5e1 m as dt halves 15->1.875 s), and it tracks the atmosphere's variation rate: the identical leg at model='exponential' gives 7.1e-1 m, and the bench's capped-horizon replica at dt=0.1 agrees to 7.4e-6 m -- a consistent discretization difference, not a model error (everything -> 0 as dt -> 0). Attitude is exactly quiet (hub-only, drag comOffset 0: no torque).",
+    "port_path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/audit_bundle/results/scenarioDragDeorbit_omni.py",
+    "port_bytes": 18771,
+    "marked_blocks": 2,
+    "stock_exit": 0,
+    "stock_wall_s": 1.4,
+    "vacuity": [],
+    "omni_exit": 0,
+    "omni_wall_s": 2.1,
+    "omni_cold_wall_s": 2.2,
+    "speedup_cold": 0.636,
+    "speedup": 0.667,
+    "diffs": {
+      "r_BN_N": 278.904624927789,
+      "v_BN_N": 0.6208894065107415,
+      "sigma_BN": 0.0,
+      "omega_BN_B": 0.0
+    },
+    "tol": {
+      "r_BN_N": 1000.0,
+      "v_BN_N": 2.0,
+      "sigma_BN": 1e-09,
+      "omega_BN_B": 1e-09
+    },
+    "verdict": "parity green",
+    "status": "ok"
+  }
+}

@@ -1,0 +1,647 @@
+{
+  "name": "replacement_matrix",
+  "timestamp_utc": "2026-10-16T20:25:19.688861+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-16T20:25:20.418708+00:00",
+    "platform": "macOS-27.2-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "scope": "Phase-3 two-line swap on 3 scripts; every stock feature is MIRRORED / REJECTS-LOUDLY / GAP -- never silent.",
+    "mirror_surface": {
+      "mirrored_set": [
+        "ReactionWheelStateEffector",
+        "Spacecraft",
+        "ThrusterDynamicEffector"
+      ],
+      "entry_points": [
+        "mirror_stock_config",
+        "mirror_sync_configs",
+        "task_effectors"
+      ],
+      "n_reject_sites": 40,
+      "reject_sites": [
+        {
+          "line": 133,
+          "context": "            f\"mirror_stock_config: stage 1 needs exactly one central body, \"             f\"found {len(bodies)} bodies ({len(centrals)} central). \"             f"
+        },
+        {
+          "line": 284,
+          "context": "                f\"mirror_stock_config: task '{task_name}' holds \"                 f\"{cls}; envelope is hub + wheels + staircase \"                 f\"thrusters + "
+        },
+        {
+          "line": 295,
+          "context": "            f\"mirror_stock_config: {len(rw_models)} RW effectors; stock \"             f\"registration order is ambiguous -- use one effector.\") "
+        },
+        {
+          "line": 348,
+          "context": "                f\"mirror_stock_config: task '{task_name}' holds \"                 f\"{cls}; envelope is hub + wheels + staircase \"                 f\"thrusters + "
+        },
+        {
+          "line": 364,
+          "context": "            f\"mirror_stock_config: {len(rw_models)} RW effectors; stock \"             f\"registration order is ambiguous -- use one effector.\")     n_wheels = 0"
+        },
+        {
+          "line": 373,
+          "context": "                \"mirror_stock_config: RW effector has fewer rwOutMsgs than \"                 \"wheels; cannot link u_current readback.\")         for k, w in enum"
+        },
+        {
+          "line": 379,
+          "context": "                    f\"mirror_stock_config: wheel {n_wheels} RWModel={model}; \"                     f\"only BalancedWheels is mirrored (jitter: loud reject).\")   "
+        },
+        {
+          "line": 440,
+          "context": "            f\"mirror_stock_config: object {idx} needs explicit \"             f\"rw_models/thr_models/fuel_models lists (pass [] when the \"             f\"object h"
+        },
+        {
+          "line": 447,
+          "context": "            f\"mirror_stock_config: object {idx} needs explicit use_gg \"             f\"(True/False); gravity-gradient task models cannot be \"             f\"attri"
+        },
+        {
+          "line": 454,
+          "context": "                f\"mirror_stock_config: object {idx} needs explicit \"                 f\"{key} (pass [] when the object has none); env \"                 f\"dynamic"
+        },
+        {
+          "line": 522,
+          "context": "    census = _census_env_families(sim)     out = []     for idx, spec in enumerate(specs):"
+        },
+        {
+          "line": 528,
+          "context": "                    f\"mirror_sync_configs: object {idx} spec needs explicit \"                     f\"'{key}' (object B must never silently inherit object \"      "
+        },
+        {
+          "line": 536,
+          "context": "                        f\"mirror_sync_configs: object {idx} spec needs \"                         f\"explicit '{key}' (the task census holds {fam} \"              "
+        },
+        {
+          "line": 605,
+          "context": "            f\"mirror_stock_config: {len(thr_models)} thruster effectors; \"             f\"stock registration order is ambiguous -- use one effector.\")     if thr"
+        },
+        {
+          "line": 609,
+          "context": "            \"mirror_stock_config: thruster effector found but no \"             \"thr_factory given; its THRSimConfig list carries MaxThrust.\")     eff = thr_mode"
+        },
+        {
+          "line": 621,
+          "context": "            \"mirror_stock_config: factory configs \"             f\"({len(cfgs)}) vs effector thrusters ({len(data)}) mismatch; \"             \"geometry join needs"
+        },
+        {
+          "line": 631,
+          "context": "                \"mirror_stock_config: factory/effector order mismatch; \"                 \"cannot join geometry safely.\")         if float(getattr(cfg, \"MinOnTim"
+        },
+        {
+          "line": 635,
+          "context": "                \"mirror_stock_config: MinOnTime=\"                 f\"{getattr(cfg, 'MinOnTime', '?')} > 0; stage 2 covers the \"                 \"staircase envelo"
+        },
+        {
+          "line": 646,
+          "context": "                \"mirror_stock_config: cutoffFrequency \"                 f\"{getattr(d, 'cutoffFrequency', '?')} <= 0; degenerate \"                 \"stock behavio"
+        },
+        {
+          "line": 653,
+          "context": "                        f\"mirror_stock_config: {attr} set; blowdown is \"                         \"out of the staircase envelope (M6).\")             except TypeE"
+        },
+        {
+          "line": 659,
+          "context": "                \"mirror_stock_config: MaxSwirlTorque != 0; swirl is out of \"                 \"the staircase envelope.\")         if object_index is None:"
+        },
+        {
+          "line": 672,
+          "context": "            \"mirror_stock_config: thrusters mirrored but no thr_cmd_msg \"             \"given; pass the driver's THRArrayOnTimeCmdMsg.\")     if object_index is N"
+        },
+        {
+          "line": 714,
+          "context": "            f\"mirror_stock_config: {len(fuel_models)} fuel tanks; v1 \"             f\"mirrors exactly one (per-tank thruster subsets unmapped).\")     tank = fuel"
+        },
+        {
+          "line": 719,
+          "context": "            \"mirror_stock_config: fuel tank with no mirrored thrusters; \"             \"nothing drains it (missed addThrusterSet or thruster-less sim).\")     nam"
+        },
+        {
+          "line": 805,
+          "context": "            f\"mirror_stock_config: oi has no {member} member; cannot \"             f\"wire the link (expected vec_integrator.hpp:{hpp_line}).\")     functor.subsc"
+        },
+        {
+          "line": 817,
+          "context": "            f\"mirror_stock_config: oi has no {twin}; cannot wire the \"             f\"link for object {obj} (expected vec_integrator.hpp:\"             f\"{hpp_lin"
+        },
+        {
+          "line": 887,
+          "context": "            f\"mirror_stock_config: {n_cannon} RadiationPressure task \"             f\"models; the omni slot holds ONE cannonball record \"             f\"(setSRPCa"
+        },
+        {
+          "line": 904,
+          "context": "                    f\"mirror_stock_config: {cls}.{attr} unlinked; the \"                     f\"sun link is REQUIRED (stock and omni both bskError \"              "
+        },
+        {
+          "line": 911,
+          "context": "                    f\"mirror_stock_config: {cls}.{attr} is linked but \"                     f\"its source message is unrecoverable; the REQUIRED \"               "
+        },
+        {
+          "line": 927,
+          "context": "                    f\"mirror_stock_config: {cls} eclipse reader is \"                     f\"linked but its source is unrecoverable and no \"                     f"
+        },
+        {
+          "line": 935,
+          "context": "            \"mirror_stock_config: Eclipse task model(s) with registered \"             \"spacecraft present, but no SRP model links its eclipse \"             \"rea"
+        },
+        {
+          "line": 1003,
+          "context": "            \"mirror_stock_config: MtbEffector with no \"             \"MagneticFieldCenteredDipole in the census; the mag link is \"             \"REQUIRED (mag on "
+        },
+        {
+          "line": 1043,
+          "context": "            f\"mirror_stock_config: {what}.gravBodies unreadable \"             f\"({exc!r}); the env-bodies census needs it (\u00a76.1).\") from exc     out = []"
+        },
+        {
+          "line": 1051,
+          "context": "                f\"mirror_stock_config: GravBodyData.isCentralBody \"                 f\"unreadable ({exc!r}).\") from exc         try:"
+        },
+        {
+          "line": 1057,
+          "context": "                f\"mirror_stock_config: GravBodyData.mu unreadable \"                 f\"({exc!r}).\") from exc         out.append((central, mu))"
+        },
+        {
+          "line": 1088,
+          "context": "                f\"mirror_stock_config: sc feels {len(sc_extra)} \"                 f\"non-central bodies but no GravityEffector task model \"                 f\"exi"
+        },
+        {
+          "line": 1103,
+          "context": "                \"mirror_stock_config: task GravityEffector bodies \"                 f\"{task_central + task_extra} != sc gravity bodies \"                 f\"{sc_c"
+        },
+        {
+          "line": 1128,
+          "context": "            \"mirror_stock_config: env-bodies J2 record malformed \"             f\"({j2_record!r}); the J2 leg needs the staged record.\")     value = j2_record[\"j"
+        },
+        {
+          "line": 1135,
+          "context": "                f\"mirror_stock_config: J2={value!r} is not finite \"                 f\"non-negative; omni setJ2 bskErrors on it \"                 f\"(src/omni_vec"
+        },
+        {
+          "line": 1141,
+          "context": "                f\"mirror_stock_config: oi has no {name}; cannot confirm \"                 f\"the J2 setter surface (vec_integrator.hpp:107/174).\")     return {\"j"
+        }
+      ],
+      "oi_calls": [
+        "addEnvironmentBody",
+        "addSRPFacet",
+        "addThruster",
+        "addThrusterForObject",
+        "addWheel",
+        "addWheelForObject",
+        "eclipseInMsg",
+        "linkWheelLog",
+        "linkWheelLogForObject",
+        "setCoMOffset",
+        "setCoMOffsetForObject",
+        "setDragParams",
+        "setFrictionEnabled",
+        "setFrictionEnabledForObject",
+        "setFrictionParams",
+        "setFrictionParamsForObject",
+        "setFuelStateName",
+        "setFuelStateNameForObject",
+        "setFuelTank",
+        "setFuelTankForObject",
+        "setInertia",
+        "setInertiaForObject",
+        "setInitialThrusterCmd",
+        "setInitialThrusterCmdForObject",
+        "setJ2",
+        "setMagneticDipole",
+        "setMagneticMoment",
+        "setMass",
+        "setMassForObject",
+        "setMaxMtbDipole",
+        "setMu",
+        "setMuForObject",
+        "setSRPCannonball",
+        "setThrusterIsps",
+        "setThrusterIspsForObject",
+        "setUseGravityGradient",
+        "setUseGravityGradientForObject",
+        "subscribeThrCmdForObject",
+        "sunStateInMsg",
+        "thrOnTimeInMsg"
+      ],
+      "env_setters_unmirrored": [
+        {
+          "setter": "setSunState",
+          "hpp_line": 117
+        },
+        {
+          "setter": "setSunStateForObject",
+          "hpp_line": 182
+        },
+        {
+          "setter": "subscribeAtmoForObject",
+          "hpp_line": 209
+        },
+        {
+          "setter": "subscribeEclipseForObject",
+          "hpp_line": 211
+        },
+        {
+          "setter": "subscribeSunForObject",
+          "hpp_line": 213
+        },
+        {
+          "setter": "subscribeWindForObject",
+          "hpp_line": 210
+        }
+      ],
+      "env_reader_functions_absent": []
+    },
+    "reject_cells": [
+      {
+        "cell": "nbody",
+        "trigger_present": true,
+        "trigger_line": 134,
+        "gaps_test": "test_reject_nbody_two_bodies"
+      },
+      {
+        "cell": "unmirrorable-dynamics",
+        "trigger_present": true,
+        "trigger_line": 288,
+        "gaps_test": "test_reject_unmirrorable_env_effector"
+      },
+      {
+        "cell": "multi-rw",
+        "trigger_present": true,
+        "trigger_line": 297,
+        "gaps_test": "test_reject_two_rw_effectors"
+      },
+      {
+        "cell": "rw-logs",
+        "trigger_present": true,
+        "trigger_line": 374,
+        "gaps_test": "test_reject_rw_logs_fewer_than_wheels"
+      },
+      {
+        "cell": "jitter",
+        "trigger_present": true,
+        "trigger_line": 381,
+        "gaps_test": "test_reject_jitter_wheel"
+      },
+      {
+        "cell": "per-object-explicit",
+        "trigger_present": true,
+        "trigger_line": 441,
+        "gaps_test": "test_reject_per_object_needs_explicit_lists"
+      },
+      {
+        "cell": "sync-empty",
+        "trigger_present": true,
+        "trigger_line": 522,
+        "gaps_test": "test_reject_sync_empty_specs"
+      },
+      {
+        "cell": "thr-no-factory",
+        "trigger_present": true,
+        "trigger_line": 611,
+        "gaps_test": "test_reject_thruster_no_factory"
+      },
+      {
+        "cell": "thr-join",
+        "trigger_present": true,
+        "trigger_line": 624,
+        "gaps_test": "test_reject_thruster_join_mismatch"
+      },
+      {
+        "cell": "thr-order",
+        "trigger_present": true,
+        "trigger_line": 632,
+        "gaps_test": "test_reject_thruster_order_mismatch"
+      },
+      {
+        "cell": "min-pulse",
+        "trigger_present": true,
+        "trigger_line": 636,
+        "gaps_test": "test_reject_min_pulse"
+      },
+      {
+        "cell": "cutoff-degenerate",
+        "trigger_present": true,
+        "trigger_line": 643,
+        "gaps_test": "test_reject_cutoff_zero"
+      },
+      {
+        "cell": "blowdown",
+        "trigger_present": true,
+        "trigger_line": 655,
+        "gaps_test": "test_reject_blowdown"
+      },
+      {
+        "cell": "swirl",
+        "trigger_present": true,
+        "trigger_line": 660,
+        "gaps_test": "test_reject_swirl"
+      },
+      {
+        "cell": "thr-cmd-msg",
+        "trigger_present": true,
+        "trigger_line": 673,
+        "gaps_test": "test_reject_thruster_no_cmd_msg"
+      },
+      {
+        "cell": "multi-tank",
+        "trigger_present": true,
+        "trigger_line": 716,
+        "gaps_test": "test_reject_multi_tank"
+      },
+      {
+        "cell": "tank-thrusterless",
+        "trigger_present": true,
+        "trigger_line": 720,
+        "gaps_test": "test_reject_tank_without_thrusters"
+      }
+    ],
+    "proof_ledgers": {
+      "swap_p1_parity": {
+        "exists": true,
+        "timestamp_utc": "2026-10-16T20:23:49.942024+00:00",
+        "status": "ok",
+        "verdict": "parity green",
+        "top_keys": [
+          "cells",
+          "dt",
+          "rejects",
+          "status",
+          "thr_ladder_30s",
+          "verdict"
+        ],
+        "cell_keys": [
+          "env_drag",
+          "env_drag_still",
+          "env_srp",
+          "fuel_centered",
+          "fuel_drag",
+          "fuel_offset",
+          "fuel_srp",
+          "hub_60s",
+          "rw1",
+          "rw1tilt",
+          "rw2",
+          "rw3_fric",
+          "rw3_open_neg",
+          "rw3_open_pos",
+          "rw3_pd",
+          "thr_fresh_05",
+          "thr_fresh_10",
+          "thr_frozen",
+          "thr_lag10",
+          "thr_offset",
+          "thr_writeonce"
+        ],
+        "sensitive_newest_mtime": 1792166205.5424938,
+        "fresh": true,
+        "margin_s": 16024.4
+      },
+      "swap_multi": {
+        "exists": true,
+        "timestamp_utc": "2026-10-16T20:24:38.113490+00:00",
+        "status": "ok",
+        "verdict": "parity green",
+        "top_keys": [
+          "cells",
+          "dt",
+          "status",
+          "t_leg",
+          "ticks",
+          "verdict"
+        ],
+        "cell_keys": [
+          "leg_shared",
+          "leg_split",
+          "reject_unmirrored"
+        ],
+        "sensitive_newest_mtime": 1792166205.5424938,
+        "fresh": true,
+        "margin_s": 16072.6
+      },
+      "closed_loop_fuel": {
+        "exists": true,
+        "timestamp_utc": "2026-10-16T20:24:45.013967+00:00",
+        "status": "ok",
+        "verdict": "parity green",
+        "top_keys": [
+          "cells",
+          "dt",
+          "loadavg",
+          "loadavg_end",
+          "status",
+          "t_leg",
+          "ticks",
+          "verdict"
+        ],
+        "cell_keys": [
+          "leg",
+          "rejected"
+        ],
+        "sensitive_newest_mtime": 1792166205.5424938,
+        "fresh": true,
+        "margin_s": 16079.5
+      },
+      "vec_mrp_switch_trace": {
+        "exists": true,
+        "timestamp_utc": null,
+        "status": null,
+        "verdict": null,
+        "top_keys": [
+          "dt",
+          "gate",
+          "omega_BN_BInit",
+          "stock_total",
+          "stock_trace",
+          "t_leg",
+          "vec_total",
+          "vec_trace"
+        ],
+        "cell_keys": [],
+        "sensitive_newest_mtime": 1791961589.1349938,
+        "fresh": true,
+        "margin_s": 27389.6
+      },
+      "wp2_friction_jitter_voltage": {
+        "exists": true,
+        "timestamp_utc": "2026-10-14T09:22:30.455541+00:00",
+        "status": null,
+        "verdict": null,
+        "top_keys": [
+          "N_FRICTION_TICKS",
+          "N_JITTER_TICKS",
+          "dt",
+          "elapsed_s",
+          "env",
+          "friction",
+          "has_basilisk",
+          "has_numpy",
+          "jitter",
+          "order",
+          "plan_rev",
+          "voltage"
+        ],
+        "cell_keys": [],
+        "sensitive_newest_mtime": 1791965335.7876058,
+        "fresh": true,
+        "margin_s": 4414.7
+      },
+      "wp3_timing": {
+        "exists": true,
+        "timestamp_utc": "2026-10-16T20:25:11.376120+00:00",
+        "status": null,
+        "verdict": null,
+        "top_keys": [
+          "env",
+          "meta",
+          "probes"
+        ],
+        "cell_keys": [],
+        "sensitive_newest_mtime": 1792166205.5424938,
+        "fresh": true,
+        "margin_s": 16105.8
+      },
+      "wp45_combo": {
+        "exists": true,
+        "timestamp_utc": "2026-10-14T09:22:33.389482+00:00",
+        "status": null,
+        "verdict": null,
+        "top_keys": [
+          "drag_offset",
+          "drag_zero_com",
+          "dt",
+          "env",
+          "hub_offset",
+          "magnetic_note",
+          "open_question",
+          "probe",
+          "srp_offset",
+          "superseded",
+          "ticks_cap"
+        ],
+        "cell_keys": [],
+        "sensitive_newest_mtime": 1791965428.5675347,
+        "fresh": true,
+        "margin_s": 4324.8
+      },
+      "arm_rule_discrimination": {
+        "exists": true,
+        "envelope": "hand-written (no timestamp_utc)",
+        "role": "CITATION ARTIFACT ONLY -- this JSON replays no simulation and proves nothing by itself. The live gates that RE-MEASURE (",
+        "live_gates": [
+          "tests/test_wp45_env_offset.py::test_stock_drag_arm_rule_rbcb_minus_com",
+          "tests/test_wp45_env_offset.py::test_host_srp_tilted_arm_discriminates"
+        ],
+        "sweep_points": [
+          "(0.0, 0.05)",
+          "(0.05, 0.05)",
+          "(0.05, 0.05)_note",
+          "(0.1, 0.0)",
+          "(0.1, 0.05)",
+          "(0.2, 0.05)"
+        ]
+      }
+    },
+    "acceptance_scripts": {
+      "demo_script_1": {
+        "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/cubesat_12u_sim/backends/basilisk/basilisk_sim.py",
+        "exists": true,
+        "has_run_simulation": true,
+        "imports_vizSupport": true,
+        "has_sun_ephemeris": true,
+        "has_shadow_sidecar": true
+      },
+      "leo_drag_script_2": {
+        "exists": true,
+        "hits": [
+          "leo_drag_sim.py",
+          "leo_drag_sim.py:dragDynamicEffector"
+        ]
+      },
+      "stationkeeping_script_3": {
+        "stationkeeping_exists": true,
+        "year3_exists": true,
+        "stationkeeping": {
+          "has_setIntegrator": false,
+          "imports_heyoka_propagate": true
+        },
+        "year3": {
+          "has_setIntegrator": false,
+          "imports_heyoka_propagate": true
+        }
+      }
+    },
+    "doc_pins": {
+      "bc_sign": {
+        "plan": [
+          [
+            "\u2212",
+            301
+          ]
+        ],
+        "design": [
+          [
+            "\u2212",
+            555
+          ]
+        ],
+        "agree": true
+      },
+      "reconciled_markers": {
+        "design_superseded_by_measurement": true,
+        "design_reconciliation_note": true,
+        "plan_decision3_locked": true,
+        "build_filter_deleted": true,
+        "build_cutoff_inert": true,
+        "build_a7_struck": true
+      }
+    },
+    "phase3_gaps": {
+      "speedup_table": {
+        "ledger_hits": [
+          "swap_speed.json",
+          "swap_speed_legs.json"
+        ],
+        "open": false,
+        "build_s_recorded_in": [
+          "closed_loop_fuel.json",
+          "env_parity_drag.json",
+          "env_parity_eclipse.json",
+          "env_parity_mag.json",
+          "env_parity_srp.json",
+          "fsw_loop.json",
+          "swap_multi.json",
+          "swap_p1_parity.json"
+        ]
+      },
+      "fsw_loop": {
+        "ledger_hits": [
+          "fsw_loop.json"
+        ],
+        "open": false,
+        "pieces": {
+          "test_vec_mrp": true,
+          "closed_loop_ledger": true,
+          "test_swap_multi": true
+        }
+      }
+    },
+    "how_to_refresh": "run_all.sh (replacement_*.py glob) or PYTHONPATH=audit_bundle:probes python3 audit_bundle/probes/replacement_matrix.py; host-gated ledgers need Basilisk 2.12.0 + built wheel."
+  }
+}

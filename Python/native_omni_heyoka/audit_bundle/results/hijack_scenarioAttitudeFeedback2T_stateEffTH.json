@@ -1,0 +1,44 @@
+{
+  "name": "hijack_scenarioAttitudeFeedback2T_stateEffTH",
+  "timestamp_utc": "2026-10-17T16:23:43.075420+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-17T16:23:43.326020+00:00",
+    "platform": "macOS-27.2-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "demo": "scenarioAttitudeFeedback2T_stateEffTH",
+    "tag": "v2.12.0",
+    "mode": "reject",
+    "scenario": "scenarioAttitudeFeedback2T_stateEffTH.py",
+    "note": "ext torque now mirrored, but the state-effector thruster FIRES (FSW-driven) and the kappa lag is only modeled in the idle case; firing fidelity (target window) not yet validated. Re-enable once Feature 2 firing path lands.",
+    "port_path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/audit_bundle/results/scenarioAttitudeFeedback2T_stateEffTH_omni.py",
+    "port_bytes": 23988,
+    "marked_blocks": 2,
+    "stock_exit": 0,
+    "stock_wall_s": 2.2,
+    "vacuity": [],
+    "omni_exit": 1,
+    "omni_wall_s": 2.0,
+    "omni_reject_loud": true,
+    "omni_err_tail": "n/native_omni_heyoka/omniheyoka/swap.py\", line 329, in mirror_stock_config\n    n_thr_state = _mirror_thruster_state(thr_state_models, thr_factory,\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/omniheyoka/swap.py\", line 1322, in _mirror_thruster_state\n    raise ValueError(\nValueError: mirror_stock_config: ThrusterStateEffector thr_cmd_msg unlinked; cannot prove idleness.\n",
+    "verdict": "reject loud",
+    "status": "ok"
+  }
+}

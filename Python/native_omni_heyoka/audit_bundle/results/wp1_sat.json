@@ -1,12 +1,12 @@
 {
   "name": "wp1_sat",
-  "timestamp_utc": "2026-10-12T14:40:31.326654+00:00",
+  "timestamp_utc": "2026-10-14T09:22:27.082848+00:00",
   "platform": "macOS-27.0-arm64-arm-64bit",
   "python": "3.11.16",
   "basilisk": "2.12.0",
   "heyoka": "7.12.1",
   "env": {
-    "timestamp_utc": "2026-10-12T14:40:31.326726+00:00",
+    "timestamp_utc": "2026-10-14T09:22:27.082897+00:00",
     "platform": "macOS-27.0-arm64-arm-64bit",
     "os_tag": "macOS",
     "machine": "arm64",
@@ -24,7 +24,7 @@
   },
   "payload": {
     "env": {
-      "timestamp_utc": "2026-10-12T14:40:26.209164+00:00",
+      "timestamp_utc": "2026-10-14T09:22:22.192739+00:00",
       "platform": "macOS-27.0-arm64-arm-64bit",
       "os_tag": "macOS",
       "machine": "arm64",

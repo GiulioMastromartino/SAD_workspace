@@ -31,6 +31,7 @@
 
 #include "omni/contributors.hpp"
 #include "omni/environment.hpp"
+#include "omni/ext_force_torque.hpp"
 #include "omni/force_torque.hpp"
 
 namespace omni {
@@ -107,6 +108,16 @@ public:
         dirty_ = true;
     }
 
+    // Thruster lag (state-effector emulation): opt-in. Replays into the
+    // thruster contributor at refresh time. Default off (dynamic effector).
+    void set_thruster_lag(bool lag, double cutoff) {
+        if (!(cutoff > 0.0) || !std::isfinite(cutoff))
+            throw std::invalid_argument("OmniSystem: thruster cutoff must be finite positive");
+        thrLag_ = lag;
+        thrCutoff_ = cutoff;
+        dirty_ = true;
+    }
+
     void set_gravity(double mu) {
         if (!(mu > 0.0)) throw std::invalid_argument("OmniSystem: mu must be positive");
         mu_ = mu;
@@ -122,6 +133,20 @@ public:
         if (has_fuel_) throw std::invalid_argument("OmniSystem: only one fuel tank allowed");
         has_fuel_ = true;
         dirty_ = true;
+    }
+
+    // --- ExtForceTorque (external force/torque, DynamicEffector channel) ------
+    // Records the single 'x' cluster. Idempotent like the env cluster: the
+    // module calls this whenever an ext-force/torque source is configured and
+    // the cluster registers ONCE in refresh() (no rebuild on re-call).
+    void add_ext_force_torque() {
+        has_extft_ = true;
+        ensure_ext_order();
+        dirty_ = true;
+    }
+    void ensure_ext_order() {
+        if (std::find(order_.begin(), order_.end(), 'x') == order_.end())
+            order_.push_back('x');
     }
 
     // --- WP5 environment (single 'e' cluster) --------------------------------
@@ -368,12 +393,16 @@ public:
         // Two-pass: non-env first, env LAST. The thruster contributor
         // overwrites ft (parallel ownership, untouchable); env accumulates.
         ForceTorqueT<double> ft;
+        // Two-pass: the thruster contributor OVERWRITES ft (parallel
+        // ownership, untouchable); every other force-torque contributor
+        // (env, ext-force-torque, ...) ACCUMULATES onto it. Pass 1 = the
+        // overwriter(s); pass 2 = the accumulators.
         for (const auto& c : num_) {
-            if (c->has_force_torque() && c->kind() != "env")
+            if (c->has_force_torque() && c->kind() == "thruster")
                 c->computeForceTorque(0.0, 0.0, ft, ctx);
         }
         for (const auto& c : num_) {
-            if (c->has_force_torque() && c->kind() == "env")
+            if (c->has_force_torque() && c->kind() != "thruster")
                 c->computeForceTorque(0.0, 0.0, ft, ctx);
         }
 
@@ -520,7 +549,10 @@ private:
     std::vector<std::array<double,3>> thrPos_;
     std::vector<double> thrTmax_;
     bool has_thrusters_ = false;
+    bool thrLag_ = false;
+    double thrCutoff_ = 10.0;
     bool has_fuel_ = false;
+    bool has_extft_ = false;
     double mu_ = 3.986004418e14;
     bool has_gravity_ = false;
     bool use_gg_ = true;
@@ -616,11 +648,11 @@ private:
         // no clamps -- the quantizer runs at step time, not here).
         ForceTorqueT<heyoka::expression> ft;
         for (const auto& c : sym_) {
-            if (c->has_force_torque() && c->kind() != "env")
+            if (c->has_force_torque() && c->kind() == "thruster")
                 c->computeForceTorque(0.0, 0.0, ft, ctx);
         }
         for (const auto& c : sym_) {
-            if (c->has_force_torque() && c->kind() == "env")
+            if (c->has_force_torque() && c->kind() != "thruster")
                 c->computeForceTorque(0.0, 0.0, ft, ctx);
         }
 
@@ -688,15 +720,19 @@ private:
             if (k == 't') {
                 if (!has_thrusters_) throw std::runtime_error("OmniSystem: stale order log");
                 num_.push_back(std::make_unique<ThrusterContributorT<double>>(
-                    thrDirs_, thrPos_, thrTmax_));
+                    thrDirs_, thrPos_, thrTmax_, thrLag_, thrCutoff_));
                 sym_.push_back(std::make_unique<ThrusterContributorT<heyoka::expression>>(
-                    thrDirs_, thrPos_, thrTmax_));
+                    thrDirs_, thrPos_, thrTmax_, thrLag_, thrCutoff_));
             } else if (k == 'e') {
                 if (!env_.has) throw std::runtime_error("OmniSystem: stale order log");
                 num_.push_back(std::make_unique<EnvContributorT<double>>(
                     env_.bodyMu, mu_, env_.J2, env_.Re, env_.j2On));
                 sym_.push_back(std::make_unique<EnvContributorT<heyoka::expression>>(
                     env_.bodyMu, mu_, env_.J2, env_.Re, env_.j2On));
+            } else if (k == 'x') {
+                if (!has_extft_) throw std::runtime_error("OmniSystem: stale order log");
+                num_.push_back(std::make_unique<ExtForceTorqueContributorT<double>>());
+                sym_.push_back(std::make_unique<ExtForceTorqueContributorT<heyoka::expression>>());
             } else {
                 if (wpos >= wheels_.size())
                     throw std::runtime_error("OmniSystem: stale order log");

@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Integrator alignment</title>
+<style>
+  :root { --ink: var(--foreground); --dim: var(--muted-foreground); --rk4: var(--chart-1); --om: var(--chart-4); }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); color: var(--ink); font-size: 13.5px; line-height: 1.5; }
+  .wrap { width: 100%; }
+  .prov { font-family: var(--font-mono); font-size: 11px; color: var(--dim); margin: 0 0 14px; }
+  h2 { font-size: 11px; font-weight: 600; letter-spacing: .09em; text-transform: uppercase;
+       color: var(--dim); margin: 24px 0 10px; }
+  h2 .sub { text-transform: none; letter-spacing: 0; font-weight: 400; margin-left: 8px; }
+  p { margin: 8px 0; }
+  .panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 12px; }
+  .panel { border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 10px 6px; }
+  .panel .cap { font-family: var(--font-mono); font-size: 11px; color: var(--dim); margin-bottom: 2px; }
+  svg { display: block; width: 100%; }
+  svg text { font-family: var(--font-mono); }
+  .leg { display: flex; flex-wrap: wrap; gap: 14px; font-size: 11.5px; color: var(--dim); margin: 10px 0 0; }
+  .leg i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { text-align: left; font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+       color: var(--dim); padding: 0 8px 7px 0; border-bottom: 1px solid var(--border); }
+  td { padding: 7px 8px 7px 0; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 11.5px; }
+  td.nm { font-family: var(--font-sans); font-size: 12px; }
+  tr:last-child td { border-bottom: none; }
+  td b { font-weight: 600; }
+  td .s { color: var(--dim); }
+  ul { margin: 8px 0; padding-left: 18px; }
+  li { margin: 7px 0; }
+  code { font-family: var(--font-mono); font-size: 11.5px; background: var(--code-background); color: var(--code-foreground);
+         padding: 1px 4px; border-radius: 3px; }
+  .k { color: var(--accent); font-weight: 600; }
+</style>
+</head>
+<body>
+<main class="wrap">
+
+<p class="prov">source: audit_bundle/results/integrator_align.json · dt ladder T=1200 s · variants at bench dt=0.1, median of 3 · 2026-10-17</p>
+
+<h2>Convergence <span class="sub">final |&Delta;r| against a stock RKF78 @ 1e-14 reference</span></h2>
+<div class="panels">
+  <div class="panel">
+    <div class="cap">basicOrbit_LEO &mdash; gravity only</div>
+    <svg id="p1" viewBox="0 0 340 250" preserveAspectRatio="xMidYMid meet" style="height:250px" role="img"
+         aria-label="log-log error versus step: RK4 falls at fourth order, omni sits at the precision floor"></svg>
+  </div>
+  <div class="panel">
+    <div class="cap">dragDeorbit &mdash; exponential atmosphere</div>
+    <svg id="p2" viewBox="0 0 340 250" preserveAspectRatio="xMidYMid meet" style="height:250px" role="img"
+         aria-label="log-log error versus step: RK4 falls at fourth order, omni falls at first order"></svg>
+  </div>
+</div>
+<div class="leg">
+  <span><i style="background:var(--rk4)"></i>stock RK4 (svIntegratorRK4)</span>
+  <span><i style="background:var(--om)"></i>omni (OmniVecIntegrator, tol 1e-12)</span>
+  <span><i style="background:var(--background);border:1.6px solid var(--dim)"></i>at or below the double-precision floor</span>
+</div>
+<p style="font-size:11.5px;color:var(--dim)">Both arms land on the same trajectory whenever the step is small enough that the answer is already exact &mdash; which is why the bench's dt=0.1 column shows no accuracy difference at all. The two panels separate only where that stops being true: gravity alone is exact for the mirrored integrator at <em>every</em> step tested, while the drag path carries a clean first-order term.</p>
+
+<h2>At the bench's dt=0.1, tolerance is not the binding constraint</h2>
+<table>
+  <thead><tr>
+    <th>demo (dt=0.1)</th><th>stock RK4</th>
+    <th>RKF45 @ 1e-12</th><th>RKF78 @ 1e-12</th><th>omni 1e-12</th>
+  </tr></thead>
+  <tbody id="vt"></tbody>
+</table>
+<p style="font-size:11.5px;color:var(--dim)">Wall = build + initialize + execute, median of 3. Every stock variant lands on the <b>same final state</b> in every row (<code>|&Delta;r| = 0</code> against the reference), and RK4 does it at 1.00&times; the cost. The bracket under each aligned variant is its cost relative to RK4.</p>
+
+<h2>The omni's own 1e-12 is a choice, not a constraint</h2>
+<p style="font-size:12.5px">Sweeping the omni's tolerance from 1e-4 to 1e-16 on <code>basicOrbit_LEO</code> (600 s): it takes <b>6000 steps &mdash; one per tick &mdash; at every single tolerance</b>, and the resulting trajectory is bit-identical. Tighter only raises the Taylor order: 2.6 ms build / 18.3 ms run at 1e-4, 6.6 ms / <span class="k">27.8 ms at 1e-12</span>, 10.4 ms / 36.7 ms at 1e-16. So the shipped setting costs the omni <b>1.52&times;</b> what 1e-4 would, for output that does not change.</p>
+
+<h2>Consequences</h2>
+<ul>
+  <li><b>RK4 @ dt=0.1 is not an unfair baseline; it is the cheapest stock choice that is already exact.</b> Basilisk ships tolerance-controlled integrators (<code>svIntegratorRKF45</code>, <code>svIntegratorRKF78</code>, per-state rel/abs tolerance, plus adaptive RK1&ndash;RK13 and a free Butcher-table factory), and Basilisk's own demos use RKF78/RKF45 where accuracy matters. Swapping them in at dt=0.1 buys zero accuracy and costs 2.17&ndash;2.18&times; (RKF45) or 5.24&ndash;5.35&times; (RKF78). The headline would read 5.8&ndash;7.0&times; and 14.1&ndash;17.3&times; instead of 2.7&ndash;3.2&times; &mdash; those numbers are available, they are just not more honest.</li>
+  <li><b>On gravity-only legs the omni is the more accurate arm at any step.</b> RK4 needs dt&nbsp;&lesssim;&nbsp;0.4 s to reach the same floor the omni holds at dt=15 s, so a genuinely accuracy-matched speed comparison would have to <em>refine</em> the stock side, never the omni.</li>
+  <li><b>On drag legs the ordering flips.</b> The omni's first-order term is &asymp;&nbsp;7.4e-5&nbsp;&middot;&nbsp;dt metres &mdash; 7.4e-6 m at dt=0.1, and it is the only arm below fourth order. It crosses under RK4's error only near dt&nbsp;&asymp;&nbsp;7 s, which is why the demo's own coarse steps look favourable to the mirror and why the hijack leg needed a 1e3 m tolerance.</li>
+  <li><b>A correction to how we described that drag residual.</b> It was recorded as a first-order-in-dt density-sampling difference shared with stock ("stock samples it across RK4 substeps"). That attribution does not survive this measurement: stock RK4 is cleanly fourth-order and, at dt=0.1, bit-identical to RKF78 @ 1e-14. The first-order term is entirely omni-side, in the mirrored drag path. The magnitude and the r&nbsp;&prop;&nbsp;dt behaviour we documented are right; the mechanism was not.</li>
+</ul>
+
+</main>
+<script>
+(function () {
+  var DT = [15, 7.5, 3.75, 1.875, 0.9375, 0.46875];
+  var FLOOR = 4.66e-10;                       /* 1 ULP of a 6.8e6 m coordinate */
+  var LEO = {
+    cap: "gravity only",
+    rk4:  [6.360e-3, 3.926e-4, 2.439e-5, 1.513e-6, 9.220e-8, 3.725e-9],
+    omni: [9.313e-10, 0, 6.985e-10, 9.313e-10, 1.164e-9, 4.657e-10],
+    note: "omni flat at the floor",
+    firstOrder: false
+  };
+  var DRAG = {
+    cap: "drag",
+    rk4:  [8.126e-3, 5.020e-4, 3.120e-5, 1.942e-6, 1.034e-7, 4.657e-9],
+    omni: [1.112e-3, 5.569e-4, 2.787e-4, 1.394e-4, 6.976e-5, 3.486e-5],
+    note: "omni first order",
+    firstOrder: true
+  };
+  var XMIN = 0.05, XMAX = 30, YMIN = 1e-11, YMAX = 1e-2;
+  var L = 38, R = 10, TP = 14, B = 30, W = 340, H = 250;
+  var px = W - L - R, py = H - TP - B;
+  var NS = "http://www.w3.org/2000/svg";
+
+  function X(dt) { return L + (Math.log10(dt) - Math.log10(XMIN)) / (Math.log10(XMAX) - Math.log10(XMIN)) * px; }
+  function Y(e) { var c = Math.min(Math.max(e, YMIN), YMAX);
+                  return TP + py - (Math.log10(c) - Math.log10(YMIN)) / (Math.log10(YMAX) - Math.log10(YMIN)) * py; }
+
+  function draw(id, D) {
+    var svg = document.getElementById(id);
+    function mk(tag, at, txt) {
+      var e = document.createElementNS(NS, tag);
+      for (var k in at) e.setAttribute(k, at[k]);
+      if (txt != null) e.textContent = txt;
+      svg.appendChild(e); return e;
+    }
+    [1e-2, 1e-4, 1e-6, 1e-8, 1e-10].forEach(function (v) {
+      mk("line", { x1: L, x2: L + px, y1: Y(v), y2: Y(v), stroke: "var(--border)", opacity: .45 });
+      mk("text", { x: L - 5, y: Y(v) + 3.2, "text-anchor": "end", "font-size": "8.5", fill: "var(--muted-foreground)" },
+         (v === 1e-2 ? "1e-2" : v === 1e-10 ? "1e-10" : "1e" + Math.log10(v)));
+    });
+    [0.1, 1, 10].forEach(function (t) {
+      mk("line", { x1: X(t), x2: X(t), y1: TP, y2: TP + py, stroke: "var(--border)", opacity: .45 });
+      mk("text", { x: X(t), y: TP + py + 13, "text-anchor": "middle", "font-size": "8.5", fill: "var(--muted-foreground)" }, t + " s");
+    });
+    mk("line", { x1: X(0.1), x2: X(0.1), y1: TP, y2: TP + py, stroke: "var(--accent)", "stroke-dasharray": "3 3", opacity: .85 });
+    mk("text", { x: X(0.1) + 4, y: TP + 9, "font-size": "8.5", fill: "var(--accent)" }, "bench dt");
+
+    /* slope guides, anchored on the RK4 curve at dt=0.9375 */
+    function guide(slope, anchor, col, label, dy) {
+      var dt0 = 0.9375, e0 = anchor, dt1 = 1.2;
+      var e1 = e0 * Math.pow(dt1 / dt0, slope);
+      mk("line", { x1: X(dt0), y1: Y(e0), x2: X(dt1), y2: Y(e1),
+                   stroke: col, "stroke-dasharray": "2 3", opacity: .6 });
+      mk("text", { x: X(dt1) + 3, y: Y(e1) + (dy || 3), "font-size": "8.5", fill: col }, label);
+    }
+    guide(-4, D.rk4[4], "var(--rk4)", "dt\u2074");
+    if (D.firstOrder) guide(-1, D.omni[4], "var(--om)", "dt\u00b9");
+
+    D.rk4.forEach(function (e, i) {
+      mk("circle", { cx: X(DT[i]), cy: Y(e), r: 3.4, fill: "var(--rk4)" })
+        .appendChild(mk("title", {}, "RK4  dt=" + DT[i] + "  |\u0394r|=" + e.toExponential(3)));
+    });
+    D.omni.forEach(function (e, i) {
+      var below = !(e > 0), v = below ? FLOOR : e;
+      mk("circle", { cx: X(DT[i]), cy: Y(v), r: below ? 2.9 : 3.4,
+                     fill: below ? "var(--background)" : "var(--om)",
+                     stroke: "var(--om)", "stroke-width": below ? 1.6 : 1 })
+        .appendChild(mk("title", {}, "omni  dt=" + DT[i] + "  |\u0394r|=" +
+                        (below ? "\u2264 floor" : e.toExponential(3))));
+    });
+    mk("text", { x: L, y: H - 3, "font-size": "8.5", fill: "var(--muted-foreground)" }, "step dt (log)");
+    mk("text", { x: L + px, y: H - 3, "text-anchor": "end", "font-size": "8.5", fill: "var(--muted-foreground)" }, D.note);
+  }
+  draw("p1", LEO);
+  draw("p2", DRAG);
+
+  var ROWS = [
+    ["basicOrbit_LEO", "87.9 ms", "3.14\u00d7", "191.0 ms", "6.81\u00d7", "2.17\u00d7", "464.0 ms", "16.55\u00d7", "5.28\u00d7", "28.0 ms"],
+    ["attFeedbackRW", "107.5 ms", "2.69\u00d7", "234.2 ms", "5.85\u00d7", "2.18\u00d7", "563.2 ms", "14.06\u00d7", "5.24\u00d7", "40.0 ms"],
+    ["dragDeorbit", "173.0 ms", "3.22\u00d7", "376.7 ms", "7.02\u00d7", "2.18\u00d7", "926.3 ms", "17.25\u00d7", "5.35\u00d7", "53.7 ms"]
+  ];
+  var tb = document.getElementById("vt");
+  ROWS.forEach(function (r) {
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td class="nm">' + r[0] + '</td>' +
+      '<td><b>' + r[1] + '</b> <span class="s">' + r[2] + '</span></td>' +
+      '<td>' + r[3] + ' <span class="s">' + r[4] + '</span> <span class="s">(' + r[5] + ' rk4)</span></td>' +
+      '<td>' + r[6] + ' <span class="s">' + r[7] + '</span> <span class="s">(' + r[8] + ' rk4)</span></td>' +
+      '<td><b>' + r[9] + '</b></td>';
+    tb.appendChild(tr);
+  });
+})();
+</script>
+</body>
+</html>

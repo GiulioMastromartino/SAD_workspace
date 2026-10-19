@@ -1,0 +1,90 @@
+{
+  "name": "leo_drag",
+  "timestamp_utc": "2026-10-16T15:17:33.436842+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-16T15:17:33.667971+00:00",
+    "platform": "macOS-27.2-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/audit_bundle/../../env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "status": "ok",
+    "verdict": "stock LEO-drag run green",
+    "cells": {
+      "leo_drag": {
+        "script": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/cubesat_12u_sim/backends/basilisk/leo_drag_sim.py",
+        "samples": 5554,
+        "t_end_s": 5553.0,
+        "altitude_km": 400.0,
+        "density_max": 3.3577567721234093e-13,
+        "firing_gate": 1e-13,
+        "firing_gate_pass": true,
+        "radius0_m": 6778137.0,
+        "radiusF_m": 6778090.362415384,
+        "decay_m": 46.637584616430104,
+        "decay_sign": "decayed (rho>0)",
+        "altitude_decay_m": 46.637584616430104,
+        "speed0_ms": 7668.558175407055,
+        "speedF_ms": 7668.584560445505,
+        "dv_loss_ms": -0.026385038449916465,
+        "corotation_airspeed_ms": 494.269605900783,
+        "projected_area_m2": 5.0,
+        "drag_coeff": 2.2,
+        "wind_links": {
+          "drag_atmoDensInMsg_subscribeTo_atmo_envOutMsgs": true,
+          "drag_windVelInMsg_subscribeTo_wind_envOutMsgs": true,
+          "wind_planetPosInMsg_linked": true,
+          "wind_epochInMsg_linked": false,
+          "wind_setUseSpiceOmegaFlag_False": true,
+          "wind_setPlanetOmega_N_called": true,
+          "zero_wind_model": true,
+          "cannonball_drag": true
+        },
+        "task_step_s": 1.0,
+        "stock_only": true
+      }
+    },
+    "run_log": [
+      {
+        "run": 1,
+        "status": "fail",
+        "verdict": "STOCK RUN RAISED: BasiliskError: WindBase: planetPosInMsg is not linked.",
+        "error": "BasiliskError: WindBase: planetPosInMsg is not linked.",
+        "density_max": null,
+        "decay_m": null
+      },
+      {
+        "run": 2,
+        "status": "ok",
+        "verdict": "stock LEO-drag run green",
+        "error": null,
+        "density_max": 3.3577567721234093e-13,
+        "decay_m": 46.637584616430104
+      },
+      {
+        "run": 3,
+        "status": "ok",
+        "verdict": "stock LEO-drag run green",
+        "error": null,
+        "density_max": 3.3577567721234093e-13,
+        "decay_m": 46.637584616430104
+      }
+    ],
+    "fails": []
+  }
+}

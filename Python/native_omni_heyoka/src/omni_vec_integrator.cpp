@@ -45,6 +45,8 @@ struct OmniVecIntegrator::Impl {
     // WP5 env slot bases + body count (valid after buildOnce).
     size_t envBody = 0, envDrag = 0, envSrp = 0, envMag = 0, envNBodies = 0;
     bool hasEnv = false;
+    bool hasExtft = false;
+    size_t extOff = 0;
     // Phase-2 fuel (valid after buildOnce): live stock source, canonical
     // position (always last), mdot + hub mass/I par slots, live aggregate
     // c (I_C + arms + B/C boundary, refreshed per tick; no rebuilds).
@@ -121,6 +123,19 @@ void OmniVecIntegrator::setMagneticDipole(double g10, double g11, double h11) {
 
 void OmniVecIntegrator::setMaxMtbDipole(double dmax) {
     this->setMaxMtbDipoleForObject(0, dmax);
+}
+
+void OmniVecIntegrator::setThrusterLag(bool lag, double cutoff) {
+    this->setThrusterLagForObject(0, lag, cutoff);
+}
+
+void OmniVecIntegrator::setExtForceTorque(double fx, double fy, double fz,
+                                         double tx, double ty, double tz) {
+    this->setExtForceTorqueForObject(0, fx, fy, fz, tx, ty, tz);
+}
+
+void OmniVecIntegrator::setExtForceInertial(double fx, double fy, double fz) {
+    this->setExtForceInertialForObject(0, fx, fy, fz);
 }
 
 void OmniVecIntegrator::setFuelStateName(const std::string& name) {
@@ -332,6 +347,34 @@ void OmniVecIntegrator::setMaxMtbDipoleForObject(size_t obj, double dmax) {
     C.dirty = true;
 }
 
+void OmniVecIntegrator::setThrusterLagForObject(size_t obj, bool lag, double cutoff) {
+    if (!(cutoff > 0.0) || !std::isfinite(cutoff))
+        this->bskLogger.bskError("OmniVecIntegrator: thruster lag cutoff must be finite positive.");
+    ObjCfg& C = this->cfgFor(obj);
+    C.thrLag = lag;
+    C.thrLagCutoff = cutoff;
+    C.mirrored = true;
+    C.dirty = true;
+}
+
+void OmniVecIntegrator::setExtForceTorqueForObject(size_t obj, double fx, double fy, double fz,
+                                                   double tx, double ty, double tz) {
+    ObjCfg& C = this->cfgFor(obj);
+    C.extForceB[0] = fx; C.extForceB[1] = fy; C.extForceB[2] = fz;
+    C.extTorqueB[0] = tx; C.extTorqueB[1] = ty; C.extTorqueB[2] = tz;
+    C.hasExtft = true;
+    C.mirrored = true;
+    C.dirty = true;
+}
+
+void OmniVecIntegrator::setExtForceInertialForObject(size_t obj, double fx, double fy, double fz) {
+    ObjCfg& C = this->cfgFor(obj);
+    C.extForceN[0] = fx; C.extForceN[1] = fy; C.extForceN[2] = fz;
+    C.hasExtft = true;
+    C.mirrored = true;
+    C.dirty = true;
+}
+
 void OmniVecIntegrator::setFuelStateNameForObject(size_t obj, const std::string& name) {
     if (name.empty())
         this->bskLogger.bskError("OmniVecIntegrator: fuel state name must be nonempty.");
@@ -505,6 +548,30 @@ void OmniVecIntegrator::subscribeMagForObject(
     M.mag->subscribeTo(src);
 }
 
+void OmniVecIntegrator::subscribeExtTorqueForObject(
+    size_t obj, Message<CmdTorqueBodyMsgPayload>* src) {
+    if (src == nullptr)
+        this->bskLogger.bskError("OmniVecIntegrator: null ext-torque source.");
+    ObjMsgs M = this->msgsFor(obj);
+    M.extTorque->subscribeTo(src);
+}
+
+void OmniVecIntegrator::subscribeExtForceBodyForObject(
+    size_t obj, Message<CmdForceBodyMsgPayload>* src) {
+    if (src == nullptr)
+        this->bskLogger.bskError("OmniVecIntegrator: null ext-force-body source.");
+    ObjMsgs M = this->msgsFor(obj);
+    M.extForceBody->subscribeTo(src);
+}
+
+void OmniVecIntegrator::subscribeExtForceInertialForObject(
+    size_t obj, Message<CmdForceInertialMsgPayload>* src) {
+    if (src == nullptr)
+        this->bskLogger.bskError("OmniVecIntegrator: null ext-force-inertial source.");
+    ObjMsgs M = this->msgsFor(obj);
+    M.extForceInertial->subscribeTo(src);
+}
+
 size_t OmniVecIntegrator::nStates() const {
     return this->impls_.empty() || !this->impls_[0] ? 0 : this->impls_[0]->nStates;
 }
@@ -577,6 +644,9 @@ OmniVecIntegrator::ObjMsgs OmniVecIntegrator::msgsFor(size_t obj) {
         M.sun = &this->sunStateInMsg;
         M.moon = &this->moonStateInMsg;
         M.mag = &this->magFieldInMsg;
+        M.extTorque = &this->extTorqueInMsg;
+        M.extForceBody = &this->extForceBodyInMsg;
+        M.extForceInertial = &this->extForceInertialInMsg;
         return M;
     }
     this->ensureSlot(obj);
@@ -589,6 +659,9 @@ OmniVecIntegrator::ObjMsgs OmniVecIntegrator::msgsFor(size_t obj) {
     M.sun = &S.sun;
     M.moon = &S.moon;
     M.mag = &S.mag;
+    M.extTorque = &S.extTorque;
+    M.extForceBody = &S.extForceBody;
+    M.extForceInertial = &S.extForceInertial;
     return M;
 }
 
@@ -647,7 +720,11 @@ std::string OmniVecIntegrator::calcFingerprint(size_t obj) const {
         << "," << C.sunState[1] << "," << C.sunState[2] << ";mag="
         << (C.magOn ? 1 : 0) << "," << C.magM[0] << "," << C.magM[1] << ","
         << C.magM[2] << "," << C.magG10 << "," << C.magG11 << ","
-        << C.magH11 << "," << C.maxMtbDipole << ";";
+        << C.magH11 << "," << C.maxMtbDipole << ";"
+        << "ext=" << (C.hasExtft ? 1 : 0) << "," << C.extForceB[0] << ","
+        << C.extForceB[1] << "," << C.extForceB[2] << "," << C.extTorqueB[0]
+        << "," << C.extTorqueB[1] << "," << C.extTorqueB[2] << ","
+        << C.extForceN[0] << "," << C.extForceN[1] << "," << C.extForceN[2] << ";";
     return oss.str();
 }
 
@@ -775,7 +852,7 @@ void OmniVecIntegrator::buildOnce() {
 // genuinely unmirrorable config is loud on every object in both modes.
 void OmniVecIntegrator::claimAndGrab(
     size_t obj, const std::vector<std::pair<std::string, size_t>>& census,
-    size_t& nW, size_t& nF) {
+    size_t& nW, size_t& nF, size_t& nK) {
     ObjCfg& C = this->cfgFor(obj);
     Impl* im = this->impls_[obj].get();
     auto rows_of = [&](const char* nm) -> size_t {
@@ -800,6 +877,10 @@ void OmniVecIntegrator::claimAndGrab(
           && rows_of(C.fuelStateName.c_str()) == 1)
              ? 1
              : 0;
+    // Thruster lag (state-effector emulation): stock registers
+    // "kappaState1" (dimension nThrusters) iff the effector is a state
+    // effector. The omni registers the same count when thrLag is on.
+    nK = rows_of("kappaState1");
     if (C.hasFuel && nF == 0)
         this->bskLogger.bskError(
             "OmniVecIntegrator: object %zu: mirrored fuel state '%s' not "
@@ -820,7 +901,8 @@ void OmniVecIntegrator::claimAndGrab(
                             || e.first == "reactionWheelOmegas"
                             || e.first == "hubGravVelocity"
                             || e.first == "BcGravVelocity"
-                            || (nF == 1 && e.first == C.fuelStateName));
+                            || (nF == 1 && e.first == C.fuelStateName)
+                            || (nK > 0 && e.first == "kappaState1"));
         if (!known)
             this->bskLogger.bskError(
                 "OmniVecIntegrator: object %zu: registered state '%s' (%zu "
@@ -903,8 +985,8 @@ void OmniVecIntegrator::buildObjectFull(
     this->impls_[obj] = std::make_unique<Impl>();
     Impl* im = this->impls_[obj].get();
 
-    size_t nW = 0, nF = 0;
-    this->claimAndGrab(obj, census, nW, nF);
+    size_t nW = 0, nF = 0, nK = 0;
+    this->claimAndGrab(obj, census, nW, nF, nK);
 
     // Mirror into a fresh OmniSystem (order = stock order by construction).
     // Hub record takes the RAW hub offset (input I/mass are hub-dry; the
@@ -925,6 +1007,8 @@ void OmniVecIntegrator::buildObjectFull(
     // Python-side); thrusters add no states (census unchanged).
     if (!C.thrDirs.empty())
         im->sys.add_thrusters(C.thrDirs, C.thrPos, C.thrTmax);
+    if (C.thrLag)
+        im->sys.set_thruster_lag(C.thrLag, C.thrLagCutoff);
     // WP5 env replay: bodies + J2 feed the graph (g_N channel); drag/SRP/mag
     // geometry lives module-side and enters via slots (A3). Any configured
     // effect registers the single 'e' cluster (same replay as the module).
@@ -951,14 +1035,18 @@ void OmniVecIntegrator::buildObjectFull(
                                       C.magM[2]);
         im->sys.setMagneticDipole(C.magG10, C.magG11, C.magH11);
     }
+    // ExtForceTorque registration (opt-in; no state, no mass).
+    if (C.hasExtft) {
+        im->sys.add_ext_force_torque();
+    }
 
     const size_t n = im->sys.n_states();
-    if (n != 12 + nW + nF)
+    if (n != 12 + nW + nF + nK)
         this->bskLogger.bskError(
             "OmniVecIntegrator: object %zu: mirrored system has %zu states "
-            "for %zu stock states; layout mismatch.", obj, n, 12 + nW + nF);
+            "for %zu stock states; layout mismatch.", obj, n, 12 + nW + nF + nK);
     im->nStates = n;
-    im->fuelPos = 12 + nW;  // fuel always last (A1)
+    im->fuelPos = 12 + nW + nK;  // fuel always last (A1)
     if (nF > 0) {
         // Name-resolved like the rest (A1); must agree with the layout rule.
         size_t fp = 0;
@@ -1026,6 +1114,11 @@ void OmniVecIntegrator::buildObjectFull(
         im->envMag = es.mag;
         im->envNBodies = es.nBodies;
     }
+    im->hasExtft = C.hasExtft;
+    if (C.hasExtft) {
+        try { im->extOff = im->sys.par_index("extFxB"); }
+        catch (...) { im->extOff = 0; }
+    }
     std::vector<double> y0(n, 0.0);
     // Suffix-drop geometry-degenerate trailing pars (throws on structural
     // gaps); ta owns exactly ta_npars: EVERY per-tick push must be bounded
@@ -1067,8 +1160,8 @@ void OmniVecIntegrator::buildObjectShared(
     this->impls_[obj] = std::make_unique<Impl>();
     Impl* im = this->impls_[obj].get();
 
-    size_t nW = 0, nF = 0;
-    this->claimAndGrab(obj, census, nW, nF);
+    size_t nW = 0, nF = 0, nK = 0;
+    this->claimAndGrab(obj, census, nW, nF, nK);
 
     // Identical configs => identical graphs: copy the resolved layout and a
     // pristine pars template (default_pars, never the owner's live vector).
@@ -1096,11 +1189,11 @@ void OmniVecIntegrator::buildObjectShared(
     // sys/ta stay empty on purpose: stepObject() routes graph calls to the
     // owner. Defense in depth: the copied layout must still describe this
     // object's own census (fingerprints matched, so it does -- prove it).
-    if (im->nStates != 12 + nW + nF)
+    if (im->nStates != 12 + nW + nF + nK)
         this->bskLogger.bskError(
             "OmniVecIntegrator: object %zu: shared layout has %zu states "
             "for %zu stock states; fingerprint collision, rebuild split.",
-            obj, im->nStates, 12 + nW + nF);
+            obj, im->nStates, 12 + nW + nF + nK);
     if (im->parsBase.size() != G->parsBase.size())
         this->bskLogger.bskError(
             "OmniVecIntegrator: object %zu: shared pars template size "
@@ -1323,6 +1416,40 @@ void OmniVecIntegrator::freezeObject(
             "integrator instead.");
 }
 
+void OmniVecIntegrator::updateExtInputs(size_t obj, std::vector<double>& P) {
+    ObjCfg& C = this->cfgFor(obj);
+    if (!C.hasExtft) return;
+    ObjMsgs M = this->msgsFor(obj);
+    Impl* im = this->impls_[obj].get();
+    if (im == nullptr) return;
+    const size_t o = im->extOff;
+    if (o + 8 >= P.size()) return;
+    double fB[3] = {C.extForceB[0], C.extForceB[1], C.extForceB[2]};
+    double tB[3] = {C.extTorqueB[0], C.extTorqueB[1], C.extTorqueB[2]};
+    double fN[3] = {C.extForceN[0], C.extForceN[1], C.extForceN[2]};
+    if (M.extForceBody != nullptr && M.extForceBody->isLinked()) {
+        const CmdForceBodyMsgPayload m = (*M.extForceBody)();
+        fB[0] += m.forceRequestBody[0];
+        fB[1] += m.forceRequestBody[1];
+        fB[2] += m.forceRequestBody[2];
+    }
+    if (M.extTorque != nullptr && M.extTorque->isLinked()) {
+        const CmdTorqueBodyMsgPayload m = (*M.extTorque)();
+        tB[0] += m.torqueRequestBody[0];
+        tB[1] += m.torqueRequestBody[1];
+        tB[2] += m.torqueRequestBody[2];
+    }
+    if (M.extForceInertial != nullptr && M.extForceInertial->isLinked()) {
+        const CmdForceInertialMsgPayload m = (*M.extForceInertial)();
+        fN[0] += m.forceRequestInertial[0];
+        fN[1] += m.forceRequestInertial[1];
+        fN[2] += m.forceRequestInertial[2];
+    }
+    P[o + 0] = fB[0]; P[o + 1] = fB[1]; P[o + 2] = fB[2];
+    P[o + 3] = tB[0]; P[o + 4] = tB[1]; P[o + 5] = tB[2];
+    P[o + 6] = fN[0]; P[o + 7] = fN[1]; P[o + 8] = fN[2];
+}
+
 void OmniVecIntegrator::stepObject(size_t obj, double timeStep) {
     ObjCfg& C = this->cfgFor(obj);
     Impl* im = this->impls_[obj].get();
@@ -1485,6 +1612,8 @@ void OmniVecIntegrator::stepObject(size_t obj, double timeStep) {
 
     // WP5 per-tick env refresh (bodies never frozen; P1 truth table inside).
     if (im->hasEnv) this->updateEnvInputs(obj, y.data(), P, cLive);
+    // ExtForceTorque per-tick refresh (constants + linked messages, additive).
+    if (im->hasExtft) this->updateExtInputs(obj, P);
 
     // Thruster channel (stage 2, staircase only): edge-triggered mailbox.
     // Fire rule (measured stock cells: fresh/write-once/frozen/advance):

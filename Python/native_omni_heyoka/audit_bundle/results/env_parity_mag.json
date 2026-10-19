@@ -1,0 +1,188 @@
+{
+  "name": "env_parity_mag",
+  "timestamp_utc": "2026-10-17T16:22:36.188974+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-17T16:22:36.207431+00:00",
+    "platform": "macOS-27.2-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "status": "ok",
+    "cells": {
+      "leg": {
+        "fixture": {
+          "orbit": "LEO 400 km circular still",
+          "dipole_cmd": [
+            0.5,
+            0.0,
+            0.0
+          ],
+          "max_dipole": 0.8,
+          "Gt": "single-bar identity",
+          "dipole_coeffs_T": [
+            -2.94048e-05,
+            -1.4509e-06,
+            4.6529e-06
+          ]
+        },
+        "dt": 0.1,
+        "ticks": 6000,
+        "t_leg": 600.0,
+        "r_BN_N": 9.313225746154785e-10,
+        "v_BN_N": 0.0,
+        "sigma_BN": 6.691121615109985e-12,
+        "omega_BN_B": 2.3466580749713275e-13,
+        "dcm_max": 2.6764367198200967e-11,
+        "tau_max_stock": 1.2250118363942087e-05,
+        "sigF_norm_stock": 0.0007035029782049355,
+        "B_max_stock_T": 2.4500149396818737e-05,
+        "steps": 6000,
+        "calls": 6000,
+        "nStates": 12,
+        "build_s": 0.3734,
+        "loadavg": [
+          3.44189453125,
+          6.65234375,
+          6.291015625
+        ],
+        "mirror": {
+          "mass": 750.0,
+          "mu": 398600436000000.0,
+          "use_gg": false,
+          "n_wheels": 0,
+          "n_thrusters": 0,
+          "n_fuel": 0,
+          "friction_on": false,
+          "rBcB": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "object_index": 0,
+          "n_drag": 0,
+          "n_extra_bodies": 0,
+          "j2": null,
+          "env": {
+            "drag": {
+              "n_drag": 0,
+              "object_index": null,
+              "n_atmo_models": 0,
+              "n_wind_models": 0,
+              "task_entry": "routed: stock task entry retained (never mutated); effector dynamics superseded by omni setters (sc detachment); field-module links forwarded only"
+            },
+            "srp": {
+              "staged": true,
+              "n_models": 0,
+              "object_index": null,
+              "srp": [],
+              "link_needs": [],
+              "sun_link": null,
+              "n_sun_sources": 0,
+              "eclipse_link": "deferred-to-eclipse-models",
+              "task_entry": "routed: stock task entry retained (never mutated); effector dynamics superseded by omni setters (sc detachment); field-module links forwarded only"
+            },
+            "mag": {
+              "object_index": 0,
+              "n_mtb": 1,
+              "n_magfield": 1,
+              "magnetic_moment": [
+                0.5,
+                0.0,
+                0.0
+              ],
+              "max_mtb_dipole": 0.8,
+              "dipole_gh": [
+                -2.94048e-05,
+                -1.4509e-06,
+                4.6529e-06
+              ],
+              "mag_msg_wired": true,
+              "mag_link": "magFieldInMsg.subscribeTo",
+              "mag_link_src": "<Basilisk.architecture.messaging.MagneticFieldMsgPayload.MagneticFieldMsg; proxy of <Swig Object of type 'Message< MagneticFieldMsgPayload > *' at 0x15332af30> >",
+              "latched_dipole": true,
+              "task_entry": "routed: stock task entry retained (never mutated); effector dynamics superseded by omni setters (sc detachment); field-module links forwarded only"
+            },
+            "eclipse": {
+              "n_eclipse": 0,
+              "class": null,
+              "object_index": null,
+              "spacecraft_registered": 0,
+              "position_msgs": null,
+              "planet_msgs": null,
+              "sun_linked": null,
+              "rEqCustom": null,
+              "payload_field": "shadowFactor",
+              "shadow_factor_default": 1.0,
+              "unlinked_legal": true,
+              "linked": false,
+              "eclipse_link": "unlinked",
+              "eclipse_src": null,
+              "eclipse_out_index": null,
+              "order_match": "eclipseOutMsgs[i] in addSpacecraftToModel order (wrapper eclipse.py:369 appends one out-message per spacecraft; mirror object i in the same order it registered that spacecraft)",
+              "task_entry": "stays-in-task: the Eclipse module is a field module (plain SysModel, PLAN \u00a71.1); only its out-message is forwarded, never removed."
+            },
+            "envbodies": {
+              "n_grav": 0,
+              "n_bodies": 0,
+              "n_central": 0,
+              "n_noncentral": 0,
+              "n_extra_bodies": 0,
+              "bodies": [],
+              "j2": {
+                "j2": null,
+                "note": "no central body in census"
+              },
+              "j2_note": "no central body in census",
+              "stays_in_task": [],
+              "object_index": null,
+              "j2_check": {
+                "j2": null,
+                "setter": null,
+                "args": null,
+                "validated": true,
+                "object_index": null
+              },
+              "task_entry": "routed: stock task entry retained (never mutated); effector dynamics superseded by omni setters (sc detachment); field-module links forwarded only"
+            },
+            "object_index": null
+          },
+          "ext": {
+            "n_ext": 0,
+            "constant": false,
+            "msgs": []
+          }
+        }
+      }
+    },
+    "dt": 0.1,
+    "t_leg": 600.0,
+    "ticks": 6000,
+    "loadavg": [
+      3.44189453125,
+      6.65234375,
+      6.291015625
+    ],
+    "loadavg_end": [
+      3.44189453125,
+      6.65234375,
+      6.291015625
+    ],
+    "verdict": "parity green"
+  }
+}

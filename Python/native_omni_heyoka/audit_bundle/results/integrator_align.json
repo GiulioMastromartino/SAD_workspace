@@ -1,0 +1,511 @@
+{
+  "name": "integrator_align",
+  "timestamp_utc": "2026-10-17T14:13:49.566825+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-17T14:13:49.585254+00:00",
+    "platform": "macOS-27.2-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "status": "ok",
+    "dt": 0.1,
+    "repeats": 3,
+    "tol_requested": 1e-12,
+    "variants": {
+      "basicOrbit_LEO": {
+        "T": 600.0,
+        "by_variant": {
+          "rk4": {
+            "wall_s": 0.087945,
+            "wall_min_s": 0.08765,
+            "walls_s": [
+              0.088707,
+              0.087945,
+              0.08765
+            ],
+            "vs_ref": {
+              "r_BN_N": 0.0,
+              "v_BN_N": 2.2737367544323206e-13,
+              "sigma_BN": 0.0,
+              "omega_BN_B": 0.0
+            },
+            "rk4_vs_omni": {
+              "r_BN_N": 2.3283064365386963e-10,
+              "v_BN_N": 9.094947017729282e-13,
+              "sigma_BN": 0.0,
+              "omega_BN_B": 0.0
+            },
+            "speedup_vs_omni": 3.137,
+            "cost_vs_rk4": 1.0
+          },
+          "rkf45": {
+            "wall_s": 0.191042,
+            "wall_min_s": 0.188131,
+            "walls_s": [
+              0.201939,
+              0.188131,
+              0.191042
+            ],
+            "vs_ref": {
+              "r_BN_N": 0.0,
+              "v_BN_N": 9.094947017729282e-13,
+              "sigma_BN": 0.0,
+              "omega_BN_B": 0.0
+            },
+            "speedup_vs_omni": 6.814,
+            "cost_vs_rk4": 2.172
+          },
+          "rkf78": {
+            "wall_s": 0.464034,
+            "wall_min_s": 0.451902,
+            "walls_s": [
+              0.478712,
+              0.451902,
+              0.464034
+            ],
+            "vs_ref": {
+              "r_BN_N": 0.0,
+              "v_BN_N": 0.0,
+              "sigma_BN": 0.0,
+              "omega_BN_B": 0.0
+            },
+            "speedup_vs_omni": 16.551,
+            "cost_vs_rk4": 5.276
+          },
+          "ref": {
+            "wall_s": 0.471212,
+            "wall_min_s": 0.467873,
+            "walls_s": [
+              0.471212,
+              0.467873,
+              0.484733
+            ],
+            "vs_ref": {
+              "r_BN_N": 0.0,
+              "v_BN_N": 0.0,
+              "sigma_BN": 0.0,
+              "omega_BN_B": 0.0
+            },
+            "speedup_vs_omni": 16.807,
+            "cost_vs_rk4": 5.358
+          },
+          "omni": {
+            "wall_s": 0.028037,
+            "wall_min_s": 0.027744,
+            "walls_s": [
+              0.029876,
+              0.028037,
+              0.027744
+            ],
+            "vs_ref": {
+              "r_BN_N": 2.3283064365386963e-10,
+              "v_BN_N": 9.094947017729282e-13,
+              "sigma_BN": 0.0,
+              "omega_BN_B": 0.0
+            },
+            "speedup_vs_omni": 1.0
+          }
+        }
+      },
+      "attFeedbackRW": {
+        "T": 600.0,
+        "by_variant": {
+          "rk4": {
+            "wall_s": 0.107544,
+            "wall_min_s": 0.107105,
+            "walls_s": [
+              0.14706,
+              0.107105,
+              0.107544
+            ],
+            "vs_ref": {
+              "r_BN_N": 9.313225746154785e-10,
+              "v_BN_N": 0.0,
+              "sigma_BN": 8.334262099896073e-16,
+              "omega_BN_B": 6.793204236979489e-17,
+              "wheels": 1.793409865058493e-11
+            },
+            "rk4_vs_omni": {
+              "r_BN_N": 0.0,
+              "v_BN_N": 1.8189894035458565e-12,
+              "sigma_BN": 8.341851515103471e-16,
+              "omega_BN_B": 6.798625247841916e-17,
+              "wheels": 1.793409865058493e-11
+            },
+            "speedup_vs_omni": 2.685,
+            "cost_vs_rk4": 1.0
+          },
+          "rkf45": {
+            "wall_s": 0.234159,
+            "wall_min_s": 0.228312,
+            "walls_s": [
+              0.228312,
+              0.234159,
+              0.248521
+            ],
+            "vs_ref": {
+              "r_BN_N": 0.0,
+              "v_BN_N": 4.547473508864641e-13,
+              "sigma_BN": 1.4289784633358948e-16,
+              "omega_BN_B": 1.085896238380013e-17,
+              "wheels": 2.4442670110147446e-12
+            },
+            "speedup_vs_omni": 5.847,
+            "cost_vs_rk4": 2.177
+          },
+          "rkf78": {
+            "wall_s": 0.56315,
+            "wall_min_s": 0.543564,
+            "walls_s": [
+              0.56315,
+              0.591362,
+              0.543564
+            ],
+            "vs_ref": {
+              "r_BN_N": 0.0,
+              "v_BN_N": 0.0,
+              "sigma_BN": 0.0,
+              "omega_BN_B": 0.0,
+              "wheels": 0.0
+            },
+            "speedup_vs_omni": 14.062,
+            "cost_vs_rk4": 5.236
+          },
+          "ref": {
+            "wall_s": 0.573584,
+            "wall_min_s": 0.551065,
+            "walls_s": [
+              0.577023,
+              0.551065,
+              0.573584
+            ],
+            "vs_ref": {
+              "r_BN_N": 0.0,
+              "v_BN_N": 0.0,
+              "sigma_BN": 0.0,
+              "omega_BN_B": 0.0,
+              "wheels": 0.0
+            },
+            "speedup_vs_omni": 14.322,
+            "cost_vs_rk4": 5.333
+          },
+          "omni": {
+            "wall_s": 0.040048,
+            "wall_min_s": 0.039562,
+            "walls_s": [
+              0.043529,
+              0.040048,
+              0.039562
+            ],
+            "vs_ref": {
+              "r_BN_N": 9.313225746154785e-10,
+              "v_BN_N": 1.8189894035458565e-12,
+              "sigma_BN": 7.589415207398531e-19,
+              "omega_BN_B": 5.421010862427522e-20,
+              "wheels": 2.842170943040401e-14
+            },
+            "speedup_vs_omni": 1.0
+          }
+        }
+      },
+      "dragDeorbit": {
+        "T": 1200.0,
+        "by_variant": {
+          "rk4": {
+            "wall_s": 0.17304,
+            "wall_min_s": 0.167743,
+            "walls_s": [
+              0.177719,
+              0.167743,
+              0.17304
+            ],
+            "vs_ref": {
+              "r_BN_N": 0.0,
+              "v_BN_N": 0.0,
+              "sigma_BN": 0.0,
+              "omega_BN_B": 0.0
+            },
+            "rk4_vs_omni": {
+              "r_BN_N": 7.437774911522865e-06,
+              "v_BN_N": 1.5014393284218386e-08,
+              "sigma_BN": 0.0,
+              "omega_BN_B": 0.0
+            },
+            "speedup_vs_omni": 3.223,
+            "cost_vs_rk4": 1.0
+          },
+          "rkf45": {
+            "wall_s": 0.376654,
+            "wall_min_s": 0.369365,
+            "walls_s": [
+              0.369365,
+              0.376654,
+              0.403406
+            ],
+            "vs_ref": {
+              "r_BN_N": 9.313225746154785e-10,
+              "v_BN_N": 1.1368683772161603e-12,
+              "sigma_BN": 0.0,
+              "omega_BN_B": 0.0
+            },
+            "speedup_vs_omni": 7.016,
+            "cost_vs_rk4": 2.177
+          },
+          "rkf78": {
+            "wall_s": 0.926308,
+            "wall_min_s": 0.913765,
+            "walls_s": [
+              0.926308,
+              0.913765,
+              0.965291
+            ],
+            "vs_ref": {
+              "r_BN_N": 0.0,
+              "v_BN_N": 0.0,
+              "sigma_BN": 0.0,
+              "omega_BN_B": 0.0
+            },
+            "speedup_vs_omni": 17.254,
+            "cost_vs_rk4": 5.353
+          },
+          "ref": {
+            "wall_s": 0.921906,
+            "wall_min_s": 0.920402,
+            "walls_s": [
+              0.953932,
+              0.920402,
+              0.921906
+            ],
+            "vs_ref": {
+              "r_BN_N": 0.0,
+              "v_BN_N": 0.0,
+              "sigma_BN": 0.0,
+              "omega_BN_B": 0.0
+            },
+            "speedup_vs_omni": 17.172,
+            "cost_vs_rk4": 5.328
+          },
+          "omni": {
+            "wall_s": 0.053686,
+            "wall_min_s": 0.053437,
+            "walls_s": [
+              0.054924,
+              0.053686,
+              0.053437
+            ],
+            "vs_ref": {
+              "r_BN_N": 7.437774911522865e-06,
+              "v_BN_N": 1.5014393284218386e-08,
+              "sigma_BN": 0.0,
+              "omega_BN_B": 0.0
+            },
+            "speedup_vs_omni": 1.0
+          }
+        }
+      }
+    },
+    "omni_tol_sweep": {
+      "demo": "basicOrbit_LEO",
+      "T": 600.0,
+      "by_tol": {
+        "0.0001": {
+          "wall_s": 0.018307,
+          "walls_s": [
+            0.019889,
+            0.018307,
+            0.018101
+          ],
+          "steps": 6000,
+          "build_ms": 2.636,
+          "dr_vs_tightest": 0.0
+        },
+        "1e-06": {
+          "wall_s": 0.019764,
+          "walls_s": [
+            0.019764,
+            0.019509,
+            0.020093
+          ],
+          "steps": 6000,
+          "build_ms": 3.333,
+          "dr_vs_tightest": 0.0
+        },
+        "1e-08": {
+          "wall_s": 0.023295,
+          "walls_s": [
+            0.02374,
+            0.023295,
+            0.022301
+          ],
+          "steps": 6000,
+          "build_ms": 4.55,
+          "dr_vs_tightest": 0.0
+        },
+        "1e-10": {
+          "wall_s": 0.02448,
+          "walls_s": [
+            0.024782,
+            0.02438,
+            0.02448
+          ],
+          "steps": 6000,
+          "build_ms": 5.407,
+          "dr_vs_tightest": 0.0
+        },
+        "1e-12": {
+          "wall_s": 0.027841,
+          "walls_s": [
+            0.027746,
+            0.028341,
+            0.027841
+          ],
+          "steps": 6000,
+          "build_ms": 6.574,
+          "dr_vs_tightest": 0.0
+        },
+        "1e-14": {
+          "wall_s": 0.032193,
+          "walls_s": [
+            0.034148,
+            0.032193,
+            0.031971
+          ],
+          "steps": 6000,
+          "build_ms": 8.546,
+          "dr_vs_tightest": 0.0
+        },
+        "1e-16": {
+          "wall_s": 0.03674,
+          "walls_s": [
+            0.037343,
+            0.03674,
+            0.036005
+          ],
+          "steps": 6000,
+          "build_ms": 10.38,
+          "dr_vs_tightest": 0.0
+        }
+      }
+    },
+    "dt_ladder": {
+      "basicOrbit_LEO": {
+        "T": 1200.0,
+        "by_dt": {
+          "15": {
+            "rk4_vs_ref": 0.006360038183629513,
+            "omni_vs_ref": 9.313225746154785e-10,
+            "rk4_vs_omni": 0.006360037252306938,
+            "omni_steps": 80
+          },
+          "7.5": {
+            "rk4_vs_ref": 0.00039261020720005035,
+            "omni_vs_ref": 0.0,
+            "rk4_vs_omni": 0.00039261020720005035,
+            "omni_steps": 160,
+            "order_rk4": 4.02,
+            "order_omni": null
+          },
+          "3.75": {
+            "rk4_vs_ref": 2.4391338229179382e-05,
+            "omni_vs_ref": 6.984919309616089e-10,
+            "rk4_vs_omni": 2.4391338229179382e-05,
+            "omni_steps": 320,
+            "order_rk4": 4.01,
+            "order_omni": null
+          },
+          "1.875": {
+            "rk4_vs_ref": 1.5133991837501526e-06,
+            "omni_vs_ref": 9.313225746154785e-10,
+            "rk4_vs_omni": 1.514330506324768e-06,
+            "omni_steps": 640,
+            "order_rk4": 4.01,
+            "order_omni": -0.42
+          },
+          "0.9375": {
+            "rk4_vs_ref": 9.220093488693237e-08,
+            "omni_vs_ref": 1.1641532182693481e-09,
+            "rk4_vs_omni": 9.220093488693237e-08,
+            "omni_steps": 1280,
+            "order_rk4": 4.04,
+            "order_omni": -0.32
+          },
+          "0.46875": {
+            "rk4_vs_ref": 3.725290298461914e-09,
+            "omni_vs_ref": 4.656612873077393e-10,
+            "rk4_vs_omni": 3.725290298461914e-09,
+            "omni_steps": 2560,
+            "order_rk4": 4.63,
+            "order_omni": 1.32
+          }
+        }
+      },
+      "dragDeorbit": {
+        "T": 1200.0,
+        "by_dt": {
+          "15": {
+            "rk4_vs_ref": 0.008126350119709969,
+            "omni_vs_ref": 0.0011115588713437319,
+            "rk4_vs_omni": 0.007342047989368439,
+            "omni_steps": 80
+          },
+          "7.5": {
+            "rk4_vs_ref": 0.000502011738717556,
+            "omni_vs_ref": 0.0005569213535636663,
+            "rk4_vs_omni": 0.00041608698666095734,
+            "omni_steps": 160,
+            "order_rk4": 4.02,
+            "order_omni": 1.0
+          },
+          "3.75": {
+            "rk4_vs_ref": 3.119930624961853e-05,
+            "omni_vs_ref": 0.0002787481062114239,
+            "rk4_vs_omni": 0.0002700439654290676,
+            "omni_steps": 320,
+            "order_rk4": 4.01,
+            "order_omni": 1.0
+          },
+          "1.875": {
+            "rk4_vs_ref": 1.9418075680732727e-06,
+            "omni_vs_ref": 0.00013943691737949848,
+            "rk4_vs_omni": 0.00013890815898776054,
+            "omni_steps": 640,
+            "order_rk4": 4.01,
+            "order_omni": 1.0
+          },
+          "0.9375": {
+            "rk4_vs_ref": 1.0337680578231812e-07,
+            "omni_vs_ref": 6.975838914513588e-05,
+            "rk4_vs_omni": 6.973533891141415e-05,
+            "omni_steps": 1280,
+            "order_rk4": 4.23,
+            "order_omni": 1.0
+          },
+          "0.46875": {
+            "rk4_vs_ref": 4.6566128730773926e-09,
+            "omni_vs_ref": 3.486289642751217e-05,
+            "rk4_vs_omni": 3.4861965104937553e-05,
+            "omni_steps": 2560,
+            "order_rk4": 4.47,
+            "order_omni": 1.0
+          }
+        }
+      }
+    }
+  }
+}

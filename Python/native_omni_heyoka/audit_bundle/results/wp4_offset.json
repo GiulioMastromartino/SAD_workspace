@@ -1,12 +1,12 @@
 {
   "name": "wp4_offset",
-  "timestamp_utc": "2026-10-12T14:40:39.513339+00:00",
+  "timestamp_utc": "2026-10-14T09:22:34.886694+00:00",
   "platform": "macOS-27.0-arm64-arm-64bit",
   "python": "3.11.16",
   "basilisk": "2.12.0",
   "heyoka": "7.12.1",
   "env": {
-    "timestamp_utc": "2026-10-12T14:40:39.513381+00:00",
+    "timestamp_utc": "2026-10-14T09:22:34.886725+00:00",
     "platform": "macOS-27.0-arm64-arm-64bit",
     "os_tag": "macOS",
     "machine": "arm64",
@@ -25,7 +25,7 @@
   "payload": {
     "probe": "wp4_offset",
     "env": {
-      "timestamp_utc": "2026-10-12T14:40:38.165553+00:00",
+      "timestamp_utc": "2026-10-14T09:22:33.616325+00:00",
       "platform": "macOS-27.0-arm64-arm-64bit",
       "os_tag": "macOS",
       "machine": "arm64",
@@ -161,6 +161,19 @@
         -0.020470323972404003
       ],
       "rBN_minus_rCN_norm": 0.0999999998949094,
+      "sigma_BN_tick0": [
+        0.05,
+        -0.05,
+        0.02
+      ],
+      "signed_residual_tick0": [
+        1.696805751461028e-10,
+        2.9635004953482147e-10,
+        -3.818182298109818e-10
+      ],
+      "signed_residual_norm": 5.122499488113152e-10,
+      "signed_residual_pass_1e8": true,
+      "signed_gate_note": "vec `-` wins (WP25-A1): residual r_BN-r_CN+R^T c ~0 per axis; `+` would read 2*R^T c ~= 0.2 m",
       "omegaDot_BN_B_tick0": [
         0.0,
         0.0,
@@ -356,16 +369,15 @@
       ],
       "thrustFactor_tick0": 0.0,
       "thrustFactor_steady": 0.0,
+      "idle_rows_superseded_by": "tests/test_wp4_offset.py:306-333 steady-tick anchor/bench (test_stock_finite_difference_anchor_host + test_omni_offset_bench_openloop_both_arms_host); probe tick0/idle rows are not arm evidence",
+      "firing_proven_steady": false,
+      "verdict_withheld": "leg idle at steady tick (thrustFactor/thrustForce ~0): no arm verdict may be read",
       "expect_unshifted_r_thr_x_F": [
         0.0,
         -0.5,
         0.0
       ],
-      "tel_minus_expect": [
-        0.0,
-        0.5,
-        0.0
-      ],
+      "tel_minus_expect": "withheld (leg idle)",
       "omega_BN_B_tick0": [
         0.0,
         0.0,

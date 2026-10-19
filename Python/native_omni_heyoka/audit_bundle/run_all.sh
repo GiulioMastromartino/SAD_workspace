@@ -28,9 +28,14 @@ fi
 echo "[run_all] python: ${PY}"
 "${PY}" --version || true
 
-# Run every probes/wp*.py sequentially; each probe writes results/<name>.json.
+# Run every envelope probe sequentially; each probe writes results/<name>.json.
 # Guard with `||` so one failing probe never stops the bundle (set -e safe).
-for f in "${PROBES_DIR}"/wp*.py; do
+# NOTE (replacement-matrix): swap_*/closed_loop_*/replacement_* probes are NOT
+# part of the wp* bundle_summary count (collect.py globs wp*.json only).
+for f in "${PROBES_DIR}"/wp*.py "${PROBES_DIR}"/swap_*.py \
+         "${PROBES_DIR}"/closed_loop_*.py "${PROBES_DIR}"/replacement_*.py \
+         "${PROBES_DIR}"/loop_*.py "${PROBES_DIR}"/fsw_*.py \
+         "${PROBES_DIR}"/bench_*.py; do
   name="$(basename "${f}" .py)"
   echo "[run_all] === ${name} ==="
   # Fresh log per run; probe appends via log_text().

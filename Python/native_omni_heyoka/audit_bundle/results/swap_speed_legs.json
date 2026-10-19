@@ -1,0 +1,179 @@
+{
+  "name": "swap_speed_legs",
+  "timestamp_utc": "2026-10-17T16:22:28.239124+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-17T16:22:28.256702+00:00",
+    "platform": "macOS-27.2-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "status": "ok",
+    "legs": {
+      "quiet_duty0_60s": {
+        "duty": 0.0,
+        "t_leg": 60.0,
+        "ticks": 600,
+        "dt": 0.1,
+        "fixture_class": "quiet",
+        "n_runs": 3,
+        "stock_wall_samples_s": [
+          0.0301,
+          0.0176,
+          0.0171
+        ],
+        "stock_wall_mean_s": 0.021602916667082656,
+        "stock_loadavg": [
+          [
+            3.609375,
+            6.7939453125,
+            6.33642578125
+          ],
+          [
+            3.609375,
+            6.7939453125,
+            6.33642578125
+          ],
+          [
+            3.609375,
+            6.7939453125,
+            6.33642578125
+          ]
+        ],
+        "omni_wall_samples_s": [
+          0.384,
+          0.0197,
+          0.0193
+        ],
+        "omni_build_wall_samples_s": [
+          0.0028,
+          0.0027,
+          0.0022
+        ],
+        "omni_loadavg": [
+          [
+            3.609375,
+            6.7939453125,
+            6.33642578125
+          ],
+          [
+            3.609375,
+            6.7939453125,
+            6.33642578125
+          ],
+          [
+            3.609375,
+            6.7939453125,
+            6.33642578125
+          ]
+        ],
+        "first_run_wall_s": 0.3839822089939844,
+        "first_per_step_ms": 0.64,
+        "warm_run_wall_s": 0.019476125497021712,
+        "warm_run_samples_s": [
+          0.0197,
+          0.0193
+        ],
+        "warm_per_step_ms": 0.0325,
+        "speedup_warm": 1.109,
+        "sim_end_nanos_ok": true,
+        "sim_end_nanos_expected": 60000000000
+      },
+      "long_warm_duty05_600s": {
+        "duty": 0.5,
+        "t_leg": 600.0,
+        "ticks": 6000,
+        "dt": 0.1,
+        "fixture_class": "firing",
+        "n_runs": 3,
+        "stock_wall_samples_s": [
+          0.1742,
+          0.1687,
+          0.1799
+        ],
+        "stock_wall_mean_s": 0.1742960280001474,
+        "stock_loadavg": [
+          [
+            3.609375,
+            6.7939453125,
+            6.33642578125
+          ],
+          [
+            3.609375,
+            6.7939453125,
+            6.33642578125
+          ],
+          [
+            3.609375,
+            6.7939453125,
+            6.33642578125
+          ]
+        ],
+        "omni_wall_samples_s": [
+          0.1708,
+          0.1263,
+          0.1125
+        ],
+        "omni_build_wall_samples_s": [
+          0.0027,
+          0.0031,
+          0.0026
+        ],
+        "omni_loadavg": [
+          [
+            3.609375,
+            6.7939453125,
+            6.33642578125
+          ],
+          [
+            3.609375,
+            6.7939453125,
+            6.33642578125
+          ],
+          [
+            3.609375,
+            6.7939453125,
+            6.33642578125
+          ]
+        ],
+        "first_run_wall_s": 0.17075237499375362,
+        "first_per_step_ms": 0.0285,
+        "warm_run_wall_s": 0.11938616700354032,
+        "warm_run_samples_s": [
+          0.1263,
+          0.1125
+        ],
+        "warm_per_step_ms": 0.0199,
+        "speedup_warm": 1.46,
+        "sim_end_nanos_ok": true,
+        "sim_end_nanos_expected": 600000000000
+      }
+    },
+    "loadavg": [
+      3.609375,
+      6.7939453125,
+      6.33642578125
+    ],
+    "loadavg_end": [
+      3.609375,
+      6.7939453125,
+      6.33642578125
+    ],
+    "note": "follow-up legs for the pinned swap_speed.json table (untouched): quiet leg tests the segmentation hypothesis at DUTY=0; long-warm leg tests per-step amortization over 600 s. In-process runs only (n=3/arm); cold-build stats live in swap_speed.json. Per-run loadavg provenance on every sample."
+  }
+}

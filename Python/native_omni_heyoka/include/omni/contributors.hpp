@@ -468,8 +468,10 @@ class ThrusterContributorT : public ContributorT<S> {
 public:
     ThrusterContributorT(std::vector<std::array<double, 3>> dirs,
                          std::vector<std::array<double, 3>> pos,
-                         std::vector<double> tmax)
-        : dirs_(std::move(dirs)), pos_(std::move(pos)), tmax_(std::move(tmax)) {
+                         std::vector<double> tmax,
+                         bool lag = false, double cutoff = 10.0)
+        : dirs_(std::move(dirs)), pos_(std::move(pos)), tmax_(std::move(tmax)),
+          lag_(lag), cutoff_(cutoff) {
         n_ = dirs_.size();
         // Per-axis CoM relevance (mask): c enters ONLY via t = (r-c) x F,
         // F = q*Tmax*d. Expanding: cx couples through dy,dz terms; cy
@@ -492,7 +494,7 @@ public:
     }
 
     std::string kind() const override { return "thruster"; }
-    size_t n_states() const override { return 0; }
+    size_t n_states() const override { return lag_ ? n_ : 0; }
     // The duty levels live in the INPUT block; the thruster has NO own
     // parameters of its own.  (Declaring both would double-count the q slots
     // and produce a par vector longer than the symbolic graph.)
@@ -500,7 +502,7 @@ public:
     // MaxSwirlTorque (module-written per tick, A2 by name; default 0.0, so
     // off by default). A dedicated slot is required because the swirl torque
     // points along the thrust axis d, which r x F folding cannot produce.
-    size_t n_inputs() const override { return n_ + 1; }
+    size_t n_inputs() const override { return n_ + 1 + (lag_ ? n_ : 0); }
     // Phase-2 swap: the aggregate-CoM arm offset lives in OWN parameters
     // (cBx,cBy,cBz subset by the relevance mask), module-written per tick
     // from live fuel (or the static record without fuel). Structural
@@ -526,11 +528,21 @@ public:
             if (cMask_[j]) o.push_back(comOff_[j]);
         return o;
     }
-    std::vector<std::string> state_names() const override { return {}; }
+    std::vector<std::string> state_names() const override {
+        if (!lag_) return {};
+        std::vector<std::string> o;
+        for (size_t i = 0; i < n_; ++i)
+            o.push_back("kappa" + std::to_string(i));
+        return o;
+    }
     std::vector<std::string> input_names() const override {
         std::vector<std::string> o;
         for (size_t i = 0; i < n_; ++i) o.push_back("q" + std::to_string(i));
         o.push_back("swirlScale");
+        if (lag_) {
+            for (size_t i = 0; i < n_; ++i)
+                o.push_back("kappaTarget" + std::to_string(i));
+        }
         return o;
     }
     bool has_force_torque() const override { return true; }
@@ -542,8 +554,17 @@ public:
     }
 
     std::vector<S> state_derivatives(const Vector3<S>&, const Vector3<S>&,
-                                     const EvalCtx<S>&) const override {
-        return {};
+                                     const EvalCtx<S>& ctx) const override {
+        if (!lag_) return {};
+        std::vector<S> out;
+        out.reserve(n_);
+        const std::vector<S>& P = ctx.pars;
+        for (size_t i = 0; i < n_; ++i) {
+            const S target = P[this->input_offset + n_ + 1 + i];
+            const S kappa = ctx.states[this->state_offset + i];
+            out.push_back(make_scalar<S>(cutoff_) * (target - kappa));
+        }
+        return out;
     }
 
     void computeForceTorque(double, double, ForceTorqueT<S>& ft,
@@ -554,14 +575,18 @@ public:
         Vector3<S> tB = zero_vec3<S>();
         for (size_t i = 0; i < n_; ++i) {
             const S q = P[this->input_offset + i];
+            S duty = q;
+            if (lag_) {
+                duty = ctx.states[this->state_offset + i];
+            }
             if constexpr (!is_expression_v<S>) {
-                if (q == static_cast<S>(0)) continue;  // skip idle thrusters
+                if (duty == static_cast<S>(0)) continue;  // skip idle thrusters
             }
             Vector3<S> d;
             d[0] = make_scalar<S>(dirs_[i][0]);
             d[1] = make_scalar<S>(dirs_[i][1]);
             d[2] = make_scalar<S>(dirs_[i][2]);
-            const S Fmag = q * make_scalar<S>(tmax_[i]);
+            const S Fmag = duty * make_scalar<S>(tmax_[i]);
             const Vector3<S> Fi = scale_vec3(d, Fmag);
             fB = vecadd3(fB, Fi);
             Vector3<S> r;
@@ -667,6 +692,10 @@ private:
     std::vector<double> tmax_;
     size_t n_ = 0;
     std::array<double, 3> comOff_{0.0, 0.0, 0.0};
+    // Thruster lag (state-effector emulation): first-order kappa state
+    // with tau = 1/cutoff_. Off by default (dynamic effector).
+    bool lag_ = false;
+    double cutoff_ = 10.0;
     // Per-axis CoM relevance (constructor-computed from dirs_/tmax_).
     std::array<bool, 3> cMask_{true, true, true};
 };

@@ -1,0 +1,94 @@
+{
+  "name": "env_parity_envbodies",
+  "timestamp_utc": "2026-10-17T16:22:40.194053+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-17T16:22:40.212234+00:00",
+    "platform": "macOS-27.2-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "status": "ok",
+    "cells": {
+      "nbody": {
+        "fixture": {
+          "orbit": "LEO 400 km circular still",
+          "extras": [
+            "sun",
+            "moon"
+          ],
+          "ephemeris": "static msgs",
+          "effector": "task GravityEffector (factory bodies)"
+        },
+        "dt": 0.1,
+        "ticks": 6000,
+        "t_leg": 600.0,
+        "tide_effect_m": 0.3189109960856856,
+        "status": "mirror-raises-on-host",
+        "mirror_raise": "ValueError: mirror_stock_config: GravityEffector is not mirrorable; envelope is hub + wheels + staircase thrusters + central gravity + explicit omni env (stock env effectors: use omni env setters instead); GravityEffector: central-body gravityModel unreadable (the concrete law lives in the _pyGravityModel shadow, gravityEffector.py:737-748, lost across the C++ copy); an unknowable law is rejected, never assumed point-mass -- the silent no-action ran omni without J2 while stock felt SH (env_parity_envbodies j2 cell, PLAN \u00a71.2).",
+        "cause": "host rejects the census before the N-body link: the central body's concrete law lives in the _pyGravityModel shadow and is lost across the C++ addBodiesTo copy, so the central-law gate fires first (the linked-reader/unrecoverable-writer-Message link gate is pinned host-free by test_reject_linked_but_sourceless_link).",
+        "loadavg": [
+          3.40625,
+          6.59130859375,
+          6.271484375
+        ]
+      },
+      "j2": {
+        "fixture": {
+          "orbit": "LEO 400 km circular still",
+          "central": "SH maxDeg=2 Cbar20=-4.8417e-4",
+          "J2_rule": "-sqrt(5)*Cbar20 = 1.0826e-3 (wp5_env:262-292)",
+          "effector": "task GravityEffector (factory body)"
+        },
+        "dt": 0.1,
+        "ticks": 6000,
+        "t_leg": 600.0,
+        "J2_expected": 0.0010826370326660732,
+        "census_shadow": {
+          "n_bodies": 1,
+          "iterated_has_py_shadow": [
+            false
+          ]
+        },
+        "j2_effect_m": 2378.4780594728823,
+        "status": "mirror-raises-on-host",
+        "mirror_raise": "ValueError: mirror_stock_config: GravityEffector is not mirrorable; envelope is hub + wheels + staircase thrusters + central gravity + explicit omni env (stock env effectors: use omni env setters instead); GravityEffector: central-body gravityModel unreadable (the concrete law lives in the _pyGravityModel shadow, gravityEffector.py:737-748, lost across the C++ copy); an unknowable law is rejected, never assumed point-mass -- the silent no-action ran omni without J2 while stock felt SH (env_parity_envbodies j2 cell, PLAN \u00a71.2).",
+        "cause": "staged _grav_model_name keys on the _pyGravityModel shadow; host stock bodies iterated from C++ vectors lost it (census_shadow all false), so the concrete law is unreadable and the reader REJECTS (never assumes point-mass, PLAN \u00a71.2). Before the reject landed the silent no-action ran omni without J2 while stock felt the SH field (~2.4 km / 600 s).",
+        "loadavg": [
+          3.40625,
+          6.59130859375,
+          6.271484375
+        ]
+      }
+    },
+    "dt": 0.1,
+    "t_leg": 600.0,
+    "ticks": 6000,
+    "loadavg": [
+      3.40625,
+      6.59130859375,
+      6.271484375
+    ],
+    "loadavg_end": [
+      3.40625,
+      6.59130859375,
+      6.271484375
+    ],
+    "verdict": "NO-GO (envbodies reader host gaps: the N-body sun/moon link's writer Message is unrecoverable -- loud raise; the central J2 law is unreadable across the C++ gravBodies copy -- loud reject, never assumed point-mass)"
+  }
+}

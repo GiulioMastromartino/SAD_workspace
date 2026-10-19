@@ -1,0 +1,81 @@
+{
+  "name": "swap_speed",
+  "timestamp_utc": "2026-10-17T16:22:25.336836+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-17T16:22:25.353595+00:00",
+    "platform": "macOS-27.2-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "status": "ok",
+    "n_runs": 3,
+    "fixture": "hub+3RW+1thr(5N,duty0.5)+fuel(10kg,centered)+central, 600 ticks @ dt=0.1, open-loop",
+    "ticks": 600,
+    "steps": 600,
+    "duty": 0.5,
+    "fixture_class": "firing",
+    "cold_build_s": 0.0,
+    "cold_build_wall_s": 0.8175039859973671,
+    "cold_build_wall_min_s": 0.0030483750015264377,
+    "cold_build_wall_max_s": 1.2300238750030985,
+    "cold_build_wall_samples_s": [
+      0.003,
+      1.23,
+      1.2194
+    ],
+    "warm_build_s": 0.0,
+    "warm_build_wall_s": 0.003062305331695825,
+    "stock_wall_s": 0.02471533332815549,
+    "stock_wall_min_s": 0.016695665995939635,
+    "stock_wall_max_s": 0.03880979199311696,
+    "stock_wall_samples_s": [
+      0.0388,
+      0.0186,
+      0.0167
+    ],
+    "omni_wall_s": 0.4187388473316484,
+    "first_run_min_s": 0.4048203749989625,
+    "first_run_max_s": 0.436507292004535,
+    "first_run_samples_s": [
+      0.4365,
+      0.4149,
+      0.4048
+    ],
+    "per_step_ms": 0.6979,
+    "warm_run_wall_s": 0.020246999668112647,
+    "warm_run_min_s": 0.01955833300598897,
+    "warm_run_max_s": 0.02088016599009279,
+    "warm_run_samples_s": [
+      0.0209,
+      0.0203,
+      0.0196
+    ],
+    "warm_steps": 600,
+    "sim_end_nanos_ok": true,
+    "sim_end_nanos_expected": 60000000000,
+    "warm_per_step_ms": 0.0337,
+    "speedup_warm": 1.221,
+    "loadavg": [
+      3.609375,
+      6.7939453125,
+      6.33642578125
+    ],
+    "note": "means of 3 runs per phase (cold: 1 in-process + 2 fresh interpreters); omni_wall_s/per_step_ms = FIRST omni run (includes JIT if lazy); warm_run_wall_s/warm_per_step_ms = post-cold runs (steady-state stepping iff cross-oi JIT cache works); speedup_warm = mean(stock)/mean(warm run); contention-inflated walls carry loadavg provenance."
+  }
+}

@@ -341,7 +341,11 @@ def _reject_unmirrored_cell():
                         thr_cmd_msg=objects[0]["thr_cmd"],
                         rw_models=[objects[0]["rw"]],
                         thr_models=[objects[0]["thr"]],
-                        fuel_models=[], use_gg=False)
+                        fuel_models=[], use_gg=False,
+                        drag_models=[], atmo_models=[], wind_models=[],
+                        srp_models=[], eclipse_models=[], mtb_models=[],
+                        magfield_models=[], grav_models=[],
+                        ephemeris_models=[], ext_models=[])
     scA.setIntegrator(oi)
     scA.syncDynamicsIntegration(scB)
     try:

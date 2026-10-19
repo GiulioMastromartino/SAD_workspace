@@ -163,6 +163,8 @@ def _run_two_ticks(sim, macros):
 
 def test_guard_force_msg_raises_and_disarmed_runs():
     """Bucket (a): linked THRArrayCmdForceMsg raises pre-propagation."""
+    pytest.importorskip("Basilisk.architecture.messaging",
+                        reason="host-only: needs Basilisk messaging")
     from Basilisk.architecture import messaging
     # Armed: linked force path raises at Reset (before first propagation).
     sim, sc, _ = _fresh_hub_wheel()

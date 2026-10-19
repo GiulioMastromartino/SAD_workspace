@@ -1,0 +1,57 @@
+{
+  "name": "hijack_scenarioTAM",
+  "timestamp_utc": "2026-10-17T16:25:22.338707+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-17T16:25:22.561484+00:00",
+    "platform": "macOS-27.2-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "demo": "scenarioTAM",
+    "tag": "v2.12.0",
+    "mode": "parity",
+    "scenario": "scenarioTAM.py",
+    "note": "default Jupiter elliptical centered-dipole + magnetometer READ (no MTB, no torque): exact-file field-only mag mirror test; central-Jupiter 1-orbit dt=10 -> basicOrbit horizon-class tol",
+    "port_path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/audit_bundle/results/scenarioTAM_omni.py",
+    "port_bytes": 14719,
+    "marked_blocks": 2,
+    "stock_exit": 0,
+    "stock_wall_s": 1.3,
+    "vacuity": [],
+    "omni_exit": 0,
+    "omni_wall_s": 1.9,
+    "omni_cold_wall_s": 1.9,
+    "speedup_cold": 0.684,
+    "speedup": 0.684,
+    "diffs": {
+      "r_BN_N": 0.003271494060754776,
+      "v_BN_N": 9.955947462003678e-07,
+      "sigma_BN": 0.0,
+      "omega_BN_B": 0.0
+    },
+    "tol": {
+      "r_BN_N": 0.05,
+      "v_BN_N": 0.0001,
+      "sigma_BN": 1e-09,
+      "omega_BN_B": 1e-09
+    },
+    "verdict": "parity green",
+    "status": "ok"
+  }
+}

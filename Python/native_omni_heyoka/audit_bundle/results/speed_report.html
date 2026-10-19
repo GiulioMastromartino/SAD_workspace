@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root { --ink: var(--foreground); --dim: var(--muted-foreground); }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); color: var(--ink); font-size: 13.5px; line-height: 1.5; }
+  .wrap { width: 100%; }
+  .prov { font-family: var(--font-mono); font-size: 11px; color: var(--dim); letter-spacing: .02em; margin: 0 0 14px; }
+  h2 { font-size: 11px; font-weight: 600; letter-spacing: .09em; text-transform: uppercase;
+       color: var(--dim); margin: 26px 0 10px; }
+  h2 .sub { text-transform: none; letter-spacing: 0; font-weight: 400; margin-left: 8px; }
+  p { margin: 8px 0; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .card { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+  .card .big { font-family: var(--font-mono); font-size: 25px; font-weight: 600; line-height: 1.1; letter-spacing: -.02em; }
+  .card .lbl { font-size: 11.5px; color: var(--dim); margin-top: 5px; }
+  .card .rng { font-family: var(--font-mono); font-size: 10.5px; color: var(--dim); margin-top: 6px; }
+  .card.hi .big { color: var(--accent); }
+  .card.wide .big { font-size: 20px; white-space: nowrap; }
+
+  .bars { display: flex; flex-direction: column; gap: 7px; }
+  .row { display: grid; grid-template-columns: 108px 1fr 132px; align-items: center; gap: 9px; }
+  .row .nm { font-family: var(--font-mono); font-size: 11.5px; color: var(--dim); text-align: right;
+             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .track { position: relative; height: 17px; background: var(--secondary); border-radius: 3px; overflow: hidden; }
+  .fill { position: absolute; inset: 0 auto 0 0; background: var(--chart-1); border-radius: 3px; }
+  .row.worse .fill { background: var(--destructive); opacity: .78; }
+  .un { position: absolute; top: -2px; bottom: -2px; width: 1px; background: var(--foreground); opacity: .38; }
+  .row .val { font-family: var(--font-mono); font-size: 11.5px; }
+  .row .val b { font-weight: 600; }
+  .row .val span { color: var(--dim); }
+
+  .leg { display: flex; flex-wrap: wrap; gap: 14px; font-size: 11.5px; color: var(--dim); margin: 10px 0 0; }
+  .leg i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+  svg { display: block; width: 100%; }
+  svg text { font-family: var(--font-mono); fill: var(--dim); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { text-align: left; font-size: 10.5px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;
+       color: var(--dim); padding: 0 10px 7px 0; border-bottom: 1px solid var(--border); }
+  td { padding: 8px 10px 8px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+  td.n { font-family: var(--font-mono); white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  .tag { font-family: var(--font-mono); font-size: 10.5px; padding: 1px 6px; border-radius: 3px;
+         border: 1px solid var(--border); color: var(--dim); }
+  .tag.good { color: var(--success); border-color: var(--success); }
+  .tag.warn { color: var(--warning); border-color: var(--warning); }
+  ul { margin: 8px 0; padding-left: 18px; }
+  li { margin: 7px 0; }
+  code { font-family: var(--font-mono); font-size: 11.5px; background: var(--code-background); color: var(--code-foreground);
+         padding: 1px 4px; border-radius: 3px; }
+</style>
+</head>
+<body>
+<main class="wrap">
+
+<p class="prov">source: bench_stock_vs_omni.json · tier=all · dt=0.1 · seed=20261016 · host loadavg 3.2 · 2026-10-17</p>
+
+<div class="cards">
+  <div class="card hi">
+    <div class="big">2.84&times;</div>
+    <div class="lbl">geomean, the 7 upstream demos</div>
+    <div class="rng">1.93&times; &ndash; 3.45&times;</div>
+  </div>
+  <div class="card">
+    <div class="big">1.44&times;</div>
+    <div class="lbl">geomean, all 30 timed cells</div>
+    <div class="rng">0.25&times; &ndash; 3.45&times; &nbsp; 2.34&rarr;1.33 s</div>
+  </div>
+  <div class="card wide">
+    <div class="big">1.09&ndash;1.60&times;</div>
+    <div class="lbl">isolated fixture, warm run only</div>
+    <div class="rng">600 / 6000 ticks</div>
+  </div>
+  <div class="card">
+    <div class="big">0.69&times;</div>
+    <div class="lbl">hijack legs, whole process</div>
+    <div class="rng">0.61&times; &ndash; 0.87&times;</div>
+  </div>
+</div>
+
+<h2>Per demo <span class="sub">in-process, both arms at the upstream horizon and dt</span></h2>
+<div class="bars" id="demoBars"></div>
+<p style="font-size:11.5px;color:var(--dim)">Bar is stock wall / omni wall. Vertical rule marks 1&times; (no gain). These seven are the matched-parity legs: identical dynamics, effectors and horizon, so the ratio is integrator throughput.</p>
+
+<h2>All 30 timed cells vs horizon <span class="sub">why the headline is the demo set, not the suite mean</span></h2>
+<svg id="scatter" viewBox="0 0 700 330" preserveAspectRatio="xMidYMid meet" style="height:330px" role="img" aria-label="speedup versus simulated horizon for all 30 cells"></svg>
+<div class="leg" id="legend"></div>
+<p style="font-size:11.5px;color:var(--dim)">Speedup rises with horizon and with effector cost, and collapses on the toy legs: every cell left of 100&nbsp;s totals under 25&nbsp;ms of stock wall. The three hollow markers are under 10&nbsp;ms total &mdash; there the ratio is timer noise, not throughput.</p>
+
+<h2>Four measurements, four different questions</h2>
+<table>
+  <thead><tr><th>Measurement</th><th>What is actually timed</th><th>Fixture</th><th>Result</th></tr></thead>
+  <tbody>
+    <tr>
+      <td class="n">demo cells</td>
+      <td>both arms built and run in one process, matched dt and horizon</td>
+      <td>7 upstream demos</td>
+      <td class="n"><span class="tag good">2.84&times;</span> geomean</td>
+    </tr>
+    <tr>
+      <td class="n">all cells</td>
+      <td>same method, plus 23 component/surface legs</td>
+      <td>T&nbsp;=&nbsp;6&ndash;1200 s</td>
+      <td class="n"><span class="tag warn">1.44&times;</span> geomean</td>
+    </tr>
+    <tr>
+      <td class="n">swap_speed</td>
+      <td>warm run only; build and import excluded</td>
+      <td>hub+3RW+thruster+fuel</td>
+      <td class="n">1.09&times; / 1.60&times;</td>
+    </tr>
+    <tr>
+      <td class="n">hijack legs</td>
+      <td>whole process, exact upstream file on both sides</td>
+      <td>7 demos, marked block only</td>
+      <td class="n">0.61&times;&ndash;0.87&times;</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>What the numbers do not say</h2>
+<ul>
+  <li><b>The 1.44&times; suite mean is not a claim about the demos.</b> It is dragged down by 23 deliberately tiny surface legs (T&nbsp;=&nbsp;6&ndash;120&nbsp;s) where a fixed per-step cost dominates. Compare like for like: the demo set is 2.84&times;, and the per-step cost is what the parity legs measure.</li>
+  <li><b>The isolated fixture disagrees with the demo cells, and that is real.</b> <code>swap_speed</code> carries a thruster plus a fuel tank; the larger symbolic system costs more per step to evaluate, so the same integrator swap buys less (1.09&times; at 60&nbsp;s, 1.60&times; at 600&nbsp;s). The omni win tracks how much of stock's time is SWIG message traffic, which grows with effector count.</li>
+  <li><b>The hijack ratios measure start-up, not throughput.</b> Each leg is a fresh interpreter: ~1.3&ndash;1.6&nbsp;s of stock run against ~2.0&ndash;2.3&nbsp;s of import plus symbolic build, on demos whose horizon is 80&ndash;600 steps. Read them as "the port boots in about the same wall time as the demo it replaces", not as a slowdown.</li>
+  <li><b>Single shot, loaded host.</b> Bench cells are one measurement each, no repeats, taken while the 1-min loadavg sat at 3.2. Treat single-digit-percent differences as noise; only the demo-tier and sub-1&times; separations are outside it.</li>
+  <li><b>Scope.</b> Every leg mirrors through the repo's <code>omniheyoka/swap.py</code> loaded by path with the installed <code>OmniVecIntegrator</code>. These numbers say nothing about the installed wheel's own <code>swap.py</code>.</li>
+</ul>
+
+</main>
+<script>
+(function () {
+  var DEMOS = [
+    { n: "attFeedbackRW",    T: 600,  s: 0.1408, o: 0.0408, x: 3.450 },
+    { n: "dragDeorbit",      T: 1200, s: 0.1759, o: 0.0552, x: 3.188 },
+    { n: "basicOrbit_GEO",   T: 600,  s: 0.0902, o: 0.0295, x: 3.056 },
+    { n: "basicOrbit_LEO",   T: 600,  s: 0.0880, o: 0.0292, x: 3.011 },
+    { n: "basicOrbit_GTO",   T: 600,  s: 0.0842, o: 0.0298, x: 2.825 },
+    { n: "attitudeGG",       T: 600,  s: 0.1000, o: 0.0370, x: 2.704 },
+    { n: "momentumDumping",  T: 300,  s: 0.0797, o: 0.0414, x: 1.925 }
+  ];
+  var CELLS = [
+    ["attFeedbackRW","demo",600,0.1408,3.450], ["dragDeorbit","demo",1200,0.1759,3.188],
+    ["basicOrbit_GEO","demo",600,0.0902,3.056], ["basicOrbit_LEO","demo",600,0.0880,3.011],
+    ["basicOrbit_GTO","demo",600,0.0842,2.825], ["attitudeGG","demo",600,0.1000,2.704],
+    ["momentumDumping","demo",300,0.0797,1.925],
+    ["env_drag","env",600,0.0995,2.983], ["env_srp","env",600,0.0940,2.833], ["env_drag_still","env",600,0.0886,2.738],
+    ["fuel_offset","fuel",600,0.1945,1.814], ["fuel_centered","fuel",600,0.1675,1.549],
+    ["fuel_srp","fuel",600,0.1626,1.458], ["fuel_drag","fuel",600,0.1608,1.404],
+    ["thr_fresh_05","thr",120,0.0430,1.428], ["thr_fresh_10","thr",120,0.0285,1.067],
+    ["thr_lag10","thr",120,0.0283,1.023], ["thr_offset","thr",60,0.0154,0.858],
+    ["thr_frozen","thr",30,0.0066,0.544], ["thr_writeonce","thr",20,0.0045,0.424],
+    ["rw1","rw",60,0.0245,1.900], ["hub","rw",60,0.0130,1.160], ["rw3_fric","rw",120,0.0314,1.169],
+    ["rw3_open_neg","rw",120,0.0305,1.153], ["rw3_pd","rw",120,0.0430,1.131],
+    ["rw3_open_pos","rw",120,0.0316,1.125], ["rw2","rw",60,0.0117,0.880],
+    ["rw1tilt","rw",60,0.0120,0.855], ["rw_diag3","rw",6,0.0034,0.252],
+    ["fsw","fsw",600,0.2817,1.288]
+  ];
+  var GROUPS = [["demo","demo"],["env","env"],["fuel","fuel"],["thr","thr"],["rw","rw"],["fsw","fsw"]];
+  var COL = { demo:"--chart-1", env:"--chart-2", fuel:"--chart-3", thr:"--chart-4", rw:"--chart-5", fsw:"--chart-6" };
+  function c(g, a) { return "color-mix(in srgb, var(" + (COL[g] || "--chart-1") + ") " + (a * 100) + "%, transparent)"; }
+
+  /* ---- demo bars ---- */
+  var MAXB = 3.6, host = document.getElementById("demoBars");
+  DEMOS.forEach(function (d) {
+    var r = document.createElement("div");
+    r.className = "row" + (d.x < 1 ? " worse" : "");
+    var w = (d.x / MAXB) * 100, u = (1 / MAXB) * 100;
+    r.innerHTML =
+      '<div class="nm">' + d.n + '</div>' +
+      '<div class="track"><div class="fill" style="width:' + w.toFixed(2) + '%"></div>' +
+      '<div class="un" style="left:' + u.toFixed(2) + '%"></div></div>' +
+      '<div class="val"><b>' + d.x.toFixed(2) + '&times;</b> <span>' + (d.s * 1000).toFixed(1) + '&rarr;' + (d.o * 1000).toFixed(1) + ' ms</span></div>';
+    host.appendChild(r);
+  });
+
+  /* ---- scatter ---- */
+  var svg = document.getElementById("scatter"), NS = "http://www.w3.org/2000/svg";
+  var L = 46, R = 16, TP = 20, B = 36, W = 700, H = 330;
+  var px = W - L - R, py = H - TP - B;
+  var xmin = 5, xmax = 1500, ymax = 3.6;
+  function X(t) { return L + (Math.log10(t) - Math.log10(xmin)) / (Math.log10(xmax) - Math.log10(xmin)) * px; }
+  function Y(v) { return TP + py - (Math.min(v, ymax) / ymax) * py; }
+  function mk(tag, at, txt) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in at) e.setAttribute(k, at[k]);
+    if (txt != null) e.textContent = txt;
+    svg.appendChild(e);
+    return e;
+  }
+  [0, 1, 2, 3].forEach(function (v) {
+    mk("line", { x1: L, x2: L + px, y1: Y(v), y2: Y(v), stroke: "var(--border)", "stroke-width": v === 1 ? 1.4 : 1,
+                 "stroke-dasharray": v === 1 ? "5 4" : "0", opacity: v === 1 ? 0.9 : 0.55 });
+    mk("text", { x: L - 8, y: Y(v) + 3.5, "text-anchor": "end", "font-size": "10.5" }, v + "\u00d7");
+  });
+  [10, 30, 100, 300, 1000].forEach(function (t) {
+    mk("line", { x1: X(t), x2: X(t), y1: TP, y2: TP + py, stroke: "var(--border)", opacity: 0.4 });
+    mk("text", { x: X(t), y: TP + py + 15, "text-anchor": "middle", "font-size": "10.5" }, t + " s");
+  });
+  mk("text", { x: L, y: H - 6, "font-size": "10.5" }, "simulated horizon (log)");
+  CELLS.forEach(function (c2) {
+    var n = c2[0], g = c2[1], T = c2[2], sw = c2[3], v = c2[4], noisy = sw < 0.01;
+    mk("circle", {
+      cx: X(T), cy: Y(v), r: noisy ? 3.6 : 5,
+      fill: noisy ? "var(--background)" : c(g, 1),
+      stroke: noisy ? c(g, 1) : "var(--background)", "stroke-width": noisy ? 1.8 : 1
+    }).appendChild(mk("title", {}, n + " \u2014 " + v.toFixed(3) + "\u00d7 at T=" + T + " s (stock " + (sw * 1000).toFixed(1) + " ms)"));
+  });
+  mk("text", { x: X(1200) + 4, y: Y(3.188) - 11, "text-anchor": "end", "font-size": "10.5" }, "dragDeorbit");
+  mk("text", { x: X(600) - 6, y: Y(3.45) + 18, "text-anchor": "end", "font-size": "10.5" }, "attFeedbackRW");
+  mk("text", { x: X(6) + 8, y: Y(0.252) + 3.5, "font-size": "10.5" }, "rw_diag3");
+
+  var lg = document.getElementById("legend");
+  GROUPS.forEach(function (g) {
+    var s = document.createElement("span");
+    s.innerHTML = '<i style="background:' + c(g[0], 1) + '"></i>' + g[1];
+    lg.appendChild(s);
+  });
+  var s2 = document.createElement("span");
+  s2.innerHTML = '<i style="background:var(--background);border:1.8px solid var(--muted-foreground)"></i>under 10 ms total';
+  lg.appendChild(s2);
+
+  console.log("demo geomean", (DEMOS.reduce(function (a, d) { return a + Math.log(d.x); }, 0) / DEMOS.length).toFixed(3));
+})();
+</script>
+</body>
+</html>

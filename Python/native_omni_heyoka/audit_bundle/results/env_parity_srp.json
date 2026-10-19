@@ -1,0 +1,214 @@
+{
+  "name": "env_parity_srp",
+  "timestamp_utc": "2026-10-17T16:22:34.177033+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-17T16:22:34.195413+00:00",
+    "platform": "macOS-27.2-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "status": "ok",
+    "cells": {
+      "leg": {
+        "fixture": {
+          "orbit": "LEO 400 km circular still",
+          "area": 10.0,
+          "C_R": 1.5,
+          "cr": 0.5,
+          "sun": "static",
+          "eclipse": "unlinked/full-sun"
+        },
+        "dt": 0.1,
+        "ticks": 6000,
+        "t_leg": 600.0,
+        "r_BN_N": 4.377216100692749e-08,
+        "v_BN_N": 1.3915268937125802e-10,
+        "sigma_BN": 0.0,
+        "omega_BN_B": 0.0,
+        "srp_single_tick_meas": 9.031834835582231e-09,
+        "srp_single_tick_analytic": 9.031834770923471e-09,
+        "srp_single_tick_ratio": 1.0000000071589839,
+        "steps": 6000,
+        "calls": 6000,
+        "nStates": 12,
+        "build_s": 0.3704,
+        "loadavg": [
+          3.44189453125,
+          6.65234375,
+          6.291015625
+        ],
+        "mirror": {
+          "mass": 750.0,
+          "mu": 398600436000000.0,
+          "use_gg": false,
+          "n_wheels": 0,
+          "n_thrusters": 0,
+          "n_fuel": 0,
+          "friction_on": false,
+          "rBcB": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "object_index": 0,
+          "n_drag": 0,
+          "n_extra_bodies": 0,
+          "j2": null,
+          "env": {
+            "drag": {
+              "n_drag": 0,
+              "object_index": null,
+              "n_atmo_models": 0,
+              "n_wind_models": 0,
+              "task_entry": "routed: stock task entry retained (never mutated); effector dynamics superseded by omni setters (sc detachment); field-module links forwarded only"
+            },
+            "srp": {
+              "staged": true,
+              "n_models": 1,
+              "object_index": null,
+              "srp": [
+                {
+                  "class": "RadiationPressure",
+                  "kind": "cannonball",
+                  "setter": "setSRPCannonball",
+                  "args": [
+                    10.0,
+                    0.5
+                  ],
+                  "area": 10.0,
+                  "coefficientReflection": 1.5,
+                  "cr": 0.5
+                }
+              ],
+              "link_needs": [
+                {
+                  "kind": "sun",
+                  "class": "RadiationPressure",
+                  "attr": "sunEphmInMsg",
+                  "src": "<Basilisk.architecture.messaging.SpicePlanetStateMsgPayload.SpicePlanetStateMsgReader; proxy of <Swig Object of type 'ReadFunctor< SpicePlanetStateMsgPayload > *' at 0x1554810b0> >",
+                  "linked": true,
+                  "required": true,
+                  "omni": {
+                    "slot0": "oi.sunStateInMsg.subscribeTo(src)",
+                    "for_object": "oi.subscribeSunForObject(object_index, src)",
+                    "slot0_subscribe_exists": false
+                  },
+                  "note": "resolve the OUT-message source in the wiring batch (PLAN_ENV_MIRROR \u00a75 eclipse module / \u00a76.3 ephemeris providers): a stock reader functor does not expose its source in Python, and the verified omni surface has no slot-0 subscribeSun/subscribeEclipse (only the ...ForObject twins and the slot-0 message members)"
+                },
+                {
+                  "kind": "eclipse",
+                  "class": "RadiationPressure",
+                  "attr": "sunEclipseInMsg",
+                  "src": "<Basilisk.architecture.messaging.EclipseMsgPayload.EclipseMsgReader; proxy of <Swig Object of type 'ReadFunctor< EclipseMsgPayload > *' at 0x15fe8d8f0> >",
+                  "linked": false,
+                  "required": false,
+                  "omni": {
+                    "slot0": "oi.eclipseInMsg.subscribeTo(src)",
+                    "for_object": "oi.subscribeEclipseForObject(object_index, src)",
+                    "slot0_subscribe_exists": false
+                  },
+                  "note": "resolve the OUT-message source in the wiring batch (PLAN_ENV_MIRROR \u00a75 eclipse module / \u00a76.3 ephemeris providers): a stock reader functor does not expose its source in Python, and the verified omni surface has no slot-0 subscribeSun/subscribeEclipse (only the ...ForObject twins and the slot-0 message members)"
+                }
+              ],
+              "sun_link": "sunStateInMsg.subscribeTo",
+              "n_sun_sources": 1,
+              "eclipse_link": "deferred-to-eclipse-models",
+              "task_entry": "routed: stock task entry retained (never mutated); effector dynamics superseded by omni setters (sc detachment); field-module links forwarded only"
+            },
+            "mag": {
+              "object_index": 0,
+              "n_mtb": 0,
+              "n_magfield": 0,
+              "magnetic_moment": null,
+              "max_mtb_dipole": null,
+              "dipole_gh": null,
+              "mag_msg_wired": false,
+              "mag_link": null,
+              "mag_link_src": null,
+              "latched_dipole": false,
+              "task_entry": "routed: stock task entry retained (never mutated); effector dynamics superseded by omni setters (sc detachment); field-module links forwarded only"
+            },
+            "eclipse": {
+              "n_eclipse": 0,
+              "class": null,
+              "object_index": null,
+              "spacecraft_registered": 0,
+              "position_msgs": null,
+              "planet_msgs": null,
+              "sun_linked": null,
+              "rEqCustom": null,
+              "payload_field": "shadowFactor",
+              "shadow_factor_default": 1.0,
+              "unlinked_legal": true,
+              "linked": false,
+              "eclipse_link": "unlinked",
+              "eclipse_src": null,
+              "eclipse_out_index": null,
+              "order_match": "eclipseOutMsgs[i] in addSpacecraftToModel order (wrapper eclipse.py:369 appends one out-message per spacecraft; mirror object i in the same order it registered that spacecraft)",
+              "task_entry": "stays-in-task: the Eclipse module is a field module (plain SysModel, PLAN \u00a71.1); only its out-message is forwarded, never removed."
+            },
+            "envbodies": {
+              "n_grav": 0,
+              "n_bodies": 0,
+              "n_central": 0,
+              "n_noncentral": 0,
+              "n_extra_bodies": 0,
+              "bodies": [],
+              "j2": {
+                "j2": null,
+                "note": "no central body in census"
+              },
+              "j2_note": "no central body in census",
+              "stays_in_task": [],
+              "object_index": null,
+              "j2_check": {
+                "j2": null,
+                "setter": null,
+                "args": null,
+                "validated": true,
+                "object_index": null
+              },
+              "task_entry": "routed: stock task entry retained (never mutated); effector dynamics superseded by omni setters (sc detachment); field-module links forwarded only"
+            },
+            "object_index": null
+          },
+          "ext": {
+            "n_ext": 0,
+            "constant": false,
+            "msgs": []
+          }
+        }
+      }
+    },
+    "dt": 0.1,
+    "t_leg": 600.0,
+    "ticks": 6000,
+    "loadavg": [
+      3.48046875,
+      6.71435546875,
+      6.310546875
+    ],
+    "loadavg_end": [
+      3.44189453125,
+      6.65234375,
+      6.291015625
+    ],
+    "verdict": "parity green"
+  }
+}

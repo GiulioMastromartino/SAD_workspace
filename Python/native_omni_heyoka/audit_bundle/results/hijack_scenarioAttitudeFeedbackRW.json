@@ -1,0 +1,59 @@
+{
+  "name": "hijack_scenarioAttitudeFeedbackRW",
+  "timestamp_utc": "2026-10-17T16:22:47.053382+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-17T16:22:47.286946+00:00",
+    "platform": "macOS-27.2-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "demo": "scenarioAttitudeFeedbackRW",
+    "tag": "v2.12.0",
+    "mode": "parity",
+    "scenario": "scenarioAttitudeFeedbackRW.py",
+    "note": "upstream default runs WITH voltage IO (kept verbatim); wheels carry the coupled-state switching bound",
+    "port_path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/audit_bundle/results/scenarioAttitudeFeedbackRW_omni.py",
+    "port_bytes": 35290,
+    "marked_blocks": 2,
+    "stock_exit": 0,
+    "stock_wall_s": 1.7,
+    "vacuity": [],
+    "omni_exit": 0,
+    "omni_wall_s": 2.1,
+    "omni_cold_wall_s": 2.2,
+    "speedup_cold": 0.773,
+    "speedup": 0.81,
+    "diffs": {
+      "r_BN_N": 9.313225746154785e-10,
+      "v_BN_N": 3.126388037344441e-13,
+      "sigma_BN": 8.345104121620928e-16,
+      "omega_BN_B": 6.796931181947408e-17,
+      "wheels": 1.7820411812863313e-11
+    },
+    "tol": {
+      "r_BN_N": 1e-09,
+      "v_BN_N": 1e-09,
+      "sigma_BN": 1e-09,
+      "omega_BN_B": 1e-09,
+      "wheels": 0.0001
+    },
+    "verdict": "parity green",
+    "status": "ok"
+  }
+}

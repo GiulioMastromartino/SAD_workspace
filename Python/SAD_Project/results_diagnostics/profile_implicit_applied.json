@@ -1,0 +1,208 @@
+{
+  "runs": 10,
+  "seed": 42,
+  "disperse": true,
+  "batch_ms": 163.772042,
+  "py_wall_ms": 163.81150000961497,
+  "track_dt": 1.0,
+  "implicit_pd": true,
+  "implicit_track_only": true,
+  "steps": 94442,
+  "phase_steps": [
+    200,
+    1418,
+    92824
+  ],
+  "us_per_step": 1.7341017979288875,
+  "ns": {
+    "sun_step": 12191026.0,
+    "  sun_point_quat": 8126324.0,
+    "startracker_step": 11057375.0,
+    "mission_step": 1993995.0,
+    "quatpd_step": 1986845.0,
+    "thruster_allocate": 10299143.0,
+    "  alloc_build_A": 543.0,
+    "  alloc_jacobiSVD": 52791.0,
+    "  alloc_clamp_scale": 2052765.0,
+    "  alloc_solve": 2128811.0,
+    "allocator_init": 55876.0,
+    "thruster_step": 6936672.0,
+    "  thr_dir_normalize": 2707013.0,
+    "dynamics_step": 95414485.0,
+    "  dyn_vector_allocs": 12877184.0,
+    "  rhs_total(4 stages)": 56918212.0,
+    "    rhs_quat_to_dcm": 7422246.0,
+    "    rhs_gravity_grad": 7593896.0,
+    "    rhs_quat_deriv": 7772942.0,
+    "kpi_bookkeeping": 1960161.0,
+    "dispersion": 3749.0,
+    "per_run_setup": 87458.0,
+    "loop_iteration_total": 161429892.0
+  },
+  "calls": {
+    "sun_step": 94442,
+    "  sun_point_quat": 94442,
+    "startracker_step": 94442,
+    "mission_step": 94442,
+    "quatpd_step": 94442,
+    "thruster_allocate": 94442,
+    "  alloc_build_A": 10,
+    "  alloc_jacobiSVD": 10,
+    "  alloc_clamp_scale": 94442,
+    "  alloc_solve": 94442,
+    "allocator_init": 10,
+    "thruster_step": 94442,
+    "  thr_dir_normalize": 94442,
+    "dynamics_step": 94442,
+    "  dyn_vector_allocs": 94442,
+    "  rhs_total(4 stages)": 377768,
+    "    rhs_quat_to_dcm": 377768,
+    "    rhs_gravity_grad": 377768,
+    "    rhs_quat_deriv": 377768,
+    "kpi_bookkeeping": 92832,
+    "dispersion": 10,
+    "per_run_setup": 10,
+    "loop_iteration_total": 94442
+  },
+  "phase_ns": {
+    "sun_step": [
+      26623.0,
+      182581.0,
+      11981822.0
+    ],
+    "  sun_point_quat": [
+      17544.0,
+      121224.0,
+      7987556.0
+    ],
+    "startracker_step": [
+      23796.0,
+      163050.0,
+      10870529.0
+    ],
+    "mission_step": [
+      3918.0,
+      30989.0,
+      1959088.0
+    ],
+    "quatpd_step": [
+      4328.0,
+      28711.0,
+      1953806.0
+    ],
+    "thruster_allocate": [
+      22245.0,
+      154332.0,
+      10122566.0
+    ],
+    "  alloc_build_A": [
+      42.0,
+      125.0,
+      376.0
+    ],
+    "  alloc_jacobiSVD": [
+      9875.0,
+      5166.0,
+      37750.0
+    ],
+    "  alloc_clamp_scale": [
+      4662.0,
+      30471.0,
+      2017632.0
+    ],
+    "  alloc_solve": [
+      4458.0,
+      31935.0,
+      2092418.0
+    ],
+    "allocator_init": [
+      10292.0,
+      5458.0,
+      40126.0
+    ],
+    "thruster_step": [
+      19578.0,
+      103447.0,
+      6813647.0
+    ],
+    "  thr_dir_normalize": [
+      11084.0,
+      39860.0,
+      2656069.0
+    ],
+    "dynamics_step": [
+      202629.0,
+      1438714.0,
+      93773142.0
+    ],
+    "  dyn_vector_allocs": [
+      28375.0,
+      201585.0,
+      12647224.0
+    ],
+    "  rhs_total(4 stages)": [
+      120417.0,
+      848439.0,
+      55949356.0
+    ],
+    "    rhs_quat_to_dcm": [
+      14623.0,
+      110924.0,
+      7296699.0
+    ],
+    "    rhs_gravity_grad": [
+      14876.0,
+      113476.0,
+      7465544.0
+    ],
+    "    rhs_quat_deriv": [
+      15701.0,
+      114818.0,
+      7642423.0
+    ],
+    "kpi_bookkeeping": [
+      0.0,
+      582.0,
+      1959579.0
+    ],
+    "dispersion": [
+      917.0,
+      374.0,
+      2458.0
+    ],
+    "per_run_setup": [
+      13750.0,
+      11042.0,
+      62666.0
+    ],
+    "loop_iteration_total": [
+      340289.0,
+      2361109.0,
+      158728494.0
+    ]
+  },
+  "run_ms": [
+    1.1235,
+    20.322917,
+    20.254917,
+    20.10425,
+    20.289875,
+    20.037417,
+    1.106542,
+    20.206917,
+    20.049,
+    20.264208
+  ],
+  "params": {
+    "detumble_K": 0.5721396611077577,
+    "detumble_P": 0.9463255432114082,
+    "detumble_Ki": 0.0005095699467074285,
+    "slew_K": 1.0585247399428523,
+    "slew_P": 0.3007473054295797,
+    "slew_Ki": 0.0005765020006137734,
+    "track_K": 0.020689329246975433,
+    "track_P": 27.177817538325897,
+    "track_Ki": 0.0015148013290261003,
+    "TS": 64.91368594399884
+  }
+}

@@ -1,12 +1,12 @@
 {
   "name": "wp2_friction_jitter_voltage",
-  "timestamp_utc": "2026-10-14T08:10:49.229791+00:00",
+  "timestamp_utc": "2026-10-14T09:22:30.455541+00:00",
   "platform": "macOS-27.0-arm64-arm-64bit",
   "python": "3.11.16",
   "basilisk": "2.12.0",
   "heyoka": "7.12.1",
   "env": {
-    "timestamp_utc": "2026-10-14T08:10:49.229815+00:00",
+    "timestamp_utc": "2026-10-14T09:22:30.455572+00:00",
     "platform": "macOS-27.0-arm64-arm-64bit",
     "os_tag": "macOS",
     "machine": "arm64",
@@ -31,7 +31,7 @@
     "has_basilisk": true,
     "has_numpy": true,
     "env": {
-      "timestamp_utc": "2026-10-14T08:10:48.237585+00:00",
+      "timestamp_utc": "2026-10-14T09:22:29.831205+00:00",
       "platform": "macOS-27.0-arm64-arm-64bit",
       "os_tag": "macOS",
       "machine": "arm64",
@@ -456,6 +456,6 @@
         }
       }
     },
-    "elapsed_s": 0.9921920299530029
+    "elapsed_s": 0.6243269443511963
   }
 }

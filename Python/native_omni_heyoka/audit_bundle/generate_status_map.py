@@ -1,28 +1,34 @@
 #!/usr/bin/env python3
 """
-generate_status_map.py - High-granularity status manifest & visual progress generator
+generate_status_map.py - Measured status manifest & visual progress generator
 for native_omni_heyoka astrodynamics porting pipeline.
 
-Extracts hundreds of discrete units:
-  - 225 granular automated test cases (via AST across tests/test_*.py)
-  - 21 numerical simulation parity cells (from audit_bundle/results/swap_p1_parity.json)
-  - 30 adversarial audit items (C1, H1-H8, M1-M16, L1-L5, X1-X5 from Audit_0-2.md)
-Total: 276 granular verification units.
+MEASURED method (no name-grading): every test-case unit takes its status from
+an actual pytest run (JUnit XML parsed with stdlib): passed -> verified,
+failed/error -> failed, skipped (host-dep) -> skipped, skipped (ledger
+absent) / not collected -> unstarted. Parity cells take theirs from the
+ledger verdict PLUS freshness vs sensitive sources. Nothing is "verified"
+without execution evidence. Audit-finding items remain author-graded.
 
 Outputs (under audit_bundle/results/):
-  - status_manifest.json (complete 276-unit machine-readable registry)
+  - status_manifest.json (machine-readable registry + measurement block)
   - status_map.svg (high-density 16-column vector matrix)
   - status_dashboard.html (interactive high-density matrix with live tooltips & filtering)
+  - pytest_junit.xml (raw pytest evidence this manifest was graded from)
 
 Usage:
-  python3 audit_bundle/generate_status_map.py
+  python3 audit_bundle/generate_status_map.py [--pytest-timeout SEC] [--no-pytest]
 """
 from __future__ import annotations
 
 import argparse
 import ast
+import datetime
 import json
 import math
+import subprocess
+import sys
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 # Subsystem classifications for test modules
@@ -42,49 +48,227 @@ SUBSYSTEM_MAP = {
     "test_wp5_env": {"name": "Gravity, SRP & Drag Laws", "cat": "Disturbances"},
     "test_wp6_telemetry": {"name": "Telemetry & Live Fuel", "cat": "Telemetry"},
     "test_wp7_dispersion_jit": {"name": "Monte Carlo JIT Scaling", "cat": "Architecture"},
+    "test_loop_split": {"name": "Task Cost Split", "cat": "Architecture"},
+    "test_cpp_values": {"name": "C++ Absolute-Value Pins", "cat": "Core Math"},
+    "test_replacement_matrix": {"name": "Replacement Matrix", "cat": "Architecture"},
+    "test_replacement_gaps": {"name": "Loud-Reject Pins", "cat": "Architecture"},
 }
+
+# --- measured-result plumbing (single source: pytest JUnit + ledger evidence) ---
+
+# Skip reasons meaning "proof ledger absent" (unmeasured) vs any other skip
+# (host-dep: importorskip without Basilisk/wheel -- known env limit).
+# NOTE: bare "missing" is deliberately NOT a hint -- host-capability skips
+# like "bash missing / C++ missing" are host-dep (skipped), not proof-absent.
+SKIP_LEDGER_HINTS = ("probe not run", "ledger", "bundle_summary",
+                     "not run on this host", "not recorded yet")
+
+try:
+    sys.path.insert(0, str(Path(__file__).resolve().parent / "probes"))
+    from replacement_matrix import SENSITIVE as LEDGER_SENSITIVE  # mirrors probe
+except Exception:
+    # Fallback (same mapping as probes/replacement_matrix.py SENSITIVE).
+    LEDGER_SENSITIVE = {
+        "swap_p1_parity": ["src/omni_vec_integrator.cpp", "include/omni/contributors.hpp",
+                           "include/omni/system.hpp", "include/omni/environment.hpp",
+                           "omniheyoka/swap.py", "audit_bundle/probes/swap_p1_parity.py"],
+        "swap_multi": ["src/omni_vec_integrator.cpp", "include/omni/system.hpp",
+                       "omniheyoka/swap.py", "audit_bundle/probes/swap_multi.py"],
+        "closed_loop_fuel": ["src/omni_vec_integrator.cpp", "include/omni/contributors.hpp",
+                             "omniheyoka/swap.py", "audit_bundle/probes/closed_loop_fuel.py"],
+        "vec_mrp_switch_trace": ["src/omni_vec_integrator.cpp", "include/omni/mrp_t.hpp"],
+        "wp2_friction_jitter_voltage": ["src/omni_spacecraft.cpp", "src/omni_vec_integrator.cpp",
+                                        "audit_bundle/probes/wp2_friction_jitter_voltage.py"],
+        "wp3_timing": ["src/omni_spacecraft.cpp", "src/omni_vec_integrator.cpp",
+                       "omniheyoka/swap.py", "audit_bundle/probes/wp3_timing.py"],
+        "wp45_combo": ["src/omni_spacecraft.cpp", "src/omni_vec_integrator.cpp",
+                       "include/omni/environment.hpp", "audit_bundle/probes/wp45_combo.py"],
+    }
+
+
+def resolve_pytest_python(base_dir: Path) -> tuple:
+    """Pick the interpreter for the pytest run: repo env first (mirrors
+    run_all.sh), then the invoking python. Returns (path, pytest_version or
+    None). Never raises."""
+    cands = [base_dir.parent / "env" / "bin" / "python",
+             base_dir / "env" / "bin" / "python",
+             Path(sys.executable)]
+    for c in cands:
+        try:
+            if not (c.exists() if isinstance(c, Path) else False):
+                continue
+            proc = subprocess.run([str(c), "-c",
+                                   "import pytest; print(pytest.__version__)"],
+                                  capture_output=True, text=True, timeout=60)
+            if proc.returncode == 0:
+                return str(c), (proc.stdout or "").strip()
+        except Exception:
+            continue
+    return str(sys.executable), None
+
+
+def run_pytest_junit(tests_dir: Path, junit_path: Path, timeout_s: int,
+                     python: str) -> dict:
+    """Run the full pytest suite once; never raises. Returns a meta dict."""
+    meta = {"ran": False, "returncode": None, "timeout_s": timeout_s,
+            "python": python, "pytest": None,
+            "junit": str(junit_path), "error": None,
+            "n_passed": 0, "n_failed": 0, "n_skipped": 0}
+    # --continue-on-collection-errors: one unimportable module must never
+    # zero out the other ~270 tests (exit 2 with 0 collected).
+    cmd = [python, "-m", "pytest", str(tests_dir), "-q", "--tb=no",
+           "-p", "no:cacheprovider", "--continue-on-collection-errors",
+           f"--junit-xml={junit_path}"]
+    # Run from the Python/ repo root (not native_omni_heyoka/): `python -m`
+    # puts cwd on sys.path, and several test modules import the sibling
+    # `cubesat_12u_sim` package (via omniheyoka.presets). Belt and braces:
+    # export the same PYTHONPATH run_all.sh uses.
+    import os as _os
+    repo_root = str(tests_dir.parent.parent)
+    child_env = dict(_os.environ)
+    child_env["PYTHONPATH"] = _os.pathsep.join(
+        [repo_root] + ([child_env["PYTHONPATH"]] if child_env.get("PYTHONPATH") else []))
+    try:
+        proc = subprocess.run(cmd, cwd=repo_root,
+                              capture_output=True, text=True, timeout=timeout_s,
+                              env=child_env)
+        meta["ran"] = True
+        meta["returncode"] = proc.returncode
+        meta["stdout_tail"] = (proc.stdout or "")[-2000:]
+        if proc.returncode not in (0, 1, 2, 5):
+            meta["error"] = (f"unexpected pytest exit {proc.returncode}; "
+                             f"stderr: {(proc.stderr or '')[-500:]}")
+    except FileNotFoundError as exc:
+        meta["error"] = f"python/pytest unavailable: {exc}"
+    except subprocess.TimeoutExpired:
+        meta["ran"] = True
+        meta["returncode"] = "timeout"
+        meta["error"] = (f"pytest timed out after {timeout_s}s; "
+                         "grading from partial JUnit if any")
+    return meta
+
+
+def parse_junit(junit_path: Path) -> tuple:
+    """JUnit XML -> ({unit_id "stem::test": (outcome, message)},
+    {stem: collection-error message}). Never raises."""
+    out: dict = {}
+    coll_errors: dict = {}
+    try:
+        root = ET.parse(str(junit_path)).getroot()
+    except Exception:
+        return out, coll_errors
+    for tc in root.iter("testcase"):
+        classname = tc.get("classname", "") or ""
+        raw_name = tc.get("name", "") or ""
+        stem = classname.split(".")[-1] or Path(tc.get("file", "") or "").stem
+        name = raw_name.split("[")[0]
+        if not stem or not name:
+            # File-level collection error: name is the module path.
+            maybe_stem = raw_name.split(".")[-1]
+            el = tc.find("error")
+            if maybe_stem.startswith("test_") and el is not None:
+                coll_errors[maybe_stem] = str(el.get("message", "") or "")[:300]
+            continue
+        outcome, msg = "passed", ""
+        el = tc.find("failure")
+        if el is None:
+            el = tc.find("error")
+            outcome = "error" if el is not None else outcome
+        else:
+            outcome = "failed"
+        if el is not None:
+            msg = str(el.get("message", "") or "")[:300]
+        else:
+            sk = tc.find("skipped")
+            if sk is not None:
+                outcome = "skipped"
+                msg = str(sk.get("message", "") or "")[:300]
+        out[f"{stem}::{name}"] = (outcome, msg)
+    return out, coll_errors
+
+
+def ledger_fresh(name: str, results_dir: Path, base_dir: Path) -> tuple:
+    """(fresh True/False, margin_s, reason) vs sensitive sources. Never raises."""
+    p = results_dir / f"{name}.json"
+    if not p.exists():
+        return None, None, "ledger absent"
+    try:
+        doc = json.loads(p.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return False, None, f"unreadable: {exc}"
+    ts = None
+    if isinstance(doc, dict) and doc.get("timestamp_utc"):
+        try:
+            ts = datetime.datetime.fromisoformat(
+                str(doc["timestamp_utc"])).timestamp()
+        except Exception:
+            ts = None
+    if ts is None:
+        try:
+            ts = p.stat().st_mtime
+        except OSError:
+            pass
+    newest, newest_name = None, None
+    for s in LEDGER_SENSITIVE.get(name, []):
+        try:
+            m = (base_dir / s).stat().st_mtime
+        except OSError:
+            continue
+        if newest is None or m > newest:
+            newest, newest_name = m, s
+    if ts is None or newest is None:
+        return False, None, "no timestamp baseline"
+    if ts >= newest:
+        return True, round(ts - newest, 1), "ok"
+    return False, round(ts - newest, 1), f"stale vs {newest_name}"
 
 AUDIT_ITEMS_DATA = [
     # Critical
-    {"id": "C1", "name": "B/C Translation Sign", "cat": "Disturbances", "sev": "Critical", "st": "blocked", "p": 0.25, "ref": "WP25-A1", "file": "src/omni_spacecraft.cpp:620", "desc": "SysModel outputs + instead of − for translation offset (0.2m error under burn)."},
+    {"id": "C1", "name": "B/C Translation Sign", "cat": "Disturbances", "sev": "Critical", "st": "verified", "p": 1.0, "ref": "WP25-A1", "file": "src/omni_spacecraft.cpp:709", "desc": "Audit_0-3 FIXED in code (code+ledger, host re-run pending): SysModel flipped to measured minus (spacecraft:709-710), source-pinned; residual one-sided cell."},
     # Verified Closures (X1 - X5)
-    {"id": "X1", "name": "Thruster CoM-Axis Mask", "cat": "Thrusters", "sev": "Fixed", "st": "verified", "p": 1.0, "ref": "Gate T1", "file": "contributors.hpp:479-487", "desc": "Source masking verified: trailing thruster c-subset correctly registered."},
-    {"id": "X2", "name": "Swap 6/6 Loud Rejects", "cat": "Architecture", "sev": "Fixed", "st": "verified", "p": 1.0, "ref": "test_swap_p1.py", "file": "swap_p1_parity.json", "desc": "Friction promoted to full parity; all remaining effectors throw loud bskError."},
-    {"id": "X3", "name": "Vec Friction 1e-14 Stock-Exact", "cat": "Reaction Wheels", "sev": "Fixed", "st": "verified", "p": 1.0, "ref": "rw3_fric cell", "file": "src/omni_vec_integrator.cpp", "desc": "Vec arm matches stock Basilisk Stribeck friction to machine precision."},
-    {"id": "X4", "name": "Vec Live Fuel Depletion", "cat": "Telemetry", "sev": "Fixed", "st": "verified", "p": 1.0, "ref": "Gate F-fuel", "file": "src/omni_vec_integrator.cpp", "desc": "Live mass and dynamic center of mass shifting integrated per tick."},
-    {"id": "X5", "name": "Historical Closures (Rev 0-1)", "cat": "Architecture", "sev": "Fixed", "st": "verified", "p": 1.0, "ref": "Audit_0-1", "file": "BUILD_STATUS.md", "desc": "Zero-offset regressions, linear3 Schur complement purity preserved."},
+    {"id": "X1", "name": "Thruster CoM-Axis Mask", "cat": "Thrusters", "sev": "Fixed", "st": "verified", "p": 1.0, "ref": "Gate T1", "file": "contributors.hpp:483-491", "desc": "Audit_0-3 re-verified no regression (code+ledger, host re-run pending). Source masking stands."},
+    {"id": "X2", "name": "Swap 6/6 Loud Rejects", "cat": "Architecture", "sev": "Fixed", "st": "verified", "p": 1.0, "ref": "test_swap_p1.py", "file": "swap_p1_parity.json:rejects", "desc": "Audit_0-3 re-verified no regression (L6 BUILD:410 remnant excepted). Loud rejects stand."},
+    {"id": "X3", "name": "Vec Friction 1e-14 Stock-Exact", "cat": "Reaction Wheels", "sev": "Fixed", "st": "verified", "p": 1.0, "ref": "rw3_fric cell", "file": "src/omni_vec_integrator.cpp:1428", "desc": "Audit_0-3 re-verified no regression (code+ledger, host re-run pending). Vec Stribeck stock-exact stands."},
+    {"id": "X4", "name": "Vec Live Fuel Depletion", "cat": "Telemetry", "sev": "Fixed", "st": "verified", "p": 1.0, "ref": "Gate F-fuel", "file": "src/omni_vec_integrator.cpp:1535", "desc": "Audit_0-3 re-verified no regression (M14 bounded writes + short-Isp raise landed vec-side). Live mass/c stands."},
+    {"id": "X5", "name": "Historical Closures (Rev 0-1)", "cat": "Architecture", "sev": "Fixed", "st": "verified", "p": 1.0, "ref": "Audit_0-1", "file": "BUILD_STATUS.md:622", "desc": "Audit_0-3 re-verified no regressions; counts/CI asserts fixed (L6/L11 remnants excepted). Closures stand."},
     # High findings
-    {"id": "H1", "name": "SysModel Cutoff Lag Filter", "cat": "Thrusters", "sev": "High", "st": "arm_split", "p": 0.50, "ref": "WP25-A2", "file": "src/omni_spacecraft.cpp:1020", "desc": "SysModel lagState diverges 0.63x from inert vec law; scheduled for removal."},
-    {"id": "H2", "name": "Silent Envelope Fatal Traps", "cat": "Hygiene & Guards", "sev": "High", "st": "in_progress", "p": 0.30, "ref": "WP25-B1", "file": "src/omni_spacecraft.cpp:743", "desc": "Unmodeled effectors (diffusion, large torques) need fatal runtime raises."},
-    {"id": "H3", "name": "Telemetry RW Omega Unset Echo", "cat": "Telemetry", "sev": "High", "st": "in_progress", "p": 0.30, "ref": "WP25-B2", "file": "src/omni_spacecraft.cpp:405", "desc": "Custom-OFF wheels echo 6000 RPM defaults rather than unset indicators."},
-    {"id": "H4", "name": "Wheel Jitter Simple Stream Split", "cat": "Reaction Wheels", "sev": "High", "st": "in_progress", "p": 0.40, "ref": "WP25-B3", "file": "src/omni_spacecraft.cpp:841", "desc": "Deterministic noise seeds need true 2x400 horizon validation."},
-    {"id": "H5", "name": "SysModel Friction Iter-1 Stub", "cat": "Reaction Wheels", "sev": "High", "st": "arm_split", "p": 0.60, "ref": "WP25-B3", "file": "src/omni_spacecraft.cpp:346", "desc": "SysModel arm uses iter-1 stiction suppression rather than Stribeck curve."},
-    {"id": "H6", "name": "SysModel Static Fuel Publisher", "cat": "Telemetry", "sev": "High", "st": "arm_split", "p": 0.35, "ref": "WP25-A3", "file": "src/omni_spacecraft.cpp:402", "desc": "SysModel publishes full tank telemetry despite burn; port vec law in A3."},
-    {"id": "H7", "name": "Fuel x Env Disturbance Cell", "cat": "Disturbances", "sev": "High", "st": "verified", "p": 1.0, "ref": "WP26-C", "file": "test_swap_p1.py:test_p1_fuel_env_scope", "desc": "fuel_drag/fuel_srp parity-in-switching-class, fuel bit-exact; drag arm sensitivity-limited (25x-insensitive fixture, G=1 open pointer, recorded not guessed) -- arm rule cited via arm_rule_discrimination.json, not proven by this badge."},
-    {"id": "H8", "name": "Body DV Rotation into Inertial", "cat": "Telemetry", "sev": "High", "st": "in_progress", "p": 0.30, "ref": "WP25-B2", "file": "src/omni_spacecraft.cpp:646", "desc": "Body impulse not rotated by R_BN into DV_CN_N."},
+    {"id": "H1", "name": "SysModel Cutoff Lag Filter", "cat": "Thrusters", "sev": "High", "st": "verified", "p": 1.0, "ref": "WP25-A2", "file": "src/omni_spacecraft.cpp:1315", "desc": "Audit_0-3 FIXED in code (code+ledger, host re-run pending): filter DELETED (spacecraft:1315-1324), ratio test 0.99-1.01; residuals M20/L7."},
+    {"id": "H2", "name": "Silent Envelope Fatal Traps", "cat": "Hygiene & Guards", "sev": "High", "st": "verified", "p": 1.0, "ref": "WP25-B1", "file": "src/omni_spacecraft.cpp:908", "desc": "Audit_0-3 FIXED in code (code+ledger, host re-run pending): 14 behavioral raise-before-propagation tests over 13 traps both heads."},
+    {"id": "H3", "name": "Telemetry RW Omega Unset Echo", "cat": "Telemetry", "sev": "High", "st": "in_progress", "p": 0.30, "ref": "WP25-B2", "file": "src/omni_spacecraft.cpp:760", "desc": "Audit_0-3 STILL-OPEN: no explicit FIXED verdict for RW echo (H2 notes config-echo labeling only); keep grade, see Audit_0-3 H2/M18/L8."},
+    {"id": "H4", "name": "Wheel Jitter Simple Stream Split", "cat": "Reaction Wheels", "sev": "High", "st": "in_progress", "p": 0.40, "ref": "WP25-B3", "file": "src/omni_spacecraft.cpp:1087", "desc": "Audit_0-3 H4-wp45-scope FIXED for that file only; this entry is jitter-horizon content, M19 J1-blindness STILL-OPEN (400-tick lengthens vacuous metric) so keep in_progress; ID/content drift recorded, not guessed."},
+    {"id": "H5", "name": "SysModel Friction Iter-1 Stub", "cat": "Reaction Wheels", "sev": "High", "st": "verified", "p": 1.0, "ref": "WP25-B3", "file": "src/omni_spacecraft.cpp:346", "desc": "Audit_0-3 FIXED in code (code+ledger, host re-run pending): Stribeck-port part landed (spacecraft:1058-1147, latch+omegaBefore); 5-knob vs per-wheel noted."},
+    {"id": "H6", "name": "SysModel Static Fuel Publisher", "cat": "Telemetry", "sev": "High", "st": "verified", "p": 1.0, "ref": "WP25-A3", "file": "src/omni_spacecraft.cpp:402", "desc": "Audit_0-3 FIXED in code (code+ledger, host re-run pending): fuel fixed as option-B absence, publisher NEVER written (:819-827); residuals M18/L8."},
+    {"id": "H7", "name": "Fuel x Env Disturbance Cell", "cat": "Disturbances", "sev": "High", "st": "verified", "p": 1.0, "ref": "WP26-C", "file": "test_swap_p1.py:test_p1_fuel_env_scope", "desc": "Audit_0-3 H9/H11/H12 sensitivity-limited: fuel_drag/fuel_srp parity-in-switching-class only, fuel bit-exact; drag arm 25x-insensitive fixture G=1 open, arm NOT proven by this badge; keep verified (parity) per caveat rule."},
+    {"id": "H8", "name": "Body DV Rotation into Inertial", "cat": "Telemetry", "sev": "High", "st": "verified", "p": 1.0, "ref": "WP25-B2", "file": "src/omni_spacecraft.cpp:646", "desc": "Audit_0-3 FIXED in code (code+ledger, host re-run pending): content is DV frame (audit M11 :1375-1405 R_BN.F.k); map H8 = audit M11 by content, audit H8 sign-reject has no map entry; drift recorded."},
     # Key Medium findings
-    {"id": "M1", "name": "Lag Filter Empty Ramps", "cat": "Thrusters", "sev": "Medium", "st": "in_progress", "p": 0.50, "ref": "WP25-A2", "file": "test_wp3_timing_models.py", "desc": "Ramp factor mirror requires explicit gating."},
-    {"id": "M2", "name": "Cutoff 10 vs 1000 Ratio", "cat": "Thrusters", "sev": "Medium", "st": "in_progress", "p": 0.50, "ref": "WP25-A2", "file": "test_wp3_timing_models.py", "desc": "Ratio test must assert 0.99 - 1.01 inert response."},
-    {"id": "M3", "name": "Min-Pulse Suppression Gate", "cat": "Thrusters", "sev": "Medium", "st": "in_progress", "p": 0.60, "ref": "WP25-B3", "file": "test_wp3_timing_models.py", "desc": "Min-pulse models suppress-only behavior documented."},
-    {"id": "M4", "name": "Staircase Achieving Duties", "cat": "Thrusters", "sev": "Medium", "st": "verified", "p": 1.0, "ref": "Gate T1", "file": "contributors.hpp:479", "desc": "Duty quantization operates cleanly at time step boundary."},
-    {"id": "M5", "name": "Trailing c-Mask Par Bounds", "cat": "Thrusters", "sev": "Medium", "st": "verified", "p": 1.0, "ref": "Audit X1", "file": "system.hpp:414", "desc": "Checked par count bounds heap safely."},
-    {"id": "M6", "name": "Blowdown & Swirl Dynamics", "cat": "Thrusters", "sev": "Medium", "st": "in_progress", "p": 0.70, "ref": "WP25-A2", "file": "test_wp3_timing_models.py", "desc": "Tank pressure blowdown factor mirrors stock."},
-    {"id": "M8", "name": "Friction F-Ledger Null Rows", "cat": "Reaction Wheels", "sev": "Medium", "st": "in_progress", "p": 0.50, "ref": "WP25-B3", "file": "BUILD_STATUS.md", "desc": "F-ledger superseded-pointer to rw3_fric recorded."},
-    {"id": "M10", "name": "Offset Delta Inverted Sign", "cat": "Disturbances", "sev": "Medium", "st": "blocked", "p": 0.25, "ref": "WP25-A1", "file": "src/omni_spacecraft.cpp", "desc": "Direct consequence of C1 sign inversion."},
-    {"id": "M11", "name": "Double Reset DV Clearing", "cat": "Telemetry", "sev": "Medium", "st": "in_progress", "p": 0.40, "ref": "WP25-B2", "file": "src/omni_spacecraft.cpp:755", "desc": "Accumulated DV and nonConsAccelB zeroed on Reset."},
-    {"id": "M13", "name": "Stiction-Band Discrepancy", "cat": "Reaction Wheels", "sev": "Medium", "st": "arm_split", "p": 0.60, "ref": "WP25-B3", "file": "src/omni_spacecraft.cpp:841", "desc": "Near-zero speed stiction band documented as iter-1 limit."},
-    {"id": "M16", "name": "SysModel Lag Filter Elimination", "cat": "Thrusters", "sev": "Medium", "st": "in_progress", "p": 0.50, "ref": "WP25-A2", "file": "src/omni_spacecraft.cpp", "desc": "Filter removal reconciles both integrator arms."},
+    {"id": "M1", "name": "Lag Filter Empty Ramps", "cat": "Thrusters", "sev": "Medium", "st": "in_progress", "p": 0.50, "ref": "WP25-A2", "file": "test_wp3_timing_models.py", "desc": "Audit_0-3 no explicit FIXED verdict; ramp gating tied to H1/M16 deletion but not separately closed; keep in_progress, see M20/L7."},
+    {"id": "M2", "name": "Cutoff 10 vs 1000 Ratio", "cat": "Thrusters", "sev": "Medium", "st": "in_progress", "p": 0.50, "ref": "WP25-A2", "file": "test_wp3_timing_models.py", "desc": "Audit_0-3 H1/M16: ratio test rewritten 0.99-1.01 in code but host-only + ledger stale (M20 wp3_timing predates deletion); keep in_progress per staleness family."},
+    {"id": "M3", "name": "Min-Pulse Suppression Gate", "cat": "Thrusters", "sev": "Medium", "st": "in_progress", "p": 0.60, "ref": "WP25-B3", "file": "test_wp3_timing_models.py", "desc": "Audit_0-3 no explicit FIXED verdict for min-pulse; suppress-only behavior stands but unclosed; keep in_progress."},
+    {"id": "M4", "name": "Staircase Achieving Duties", "cat": "Thrusters", "sev": "Medium", "st": "verified", "p": 1.0, "ref": "Gate T1", "file": "contributors.hpp:479", "desc": "Audit_0-3 no regression noted; keep verified (code+ledger, host re-run pending). Duty quantization clean at step boundary."},
+    {"id": "M5", "name": "Trailing c-Mask Par Bounds", "cat": "Thrusters", "sev": "Medium", "st": "verified", "p": 1.0, "ref": "Audit X1", "file": "system.hpp:414", "desc": "Audit_0-3 X1 re-verified no regression; keep verified (code+ledger, host re-run pending). Par count bounds heap safe."},
+    {"id": "M6", "name": "Blowdown & Swirl Dynamics", "cat": "Thrusters", "sev": "Medium", "st": "in_progress", "p": 0.70, "ref": "WP25-A2", "file": "test_wp3_timing_models.py", "desc": "Audit_0-3 M6/M7 FIXED is N-body/rotHat/Gt behavioral, not this blowdown/swirl content (ID drift); no explicit verdict here so keep in_progress, drift recorded."},
+    {"id": "M8", "name": "Friction F-Ledger Null Rows", "cat": "Reaction Wheels", "sev": "Medium", "st": "in_progress", "p": 0.50, "ref": "WP25-B3", "file": "BUILD_STATUS.md", "desc": "Audit_0-3 M20 ledger-stale + M22 void-flags applicable (wp2 rev-1 2x40, F-rows null, no in-JSON flags); keep in_progress pending host regen."},
+    {"id": "M10", "name": "Offset Delta Inverted Sign", "cat": "Disturbances", "sev": "Medium", "st": "blocked", "p": 0.25, "ref": "WP25-A1", "file": "src/omni_spacecraft.cpp", "desc": "Audit_0-3 no explicit M10 verdict; C1 FIXED suggests likely-fixed but SysModel minus has one-sided residual (no signed stock cell); do not guess, keep blocked."},
+    {"id": "M11", "name": "Double Reset DV Clearing", "cat": "Telemetry", "sev": "Medium", "st": "in_progress", "p": 0.80, "ref": "WP25-B2", "file": "src/omni_spacecraft.cpp:755", "desc": "Audit_0-3 M12 FIXED with leftover M18 (matches this Reset content: Reset restores FULL tank not m0, spacecraft:974); per leftover rule keep in_progress; literal M11-DV FIXED maps to H8, drift recorded."},
+    {"id": "M13", "name": "Stiction-Band Discrepancy", "cat": "Reaction Wheels", "sev": "Medium", "st": "in_progress", "p": 0.50, "ref": "WP25-B3", "file": "src/omni_spacecraft.cpp:841", "desc": "Audit_0-3 J1-blindness STILL-OPEN in probe/test (M19 spike-only label, wheelSpeeds-only); Stribeck code landed but probe blind; downgrade arm_split->in_progress."},
+    {"id": "M16", "name": "SysModel Lag Filter Elimination", "cat": "Thrusters", "sev": "Medium", "st": "verified", "p": 1.0, "ref": "WP25-A2", "file": "src/omni_spacecraft.cpp", "desc": "Audit_0-3 FIXED in code (code+ledger, host re-run pending) with H1: filter DELETED both paths; residuals M20/L7."},
     # Low findings
-    {"id": "L1", "name": "Stale Par Count Docs", "cat": "Hygiene & Guards", "sev": "Low", "st": "in_progress", "p": 0.60, "ref": "BUILD_STATUS.md", "file": "BUILD_STATUS.md", "desc": "Documentation refers to 19 pars instead of derived 13."},
-    {"id": "L2", "name": "NPOS Parity Formatting", "cat": "Architecture", "sev": "Low", "st": "verified", "p": 1.0, "ref": "Audit X1", "file": "system.hpp", "desc": "NPOS sentinel guards non-coupled thruster axes."},
-    {"id": "L3", "name": "SWIG Top-Level Shim Note", "cat": "Architecture", "sev": "Low", "st": "verified", "p": 1.0, "ref": "Audit X2", "file": "cSysModel.py", "desc": "Shim required for SWIG %import documented."},
-    {"id": "L4", "name": "CMake Direct Heyoka Link", "cat": "Architecture", "sev": "Low", "st": "verified", "p": 1.0, "ref": "CMakeLists.txt", "file": "CMakeLists.txt", "desc": "rpath links libheyoka directly for Taylor stepping."},
-    {"id": "L5", "name": "thr_offset Ledger Provenance", "cat": "Disturbances", "sev": "Low", "st": "in_progress", "p": 0.50, "ref": "WP25-A1", "file": "swap_p1_parity.json", "desc": "Cite exact cell 2.24e-08 in ledger."}
+    {"id": "L1", "name": "Stale Par Count Docs", "cat": "Hygiene & Guards", "sev": "Low", "st": "in_progress", "p": 0.60, "ref": "BUILD_STATUS.md", "file": "BUILD_STATUS.md", "desc": "Audit_0-3 L10 manifest stale counts + L6/L11 remnants applicable; counts fixed except remnants; keep in_progress."},
+    {"id": "L2", "name": "NPOS Parity Formatting", "cat": "Architecture", "sev": "Low", "st": "verified", "p": 1.0, "ref": "Audit X1", "file": "system.hpp", "desc": "Audit_0-3 no regression noted; keep verified. NPOS sentinel guards non-coupled axes."},
+    {"id": "L3", "name": "SWIG Top-Level Shim Note", "cat": "Architecture", "sev": "Low", "st": "verified", "p": 1.0, "ref": "Audit X2", "file": "cSysModel.py", "desc": "Audit_0-3 no regression noted; keep verified. SWIG shim documented."},
+    {"id": "L4", "name": "CMake Direct Heyoka Link", "cat": "Architecture", "sev": "Low", "st": "verified", "p": 1.0, "ref": "CMakeLists.txt", "file": "CMakeLists.txt", "desc": "Audit_0-3 CI L4 all fixed; keep verified. Heyoka rpath link stands."},
+    {"id": "L5", "name": "thr_offset Ledger Provenance", "cat": "Disturbances", "sev": "Low", "st": "in_progress", "p": 0.5, "ref": "WP25-A1", "file": "swap_p1_parity.json", "desc": "Audit_0-3 M24 phantom cite (hpp:214-216 numbers absent from wp45_combo.json) + H9 no discriminating row + M22 void flags; keep in_progress."}
 ]
 
 
-def extract_test_units(tests_dir: Path) -> list[dict]:
-    """Extract all individual test functions across tests/test_*.py using AST."""
+def extract_test_units(tests_dir: Path, outcomes: dict, coll_errors: dict,
+                     measured_at: str) -> list[dict]:
+    """Test functions across tests/test_*.py, graded by MEASURED pytest outcome.
+
+    passed -> verified 1.0; failed/error -> failed 0.0; skipped (proof ledger
+    absent) -> unstarted 0.2; skipped (host-dep etc.) -> skipped 0.5; not
+    collected by this run -> unstarted 0.1. No name-keyword grading.
+    """
     units = []
     if not tests_dir.exists():
         return units
@@ -96,30 +280,38 @@ def extract_test_units(tests_dir: Path) -> list[dict]:
             tree = ast.parse(py_file.read_text(encoding="utf-8"), filename=str(py_file))
             for node in ast.walk(tree):
                 if isinstance(node, ast.FunctionDef) and node.name.startswith("test_"):
-                    # Determine progress & status based on known finding cross-references
-                    t_name = node.name
-                    st = "verified"
-                    prog = 1.0
-
-                    if "offset" in t_name and ("sign" in t_name or "sysmodel" in t_name):
-                        st = "blocked"
-                        prog = 0.30
-                    elif "lag" in t_name or "cutoff" in t_name:
-                        st = "arm_split"
-                        prog = 0.55
-                    elif "fuel" in t_name and "sysmodel" in t_name:
-                        st = "arm_split"
-                        prog = 0.40
-                    elif "multi" in t_name or "dynPtrs" in t_name:
-                        st = "unstarted"
-                        prog = 0.10
-                    elif "b2_" in t_name or "guard" in t_name and "raise" in t_name:
-                        st = "in_progress"
-                        prog = 0.50
+                    uid = f"{stem}::{node.name}"
+                    if uid in outcomes:
+                        outcome, msg = outcomes[uid]
+                        if outcome == "passed":
+                            st, prog = "verified", 1.0
+                            desc = f"pytest PASSED ({measured_at})."
+                        elif outcome in ("failed", "error"):
+                            st, prog = "failed", 0.0
+                            desc = (f"pytest {outcome.upper()} ({measured_at}): "
+                                    f"{msg or 'see pytest_junit.xml'}")
+                        elif any(h in msg.lower() for h in SKIP_LEDGER_HINTS):
+                            st, prog = "unstarted", 0.2
+                            desc = (f"pytest SKIPPED ({msg or 'no reason'}): "
+                                    f"proof ledger absent -- not measured.")
+                        else:
+                            st, prog = "skipped", 0.5
+                            desc = (f"pytest SKIPPED ({msg or 'no reason'}): "
+                                    f"host-dep, not measured here.")
+                    else:
+                        outcome, msg = "unmeasured", ""
+                        if stem in coll_errors:
+                            st, prog = "unstarted", 0.1
+                            desc = ("File-level COLLECTION ERROR -- not measured: "
+                                    f"{coll_errors[stem]}")
+                        else:
+                            st, prog = "unstarted", 0.1
+                            desc = ("Not collected by this pytest run "
+                                    "(absent/collection error) -- not measured.")
 
                     units.append({
-                        "id": f"{stem}::{t_name}",
-                        "name": t_name,
+                        "id": uid,
+                        "name": node.name,
                         "type": "test_case",
                         "module": stem,
                         "subsystem": subsys["name"],
@@ -127,16 +319,21 @@ def extract_test_units(tests_dir: Path) -> list[dict]:
                         "file": f"tests/{py_file.name}:{node.lineno}",
                         "status": st,
                         "progress": prog,
-                        "target": "pytest pass (bit-exact / tolerance)",
-                        "desc": f"Automated test case in {py_file.name} (line {node.lineno})."
+                        "target": "pytest result (measured, not name-graded)",
+                        "desc": desc,
+                        "outcome": outcome,
                     })
         except Exception:
             continue
     return units
 
 
-def extract_parity_cells(results_dir: Path) -> list[dict]:
-    """Extract granular simulation parity cells from swap_p1_parity.json."""
+def extract_parity_cells(results_dir: Path, base_dir: Path) -> list[dict]:
+    """Parity cells from swap_p1_parity.json, graded by ledger verdict + freshness.
+
+    verdict green + fresh -> verified 1.0; green but stale -> in_progress 0.5
+    (do not cite); verdict not green -> blocked 0.25. No name-keyword grading.
+    """
     cells = []
     parity_file = results_dir / "swap_p1_parity.json"
     if not parity_file.exists():
@@ -144,37 +341,50 @@ def extract_parity_cells(results_dir: Path) -> list[dict]:
 
     try:
         data = json.loads(parity_file.read_text(encoding="utf-8"))
-        raw_cells = data.get("payload", {}).get("cells", {})
-        for c_id, metrics in raw_cells.items():
-            sigma = metrics.get("sigma_BN", 0.0)
-            omega = metrics.get("omega_BN_B", 0.0)
-            n_pars = metrics.get("nPars", 0)
-            n_states = metrics.get("nStates", 0)
-
-            st = "verified"
-            prog = 1.0
-            if "offset" in c_id:
-                st = "blocked"
-                prog = 0.40
-            elif "lag" in c_id or "fric" in c_id and "sys" in c_id:
-                st = "arm_split"
-                prog = 0.65
-
-            cells.append({
-                "id": f"cell::{c_id}",
-                "name": f"Cell: {c_id}",
-                "type": "parity_cell",
-                "subsystem": "Simulation Parity Ledger",
-                "category": "Parity Cells",
-                "file": "audit_bundle/results/swap_p1_parity.json",
-                "status": st,
-                "progress": prog,
-                "target": f"sigma={sigma:.2e}, omega={omega:.2e}",
-                "desc": f"Matched-dt parity cell {c_id} (nStates={n_states}, nPars={n_pars}).",
-                "metrics": metrics
-            })
+        payload = data.get("payload", {}) if isinstance(data, dict) else {}
+        raw_cells = payload.get("cells", {}) if isinstance(payload, dict) else {}
+        verdict = str(payload.get("verdict", "")) if isinstance(payload, dict) else ""
     except Exception:
-        pass
+        return cells
+    fresh, margin, reason = ledger_fresh("swap_p1_parity", results_dir, base_dir)
+    green = (verdict == "parity green")
+    for c_id, metrics in raw_cells.items():
+        metrics = metrics if isinstance(metrics, dict) else {}
+        sigma = metrics.get("sigma_BN", 0.0)
+        omega = metrics.get("omega_BN_B", 0.0)
+        n_pars = metrics.get("nPars", 0)
+        n_states = metrics.get("nStates", 0)
+
+        if green and fresh:
+            st, prog = "verified", 1.0
+            desc = (f"Matched-dt parity cell {c_id} (nStates={n_states}, "
+                    f"nPars={n_pars}): ledger verdict green, proof fresh "
+                    f"(margin {margin}s).")
+        elif green:
+            st, prog = "in_progress", 0.5
+            desc = (f"Matched-dt parity cell {c_id} (nStates={n_states}, "
+                    f"nPars={n_pars}): verdict green BUT proof {reason} -- "
+                    f"regen before citing.")
+        else:
+            st, prog = "blocked", 0.25
+            desc = (f"Matched-dt parity cell {c_id}: ledger verdict "
+                    f"{verdict!r} -- not green.")
+
+        cells.append({
+            "id": f"cell::{c_id}",
+            "name": f"Cell: {c_id}",
+            "type": "parity_cell",
+            "subsystem": "Simulation Parity Ledger",
+            "category": "Parity Cells",
+            "file": "audit_bundle/results/swap_p1_parity.json",
+            "status": st,
+            "progress": prog,
+            "target": f"sigma={sigma:.2e}, omega={omega:.2e}",
+            "desc": desc,
+            "ledger_verdict": verdict,
+            "fresh": fresh,
+            "fresh_margin_s": margin,
+        })
     return cells
 
 
@@ -197,22 +407,26 @@ def extract_audit_units() -> list[dict]:
     return units
 
 
-def build_comprehensive_manifest(base_dir: Path, results_dir: Path) -> dict:
-    """Combine test cases, parity cells, and audit items into a unified 200+ unit manifest."""
+def build_comprehensive_manifest(base_dir: Path, results_dir: Path,
+                                 outcomes: dict, coll_errors: dict,
+                                 pytest_meta: dict,
+                                 measured_at: str) -> dict:
+    """Combine measured test cases, parity cells, and audit items."""
     tests_dir = base_dir / "tests"
-    test_units = extract_test_units(tests_dir)
-    parity_units = extract_parity_cells(results_dir)
+    test_units = extract_test_units(tests_dir, outcomes, coll_errors,
+                                    measured_at)
+    parity_units = extract_parity_cells(results_dir, base_dir)
     audit_units = extract_audit_units()
 
     all_units = test_units + parity_units + audit_units
 
-    # Summary tallies
-    verified = sum(1 for u in all_units if u["status"] == "verified")
-    arm_split = sum(1 for u in all_units if u["status"] == "arm_split")
-    blocked = sum(1 for u in all_units if u["status"] == "blocked")
-    in_progress = sum(1 for u in all_units if u["status"] == "in_progress")
-    unstarted = sum(1 for u in all_units if u["status"] == "unstarted")
+    # Summary tallies (measured statuses included; audit items keep old ones)
+    summary = {}
+    for st in ("verified", "failed", "skipped", "arm_split", "blocked",
+               "in_progress", "unstarted"):
+        summary[st] = sum(1 for u in all_units if u["status"] == st)
     avg_prog = sum(u["progress"] for u in all_units) / len(all_units) if all_units else 0.0
+    summary["overall_progress_pct"] = round(avg_prog * 100, 1)
 
     return {
         "project": "native_omni_heyoka",
@@ -222,13 +436,12 @@ def build_comprehensive_manifest(base_dir: Path, results_dir: Path) -> dict:
             "simulation_parity_cells": len(parity_units),
             "audit_ledger_items": len(audit_units)
         },
-        "summary": {
-            "verified": verified,
-            "arm_split": arm_split,
-            "blocked": blocked,
-            "in_progress": in_progress,
-            "unstarted": unstarted,
-            "overall_progress_pct": round(avg_prog * 100, 1)
+        "summary": summary,
+        "measurement": {
+            "method": "pytest JUnit outcomes + ledger verdict/freshness; "
+                      "audit items remain author-graded",
+            "measured_at": measured_at,
+            "pytest": pytest_meta,
         },
         "units": all_units
     }
@@ -247,6 +460,8 @@ def generate_high_density_svg(manifest: dict, out_path: Path):
 
     color_map = {
         "verified": "#2ea043",
+        "failed": "#f85149",
+        "skipped": "#d29922",
         "arm_split": "#d29922",
         "blocked": "#f85149",
         "in_progress": "#3b82f6",
@@ -399,6 +614,8 @@ def generate_interactive_dashboard_html(manifest: dict, out_path: Path):
   .cell:hover {{ transform: scale(1.18); z-index: 10; }}
   .cell.selected {{ outline: 2px solid #58a6ff; outline-offset: 1px; }}
   .cell-verified {{ background: rgba(46, 160, 67, 0.25); color: #3fb950; border: 1px solid rgba(46, 160, 67, 0.5); }}
+  .cell-failed {{ background: rgba(248, 81, 73, 0.30); color: #f85149; border: 1px solid rgba(248, 81, 73, 0.7); }}
+  .cell-skipped {{ background: rgba(210, 153, 34, 0.25); color: #d29922; border: 1px solid rgba(210, 153, 34, 0.5); }}
   .cell-arm_split {{ background: rgba(210, 153, 34, 0.25); color: #d29922; border: 1px solid rgba(210, 153, 34, 0.5); }}
   .cell-blocked {{ background: rgba(248, 81, 73, 0.25); color: #f85149; border: 1px solid rgba(248, 81, 73, 0.6); }}
   .cell-in_progress {{ background: rgba(59, 130, 246, 0.25); color: #58a6ff; border: 1px solid rgba(59, 130, 246, 0.5); }}
@@ -565,6 +782,10 @@ def main():
     parser.add_argument("--out-json", default=None, help="Output path for status_manifest.json")
     parser.add_argument("--out-svg", default=None, help="Output path for status_map.svg")
     parser.add_argument("--out-html", default=None, help="Output path for status_dashboard.html")
+    parser.add_argument("--pytest-timeout", type=int, default=3600,
+                        help="Seconds to allow the pytest run (default 3600)")
+    parser.add_argument("--no-pytest", action="store_true",
+                        help="Skip the pytest run; all test units graded unmeasured")
     args = parser.parse_args()
 
     base_dir = Path(__file__).resolve().parent.parent  # native_omni_heyoka root
@@ -574,9 +795,46 @@ def main():
     out_html = Path(args.out_html) if args.out_html else results_dir / "status_dashboard.html"
 
     results_dir.mkdir(parents=True, exist_ok=True)
+    junit_path = results_dir / "pytest_junit.xml"
 
-    print(f"[generate_status_map] Scanning AST tests from {base_dir}/tests & ledgers from {results_dir}...")
-    manifest = build_comprehensive_manifest(base_dir, results_dir)
+    if args.no_pytest:
+        pytest_meta = {"ran": False, "returncode": None,
+                       "error": "pytest run disabled by --no-pytest flag"}
+        outcomes: dict = {}
+        coll_errors: dict = {}
+    else:
+        print(f"[generate_status_map] Running pytest (timeout {args.pytest_timeout}s)...")
+        python, pytest_ver = resolve_pytest_python(base_dir)
+        if pytest_ver is None:
+            pytest_meta = {"ran": False, "returncode": None, "python": python,
+                           "error": "no interpreter with pytest found "
+                                    "(tried repo env + invoking python)"}
+            outcomes, coll_errors = {}, {}
+        else:
+            pytest_meta = run_pytest_junit(base_dir / "tests", junit_path,
+                                           args.pytest_timeout, python)
+            pytest_meta["pytest"] = pytest_ver
+            outcomes, coll_errors = (parse_junit(junit_path)
+                                     if junit_path.exists() else ({}, {}))
+        n_p = sum(1 for o, _ in outcomes.values() if o == "passed")
+        n_f = sum(1 for o, _ in outcomes.values() if o in ("failed", "error"))
+        n_s = sum(1 for o, _ in outcomes.values() if o == "skipped")
+        pytest_meta.update({"n_passed": n_p, "n_failed": n_f, "n_skipped": n_s,
+                            "n_collected": len(outcomes),
+                            "n_collection_errors": len(coll_errors)})
+        if not outcomes and pytest_meta.get("returncode") != 5:
+            pytest_meta["error"] = ("0 tests collected -- collection aborted "
+                                    "(wrong interpreter?); see stdout_tail / junit; "
+                                    f"interpreter was {pytest_meta.get('python')}")
+        print(f"[generate_status_map] pytest returncode={pytest_meta['returncode']}: "
+              f"{n_p} passed, {n_f} failed, {n_s} skipped "
+              f"({len(outcomes)} collected, {len(coll_errors)} collection errors)")
+
+    measured_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    print(f"[generate_status_map] Grading AST tests from {base_dir}/tests & ledgers from {results_dir}...")
+    manifest = build_comprehensive_manifest(base_dir, results_dir, outcomes,
+                                            coll_errors,
+                                            pytest_meta, measured_at)
 
     print(f"[generate_status_map] Built {manifest['total_units']} granular units:")
     print(f"  - Automated test cases: {manifest['breakdown']['automated_test_units']}")

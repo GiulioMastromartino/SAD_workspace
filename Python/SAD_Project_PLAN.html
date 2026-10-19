@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAD_Project — Finalized Plan</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'SF SF Text', 'Segoe UI', sans-serif;
+         max-width: 1080px; margin: 2rem auto; padding: 0 1rem;
+         color: #1a1a1a; line-height: 1.6; }
+  h1 { border-bottom: 2px solid #0066cc; padding-bottom: .3rem; }
+  h2 { border-bottom: 1px solid #ccc; padding-bottom: .2rem; margin-top: 2rem; }
+  h3 { margin-top: 1.5rem; color: #0066cc; }
+  h4 { margin-top: 1.2rem; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .92em; }
+  th, td { border: 1px solid #ccc; padding: .45rem .6rem; text-align: left; vertical-align: top; }
+  th { background: #f0f4f9; }
+  pre { background: #f4f4f4; padding: 1rem; border-radius: 6px; overflow-x: auto; font-size: .85em; }
+  code { background: #f4f4f4; padding: .1rem .3rem; border-radius: 3px; font-size: .9em; }
+  pre code { background: none; padding: 0; }
+  .tag { display: inline-block; background: #e8f0fe; color: #1565c0;
+         padding: .1rem .5rem; border-radius: 3px; font-size: .85em; margin-right:.3rem; }
+  .warn { background: #fff3e0; border-left: 4px solid #ff9800; padding: .5rem 1rem; margin: 1rem 0; }
+  .info { background: #e3f2fd; border-left: 4px solid #2196f3; padding: .5rem 1rem; margin: 1rem 0; }
+  .ok   { background: #e8f5e9; border-left: 4px solid #4caf50; padding: .5rem 1rem; margin: 1rem 0; }
+  ul li, ol li { margin-bottom: .3rem; }
+  .footer { margin-top: 3rem; color: #888; font-size: .85em; border-top: 1px solid #ddd; padding-top: 1rem; }
+  .mod { font-family: monospace; font-size: .85em; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+</style>
+</head>
+<body>
+
+<h1>SAD_Project — Finalized Plan</h1>
+
+<p>
+<span class="tag">6U CubeSat</span>
+<span class="tag">Hamiltonian quaternions</span>
+<span class="tag">Star tracker + full Basilisk sensor suite</span>
+<span class="tag">8 variable-thrust jets + full Basilisk actuator suite</span>
+<span class="tag">Detumble → Slew → Track</span>
+<span class="tag">Modular C++ / Simulink-first</span>
+</p>
+
+<div class="ok">
+<strong>Status: FINALIZED PLAN.</strong> Supersedes <code>SAD_Project_PROPOSAL.html</code>. No code written yet — this
+document defines the final architecture, the complete reuse inventory of Basilisk sensors/actuators, the modular
+C++ module decomposition, and the path to a first-class C++ library embeddable in Simulink (and still callable from Python).
+</div>
+
+<h2>0. Objective (clarified)</h2>
+<p>
+Build a <strong>modular C++ library</strong> of spacecraft attitude-dynamics components — not one monolithic module.
+Each component is a self-contained C++ module with a flat C interface and a Simulink S-function wrapper, so it can be
+dropped into a Simulink model as a first-class block, while remaining callable from Python for parity testing and
+Monte-Carlo campaigns. Python becomes a thin orchestration/test layer over the C++ modules; Basilisk remains the
+reference truth model.
+</p>
+<ul>
+  <li><strong>First-class C++ module</strong>: each module compiles to a shared library + MEX S-function, exposes typed
+      input/output/state structs, init/reset/step API, and is registered in Simulink's Library Browser.</li>
+  <li><strong>Modular</strong>: one module per concern (dynamics, each sensor, each actuator, environment, estimator,
+      controller, allocator, mission sequencer). Modules compose through typed message ports, mirroring Basilisk's
+      message-passing architecture.</li>
+  <li><strong>Reuse</strong>: every Basilisk sensor and actuator that is physically relevant to a 6U CubeSat is reused
+      (wrapped or mirrored), not reimplemented, so the C++ modules stay bit-consistent with Basilisk reference runs.</li>
+</ul>
+
+<h2>1. Requirements (finalized)</h2>
+<table>
+  <tr><th>Aspect</th><th>12U baseline</th><th>SAD_Project (finalized)</th></tr>
+  <tr><td>Bus size</td><td>200×200×300 mm, 20 kg</td><td>6U: 100×200×300 mm, ~8 kg</td></tr>
+  <tr><td>Attitude rep</td><td>Euler 3-2-1 (+MRP in MC)</td><td><strong>Hamiltonian quaternions</strong> (scalar-last) throughout, including Simulink ports</td></tr>
+  <tr><td>Sensors</td><td>Rate gyro + CSS</td><td><strong>Star tracker</strong> (primary) + full Basilisk sensor suite (IMU 9-axis, magnetometer, CSS, fine sun sensor, temp, GPS/nav, pinhole camera)</td></tr>
+  <tr><td>Actuators</td><td>12 thrusters + RWs</td><td><strong>8 variable-thrust jets</strong> (primary) + full Basilisk actuator suite (RWs, MTQs, VSCMGs, stepper motors, hinged bodies)</td></tr>
+  <tr><td>Mission</td><td>Free-fall + orbit-keeping</td><td><strong>Detumble → slew with orientation constraint → track</strong></td></tr>
+  <tr><td>Control</td><td>MRP PD (Basilisk) + RTN PID</td><td><strong>Quaternion PD</strong> on thrusters, sun-pointing cone; plus Basilisk controller family (MRP PD/feedback/steering, rate servo, sun-safe ACS)</td></tr>
+  <tr><td>Runtime</td><td>Python + pybind C++</td><td><strong>C++ modules + Simulink S-functions</strong> (Python becomes test/orchestration layer)</td></tr>
+</table>
+
+<p><strong>Mission flow:</strong> Detumble (null initial body rates, hold attitude)
+→ Slew (rotate to a 90° target quaternion about body +Z) → Track within a keep-in cone about
+the Sun (body +X boresight stays within 15° of Sun line).</p>
+
+<h2>2. Modular C++ architecture</h2>
+<p>Each box below is one independently compilable module. Arrows are typed message ports (Basilisk-style). A module never
+links against another module's internals — only against the shared <code>sad_core</code> math/message library.</p>
+<pre><code>SAD_Project/
+├── cpp/
+│   ├── core/            # sad_core: math, quaternions, DCM, messages, RNG, integrator
+│   ├── dynamics/        # sad_dynamics: rigid body EOM + orbital env coupling
+│   ├── actuators/       # one module per actuator (see §3.2)
+│   ├── sensors/         # one module per sensor (see §3.1)
+│   ├── environment/     # sun, mag field, atmosphere, eclipse, albedo, planet ephemeris
+│   ├── estimation/      # nav/estimation modules (EKF/UKF/SuKF family)
+│   ├── control/         # one module per controller
+│   ├── guidance/        # pointing, Lambert, DV guidance
+│   ├── allocation/      # thruster/RW/MTQ allocation & firing logic
+│   ├── mission/         # sad_mission_sequencer state machine
+│   └── simulink/        # S-function wrappers (one per module) + Library Browser
+├── python/              # thin wrappers + parity tests + Monte Carlo driver
+├── tests/               # per-module parity vs Basilisk reference
+└── cmake/               # build system
+</code></pre>
+
+<h3>2.1 Module interface contract (applies to every module)</h3>
+<pre><code>// Every module implements this minimal C ABI (extern "C") so Simulink can call it.
+typedef struct { double x[...]; int n; } sad_input_t;   // typed per module
+typedef struct { double y[...]; int n; } sad_output_t;
+typedef struct { double z[...]; int n; } sad_state_t;
+
+void   mod_init(sad_state_t* s, const sad_params_t* p);   // Reset/initialize
+void   mod_step(const sad_input_t* u, sad_state_t* s, sad_output_t* y, double dt);
+void   mod_reset(sad_state_t* s);                        // zero state
+size_t mod_state_size(void);
+</code></pre>
+<p>
+Simulink side: each module ships a Level-2 C MEX S-function (<code>sad_&lt;mod&gt;_sfun.c</code>) exposing the same ports, plus a
+<code>.tlc</code> for Simulink Coder. Python side: a pybind11 shim exposes <code>init/step/reset</code> for parity tests.
+</p>
+
+<h3>2.2 Data flow (one control tick)</h3>
+<ol>
+  <li><code>sad_dynamics</code> propagates quaternion state (Heyoka or RK4) using commanded wrench.</li>
+  <li>Sensors (<code>sad_startracker</code>, <code>sad_imu</code>, …) read true state + environment → noisy measurements.</li>
+  <li>Estimation modules fuse measurements → estimated attitude/rate.</li>
+  <li>Controller modules compute desired torque from estimated state + reference.</li>
+  <li>Allocation modules map desired torque → thruster on-times / RW torques / MTQ dipoles.</li>
+  <li>Actuator modules apply commands → actual wrench fed back to dynamics next tick.</li>
+  <li><code>sad_mission_sequencer</code> selects mode (detumble/slew/track) and reference.</li>
+</ol>
+
+<h2>3. Reuse inventory — Basilisk sensors &amp; actuators</h2>
+<p>All modules below are taken from the installed Basilisk 2.12.0 SDK
+(<code>env/lib/python3.11/site-packages/Basilisk/</code>). SAD_Project reuses them as the reference implementation and mirrors
+them as C++ modules; it does not reimplement their physics.</p>
+
+<h3>3.1 Sensors reused (Basilisk → SAD module)</h3>
+<table>
+  <tr><th>Basilisk module</th><th>SAD module</th><th>Notes</th></tr>
+  <tr><td><code>starTracker</code></td><td><code>sad_startracker</code></td><td>Primary attitude sensor; quaternion output, dropout model (motion blur, Sun flare, rate cap)</td></tr>
+  <tr><td><code>imuSensor</code></td><td><code>sad_imu</code></td><td>9-axis: gyro + accel + mag; noise/bias/walk params from config</td></tr>
+  <tr><td><code>magnetometer</code></td><td><code>sad_magnetometer</code></td><td>Standalone TAM for MTQ control / attitude aiding</td></tr>
+  <tr><td><code>coarseSunSensor</code></td><td><code>sad_css</code></td><td>Array of CSS; WLS estimator <code>cssWlsEst</code> reused</td></tr>
+  <tr><td><code>pinholeCamera</code></td><td><code>sad_camera</code></td><td>OpNav / horizon-based attitude</td></tr>
+  <tr><td><code>tempMeasurement</code>, <code>sensorThermal</code></td><td><code>sad_thermal</code></td><td>Thermal model of sensors (optional)</td></tr>
+  <tr><td><code>simpleNav</code>, <code>planetNav</code></td><td><code>sad_nav</code></td><td>Inertial/planet-relative state estimate</td></tr>
+  <tr><td><code>encoder</code>, <code>hingedRigidBodyMotorSensor</code></td><td><code>sad_encoder</code></td><td>For RW/MTQ gimbal angle feedback</td></tr>
+</table>
+
+<h3>3.2 Actuators reused (Basilisk → SAD module)</h3>
+<table>
+  <tr><th>Basilisk module</th><th>SAD module</th><th>Notes</th></tr>
+  <tr><td><code>thrusterStateEffector</code>, <code>thrusterDynamicEffector</code></td><td><code>sad_thruster</code></td><td>Variable thrust, on-time command, fuel bookkeeping; 8-jet 6U geometry</td></tr>
+  <tr><td><code>reactionWheelStateEffector</code></td><td><code>sad_rw</code></td><td>3 orthogonal RWs, saturation, first-order response</td></tr>
+  <tr><td><code>MtbEffector</code></td><td><code>sad_mtq</code></td><td>Magnetic torque bars (LEO detumble assist)</td></tr>
+  <tr><td><code>vscmgStateEffector</code></td><td><code>sad_vscmg</code></td><td>VSCMG (optional high-agility config)</td></tr>
+  <tr><td><code>stepperMotor</code>, <code>hingedRigidBodyMotor</code></td><td><code>sad_stepper</code></td><td>Solar array / antenna pointing</td></tr>
+  <tr><td><code>extForceTorque</code></td><td><code>sad_ext_forcetorque</code></td><td>Generic external wrench injection (testing)</td></tr>
+  <tr><td><code>constraintDynamicEffector</code></td><td><code>sad_constraint</code></td><td>Kinematic constraints (deployments)</td></tr>
+  <tr><td><code>prescribedMotionStateEffector</code></td><td><code>sad_prescribed_motion</code></td><td>Scripted motion profiles</td></tr>
+  <tr><td><code>gravityEffector</code>, <code>gravityGradientEffector</code></td><td><code>sad_gravity</code></td><td>Point-mass + gravity gradient torque</td></tr>
+  <tr><td><code>dragDynamicEffector</code>, <code>facetDragDynamicEffector</code></td><td><code>sad_drag</code></td><td>Atmospheric drag (LEO)</td></tr>
+  <tr><td><code>facetSRPDynamicEffector</code>, <code>facetedSRPEffector</code></td><td><code>sad_srp</code></td><td>Solar radiation pressure</td></tr>
+  <tr><td><code>fuelTank</code></td><td><code>sad_fuel_tank</code></td><td>Propellant bookkeeping</td></tr>
+  <tr><td><code>saturationSingleActuator</code></td><td><code>sad_saturation</code></td><td>Generic actuator saturation</td></tr>
+</table>
+
+<h3>3.3 Environment reused (Basilisk → SAD module)</h3>
+<table>
+  <tr><th>Basilisk module</th><th>SAD module</th><th>Notes</th></tr>
+  <tr><td><code>spiceInterface</code>, <code>planetEphemeris</code></td><td><code>sad_planet_ephem</code></td><td>Planet positions/velocities</td></tr>
+  <tr><td><code>solarFlux</code>, <code>sunlineEphem</code></td><td><code>sad_sun_ephem</code></td><td>Sun position (drives sun-pointing ref + CSS)</td></tr>
+  <tr><td><code>magneticFieldCenteredDipole</code>, <code>magneticFieldWMM</code></td><td><code>sad_mag_field</code></td><td>Earth mag field for MTQ + mag sensor</td></tr>
+  <tr><td><code>exponentialAtmosphere</code>, <code>msisAtmosphere</code>, <code>tabularAtmosphere</code></td><td><code>sad_atmosphere</code></td><td>Drag density</td></tr>
+  <tr><td><code>eclipse</code></td><td><code>sad_eclipse</code></td><td>Shadow / Sun flare gating for star tracker</td></tr>
+  <tr><td><code>albedo</code>, <code>earthRadiationModel</code></td><td><code>sad_albedo</code></td><td>Earth-reflected radiation</td></tr>
+  <tr><td><code>spaceWeatherData</code>, <code>spacecraftCharging*</code></td><td><code>sad_space_weather</code></td><td>Optional charging model</td></tr>
+  <tr><td><code>groundLocation</code>, <code>groundMapping</code>, <code>stripLocation</code></td><td><code>sad_ground</code></td><td>Ground station / target geometry</td></tr>
+  <tr><td><code>spacecraftLocation</code></td><td><code>sad_sc_location</code></td><td>Lat/lon/alt of spacecraft</td></tr>
+</table>
+
+<h3>3.4 Controllers reused (Basilisk fswAlgorithms → SAD module)</h3>
+<table>
+  <tr><th>Basilisk module</th><th>SAD module</th><th>Notes</th></tr>
+  <tr><td><code>mrpPD</code>, <code>mrpFeedback</code>, <code>mrpPDRust</code></td><td><code>sad_mrp_pd</code>, <code>sad_mrp_feedback</code></td><td>MRP-based PD (baseline comparison)</td></tr>
+  <tr><td><code>mrpSteering</code>, <code>mrpRotation</code></td><td><code>sad_mrp_steering</code></td><td>Steering law for large slews</td></tr>
+  <tr><td><code>rateServoFullNonlinear</code></td><td><code>sad_rate_servo</code></td><td>Rate servo inner loop</td></tr>
+  <tr><td><code>inertial3D</code>, <code>inertial3DSpin</code></td><td><code>sad_inertial_3d</code></td><td>Inertial pointing references</td></tr>
+  <tr><td><code>sunSafeACS</code>, <code>sunSafePoint</code></td><td><code>sad_sun_safe</code></td><td>Sun-safe mode (detumble-to-Sun)</td></tr>
+  <tr><td><code>sunlineEKF/UKF/SEKF/SuKF</code></td><td><code>sad_sunline_est</code></td><td>Sun-line attitude estimation</td></tr>
+  <tr><td><code>inertialUKF</code>, <code>headingSuKF</code></td><td><code>sad_inertial_est</code></td><td>Inertial attitude UKF</td></tr>
+  <tr><td><code>spacecraftPointing</code>, <code>locationPointing</code>, <code>velocityPoint</code>, <code>hillPoint</code></td><td><code>sad_pointing</code></td><td>Pointing reference generators</td></tr>
+  <tr><td><code>oneAxisSolarArrayPoint</code>, <code>solarArrayReference</code></td><td><code>sad_solar_array_point</code></td><td>Solar array pointing</td></tr>
+  <tr><td><code>constrainedAttitudeManeuver</code></td><td><code>sad_constrained_maneuver</code></td><td>Keep-in-cone constrained slew</td></tr>
+  <tr><td><code>smallBodyWaypointFeedback</code>, <code>waypointReference</code></td><td><code>sad_waypoint</code></td><td>Waypoint tracking</td></tr>
+  <tr><td><code>celestialTwoBodyPoint</code></td><td><code>sad_celestial_point</code></td><td>Celestial pointing</td></tr>
+</table>
+
+<h3>3.5 Estimation / Navigation / Comm reused</h3>
+<table>
+  <tr><th>Basilisk module</th><th>SAD module</th></tr>
+  <tr><td><code>navAggregate</code></td><td><code>sad_nav_aggregate</code></td></tr>
+  <tr><td><code>stComm</code>, <code>imuComm</code>, <code>cssComm</code>, <code>tamComm</code></td><td><code>sad_sensor_comm</code></td></tr>
+  <tr><td><code>sunlineEKF/UKF/SEKF/SuKF</code>, <code>okeefeEKF</code>, <code>smallBodyNavEKF/UKF</code>, <code>relativeODuKF</code>, <code>pixelLineBiasUKF</code></td><td><code>sad_estimation_family</code></td></tr>
+  <tr><td><code>ephemNavConverter</code>, <code>ephemDifference</code></td><td><code>sad_ephem_nav</code></td></tr>
+  <tr><td><code>horizonOpNav</code>, <code>opNavPoint</code></td><td><code>sad_opnav</code></td></tr>
+  <tr><td><code>faultDetection</code></td><td><code>sad_fdir</code></td></tr>
+</table>
+
+<h3>3.6 Guidance / Planning / Allocation reused</h3>
+<table>
+  <tr><th>Basilisk module</th><th>SAD module</th></tr>
+  <tr><td><code>lambertPlanner</code>, <code>lambertSolver</code>, <code>lambertSecondDV</code>, <code>lambertValidator</code>, <code>lambertSurfaceRelativeVelocity</code></td><td><code>sad_lambert</code></td></tr>
+  <tr><td><code>dvGuidance</code>, <code>dvAccumulation</code>, <code>dvAttEffect</code>, <code>dvExecuteGuidance</code></td><td><code>sad_dv_guidance</code></td></tr>
+  <tr><td><code>orbElemOffset</code>, <code>oeStateEphem</code></td><td><code>sad_orb_elem</code></td></tr>
+  <tr><td><code>hillStateConverter</code>, <code>hillToAttRef</code>, <code>hillFrameRelativeControl</code></td><td><code>sad_hill</code></td></tr>
+  <tr><td><code>thrForceMapping</code>, <code>forceTorqueThrForceMapping</code></td><td><code>sad_thr_force_mapping</code></td></tr>
+  <tr><td><code>thrFiringSchmitt</code>, <code>thrFiringRound</code>, <code>thrFiringRemainder</code></td><td><code>sad_thr_firing</code></td></tr>
+  <tr><td><code>thrMomentumDumping</code>, <code>thrMomentumManagement</code></td><td><code>sad_thr_momentum</code></td></tr>
+  <tr><td><code>thrMomentumDumping</code> (MTQ), <code>mtbFeedforward</code>, <code>mtbMomentumManagement</code>, <code>mtbMomentumManagementSimple</code></td><td><code>sad_mtb_momentum</code></td></tr>
+  <tr><td><code>torque2Dipole</code>, <code>dipoleMapping</code></td><td><code>sad_torque2dipole</code></td></tr>
+  <tr><td><code>rwMotorTorque</code>, <code>rwNullSpace</code>, <code>rwConfigData</code>, <code>arrayMotorTorqueToSingleActuators</code></td><td><code>sad_rw_allocation</code></td></tr>
+  <tr><td><code>jointThrAllocation</code></td><td><code>sad_joint_thr_alloc</code></td></tr>
+  <tr><td><code>vscmgVelocitySteering</code>, <code>vscmgGimbalRateServo</code></td><td><code>sad_vscmg_steering</code></td></tr>
+  <tr><td><code>thrustCMEstimation</code>, <code>thrustRWDesat</code></td><td><code>sad_thrust_cm</code></td></tr>
+  <tr><td><code>lowPassFilterTorqueCommand</code>, <code>torqueScheduler</code></td><td><code>sad_torque_filter</code></td></tr>
+  <tr><td><code>formationBarycenter</code>, <code>spacecraftReconfig</code></td><td><code>sad_formation</code></td></tr>
+  <tr><td><code>jointMotionCompensator</code>, <code>hingedJointArrayMotor</code>, <code>hingedRigidBodyPIDMotor</code></td><td><code>sad_hinged_motor</code></td></tr>
+  <tr><td><code>attRefCorrection</code>, <code>attTrackingError</code></td><td><code>sad_att_ref</code></td></tr>
+  <tr><td><code>simpleDeadband</code></td><td><code>sad_deadband</code></td></tr>
+</table>
+
+<h3>3.7 Dynamics / integrators reused</h3>
+<table>
+  <tr><th>Basilisk module</th><th>SAD module</th></tr>
+  <tr><td><code>spacecraft</code>, <code>spacecraftSystem</code>, <code>dynamicObject</code></td><td><code>sad_spacecraft</code> (top-level assembler)</td></tr>
+  <tr><td><code>svIntegrators</code> (RK4/RK45/adaptive)</td><td><code>sad_integrator</code></td></tr>
+  <tr><td><code>dynParamManager</code></td><td><code>sad_dyn_params</code></td></tr>
+  <tr><td><code>NBodyGravity</code>, <code>sphericalHarmonicsGravityModel</code>, <code>polyhedralGravityModel</code>, <code>pointMassGravityModel</code></td><td><code>sad_gravity_models</code></td></tr>
+  <tr><td><code>constraintDynamicEffector</code>, <code>prescribedMotionStateEffector</code></td><td>see §3.2</td></tr>
+</table>
+
+<h2>4. Core dynamics (SAD-specific)</h2>
+<h3>4.1 State vector</h3>
+<p><code>y = [r(3), v(3), q(4), omega(3)]</code> = 13 states. Quaternion scalar-last (Hamiltonian), renormalized every RHS evaluation.</p>
+<pre><code>q_vec_dot = 0.5 * (q4 * omega + cross(omega, q_vec))
+q4_dot    = -0.5 * dot(omega, q_vec)</code></pre>
+
+<h3>4.2 Quaternion PD controller</h3>
+<pre><code>q_err = q_desired * q_current^{-1}   (Hamiltonian product)
+tau   = -K * q_err_vec - P * omega     (detumble: q_desired = identity)</code></pre>
+<ul>
+  <li><strong>Detumble</strong>: <code>q_desired = [0,0,0,1]</code>, high K (rate damping)</li>
+  <li><strong>Slew</strong>: <code>q_desired = ACS_SLEW_QUAT</code> (90° about +Z), moderate K</li>
+  <li><strong>Sun-track</strong>: <code>q_desired = sun_pointing_quaternion()</code>, cone check (15° half-angle)</li>
+</ul>
+
+<h3>4.3 Star tracker model</h3>
+<p>Returns noisy <code>q_BN</code> or dropout (<code>None</code>) on motion blur / Sun flare / rate cap. Mirrors Basilisk <code>starTracker</code>.</p>
+
+<h3>4.4 Sun-pointing orientation constraint</h3>
+<p>After slew, keep body +X within 15° of Sun. <code>sun_pointing_quaternion()</code> builds DCM like cubesat_12u_sim's
+<code>sun_pointing_sigma()</code>, final conversion to quaternion.</p>
+
+<h3>4.5 Optional RW path</h3>
+<pre><code>tau_body = -K * q_err_vec - P * omega
+tau_rw   = RW.step(tau_body, dt)       # first-order + saturation
+u        = allocation_pinv(F=0, tau=tau_rw)</code></pre>
+
+<h2>5. Monte Carlo dispersed set</h2>
+<table>
+  <tr><th>Dispersion</th><th>Value</th></tr>
+  <tr><td>Mass</td><td>±5%</td></tr>
+  <tr><td>Inertia</td><td>±5% diagonal, ±5% products</td></tr>
+  <tr><td>Tip-off rates</td><td>±1.5 °/s</td></tr>
+  <tr><td>Initial attitude</td><td>±0.08 rad quaternion error</td></tr>
+  <tr><td>Thruster Tmax</td><td>±5% per thruster</td></tr>
+  <tr><td>Thruster canting</td><td>±1° per thruster</td></tr>
+  <tr><td>Star tracker sigma</td><td>±20%</td></tr>
+  <tr><td>Orbit injection</td><td>±5 km / ±5 m/s</td></tr>
+</table>
+<p><strong>KPIs:</strong> detumble settle time + residual rate, slew settle time + residual error
+(<code>4·atan(|q_vec|)</code>), cone compliance, total propellant/ΔV.</p>
+
+<h2>6. Resolved open questions</h2>
+<ol>
+  <li><strong>LEO drag/J2</strong> — off by default for the ~180–600 s attitude mission (matches 12U baseline); enabled via
+      config flag for LEO-realism runs. Decision: <em>off by default, configurable.</em></li>
+  <li><strong>Star tracker model</strong> — reuse Basilisk <code>starTracker</code> as the reference sensor; Python mirror
+      implements the same error/dropout model. Decision: <em>Basilisk ST (not a separate Kalman/Live split).</em></li>
+  <li><strong>Slew target</strong> — 90° about body +Z confirmed (matches <code>ACS_SLEW_QUAT</code>). Decision: <em>confirmed.</em></li>
+  <li><strong>Modularity</strong> — one module per concern (not one monolithic C++ module); see §2 and §3. Decision: <em>modular.</em></li>
+  <li><strong>Simulink embedding</strong> — each module ships a Level-2 C MEX S-function + <code>.tlc</code>; C ABI in §2.1.
+      Decision: <em>first-class Simulink blocks.</em></li>
+</ol>
+
+<h2>7. Build &amp; integration plan</h2>
+<ol>
+  <li><strong>Core library</strong> <code>sad_core</code>: quaternion math, DCM, message structs, RNG, integrator. Header-only + compiled utils.</li>
+  <li><strong>Per-module targets</strong>: each module is a CMake target producing
+      <code>libsad_&lt;mod&gt;.so/.dylib</code> + <code>sad_&lt;mod&gt;_sfun.mex*</code> + pybind shim.</li>
+  <li><strong>Parity tests</strong>: Python tests drive both the C++ module and the Basilisk reference; assert state
+      trajectories agree within tolerance.</li>
+  <li><strong>Simulink</strong>: assemble a reference model using the S-function blocks; generate code via Simulink Coder
+      for HIL/flight-software builds.</li>
+  <li><strong>Monte Carlo</strong>: Python driver dispatches C++ modules (via pybind) over the dispersed set; reuses
+      <code>tuning/profiling.py</code>.</li>
+</ol>
+
+<h2>8. Execution roadmap (phased)</h2>
+<ol>
+  <li><strong>Phase 0 — Scaffold</strong>: CMake skeleton, <code>sad_core</code>, module interface contract, pybind + MEX shims, CI.</li>
+  <li><strong>Phase 1 — Dynamics + environment</strong>: <code>sad_dynamics</code>, gravity, drag, SRP, sun/mag/atmosphere/eclipse modules.</li>
+  <li><strong>Phase 2 — Actuators</strong>: thruster, RW, MTQ, VSCMG, fuel tank, saturation (all reused from Basilisk).</li>
+  <li><strong>Phase 3 — Sensors</strong>: star tracker, IMU, magnetometer, CSS, camera, temp, nav (all reused).</li>
+  <li><strong>Phase 4 — Estimation</strong>: nav aggregate, sensor comms, EKF/UKF/SuKF family.</li>
+  <li><strong>Phase 5 — Control + allocation</strong>: quaternion PD, MRP family, pointing, thruster/RW/MTQ allocation, firing logic.</li>
+  <li><strong>Phase 6 — Guidance + mission</strong>: pointing refs, Lambert/DV, mission sequencer (detumble→slew→track).</li>
+  <li><strong>Phase 7 — Simulink integration</strong>: S-functions, Library Browser, reference model, codegen.</li>
+  <li><strong>Phase 8 — Verification</strong>: parity tests, Monte Carlo, KPI report.</li>
+</ol>
+
+<h2>9. Deliverables</h2>
+<ul>
+  <li><code>Python/SAD_Project_PLAN.html</code> (this document) — finalized plan.</li>
+  <li><code>cpp/</code> tree with one module per concern (§2, §3) + <code>sad_core</code>.</li>
+  <li>Simulink library <code>SAD_Project_lib.slx</code> with one block per module.</li>
+  <li>Python parity-test suite + Monte Carlo driver.</li>
+  <li>KPI report (detumble/slew/track metrics, propellant, cone compliance).</li>
+</ul>
+
+<h2>10. Testing strategy</h2>
+<ul>
+  <li><strong>Unit parity</strong>: each C++ module vs Basilisk reference over randomized inputs; tolerance 1e-9 (state), 1e-6 (sensors).</li>
+  <li><strong>Integration</strong>: full mission run C++ vs Python/Basilisk end-to-end; compare trajectories.</li>
+  <li><strong>Simulink</strong>: model runs in normal mode and codegen (ERT) mode; compare against C++ reference.</li>
+  <li><strong>Monte Carlo</strong>: 500-run dispersed campaign; report KPI distributions.</li>
+</ul>
+
+<div class="footer">
+SAD_Project Finalized Plan · Spacecraft Attitude Dynamics course · Politecnico di Milano ·
+Supersedes SAD_Project_PROPOSAL.html
+</div>
+
+</body>
+</html>

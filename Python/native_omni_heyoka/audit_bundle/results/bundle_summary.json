@@ -1,12 +1,12 @@
 {
   "name": "bundle_summary",
-  "timestamp_utc": "2026-10-12T14:40:58.424723+00:00",
+  "timestamp_utc": "2026-10-14T09:23:25.256333+00:00",
   "platform": "macOS-27.0-arm64-arm-64bit",
   "python": "3.11.16",
   "basilisk": "2.12.0",
   "heyoka": "7.12.1",
   "env": {
-    "timestamp_utc": "2026-10-12T14:40:58.424742+00:00",
+    "timestamp_utc": "2026-10-14T09:23:25.256354+00:00",
     "platform": "macOS-27.0-arm64-arm-64bit",
     "os_tag": "macOS",
     "machine": "arm64",
@@ -51,7 +51,7 @@
       {
         "file": "wp1_threshold.json",
         "probe": "wp1_threshold",
-        "status": "guarded-fail",
+        "status": "ok",
         "passed": null,
         "n_pass": 0,
         "n_fail": 0,
@@ -131,7 +131,7 @@
       }
     ],
     "env": {
-      "timestamp_utc": "2026-10-12T14:40:57.562525+00:00",
+      "timestamp_utc": "2026-10-14T09:23:24.499265+00:00",
       "platform": "macOS-27.0-arm64-arm-64bit",
       "os_tag": "macOS",
       "machine": "arm64",

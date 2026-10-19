@@ -1,0 +1,44 @@
+{
+  "name": "hijack_scenarioAttGuideHyperbolic",
+  "timestamp_utc": "2026-10-17T16:22:57.225410+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "python": "3.11.16",
+  "basilisk": "2.12.0",
+  "heyoka": "7.12.1",
+  "env": {
+    "timestamp_utc": "2026-10-17T16:22:57.527129+00:00",
+    "platform": "macOS-27.2-arm64-arm-64bit",
+    "os_tag": "macOS",
+    "machine": "arm64",
+    "python": "3.11.16",
+    "executable": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/bin/python",
+    "heyoka": "7.12.1",
+    "basilisk": "2.12.0",
+    "basilisk_importable": true,
+    "numpy_importable": true,
+    "bsk_sdk": {
+      "present": true,
+      "path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/env/lib/python3.11/site-packages/bsk_sdk",
+      "includes": []
+    }
+  },
+  "payload": {
+    "demo": "scenarioAttGuideHyperbolic",
+    "tag": "v2.12.0",
+    "mode": "reject",
+    "scenario": "scenarioAttGuideHyperbolic.py",
+    "note": "hyperbolic guidance PD via extForceTorque: same guard",
+    "port_path": "/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/audit_bundle/results/scenarioAttGuideHyperbolic_omni.py",
+    "port_bytes": 17865,
+    "marked_blocks": 2,
+    "stock_exit": 0,
+    "stock_wall_s": 1.4,
+    "vacuity": [],
+    "omni_exit": 1,
+    "omni_wall_s": 1.6,
+    "omni_reject_loud": true,
+    "omni_err_tail": "ne 339, in mirror_stock_config\n    ext = _mirror_ext_force_torque(ext_models, oi, None,\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/giuliomastromartino/Documents/Polimi/MAGISTRALE/SAD/Project/Python/native_omni_heyoka/omniheyoka/swap.py\", line 1243, in _mirror_ext_force_torque\n    raise ValueError(\nValueError: mirror_stock_config: ExtForceTorque.cmdTorqueInMsg is linked but no ext_torque_msg handle was supplied; the omni cannot subscribe it (pass ext_torque_msg=...).\n",
+    "verdict": "reject loud",
+    "status": "ok"
+  }
+}
